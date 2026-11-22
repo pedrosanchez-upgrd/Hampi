@@ -163,3 +163,13 @@ export function redactar(h: Historia): string {
   }
   return partes.join('\n\n')
 }
+
+/** Campos que identifican al paciente y nunca se envían a la IA. */
+export const CAMPOS_IDENTIFICADORES = ['nombre', 'cedula', 'hcu', 'acompanante', 'nacimiento', 'lugarNacimiento', 'residencia']
+
+/** Texto de la historia sin datos identificadores, para la redacción con IA. */
+export function textoParaIA(h: Historia): string {
+  const filiacion = { ...(h.filiacion ?? {}) }
+  for (const c of CAMPOS_IDENTIFICADORES) delete filiacion[c]
+  return redactar({ ...h, filiacion })
+}

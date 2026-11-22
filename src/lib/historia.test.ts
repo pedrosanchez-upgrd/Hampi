@@ -67,3 +67,15 @@ describe('pestañas de síntoma', () => {
     expect(sintomasAbiertos(h)).toEqual(['fiebre'])
   })
 })
+
+import { textoParaIA } from './historia'
+
+describe('privacidad', () => {
+  it('el texto para la IA no lleva nombre, cédula, HCU ni contacto', () => {
+    const h = historiaVacia()
+    h.filiacion = { nombre: 'Juana Pérez', cedula: '0102030400', hcu: '12345', acompanante: 'Hija 0991234567', edad: '60', sexo: 'Mujer' }
+    const t = textoParaIA(h)
+    for (const x of ['Juana', '0102030400', '12345', '0991234567']) expect(t).not.toContain(x)
+    expect(t).toContain('Mujer de 60 años')
+  })
+})
