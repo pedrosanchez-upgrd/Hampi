@@ -229,6 +229,8 @@ export interface Diagnostico {
   soloSexo?: 'Mujer' | 'Hombre'
   /** Solo se muestra si este hallazgo está marcado como presente. */
   requiere?: string
+  /** Estudios que menciona el resumen del artículo citado (no es una orden médica). */
+  estudios?: string
   nota?: string
   reglas: Regla[]
   conteo?: ReglaConteo
@@ -246,7 +248,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'deficitFocal', lrPos: 6.6, fuente: 'klompas2002', nota: 'LR 6,6–33; se usa el valor menor' },
     { hallazgo: 'soploDiastolico', lrPos: 1.4, fuente: 'klompas2002' },
   ] },
-  { id: 'tep', nombre: 'Tromboembolismo pulmonar', grave: true, sintomas: ['toracico', 'disnea'],
+  { id: 'tep', nombre: 'Tromboembolismo pulmonar', estudios: 'Puntaje de Wells completo y dímero D (en probabilidad baja, un dímero D negativo ayuda a descartar).', grave: true, sintomas: ['toracico', 'disnea'],
     nota: 'Reglas cualitativas basadas en las variables del modelo de Wells; calcule el puntaje completo de Wells.', reglas: [
     { hallazgo: 'signosTvp', cualitativo: 'sube', fuente: 'wells2000' },
     { hallazgo: 'taquicardia', cualitativo: 'sube', fuente: 'wells2000' },
@@ -259,7 +261,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'dolorPleuritico', cualitativo: 'sube', fuente: 'adler2015', nota: 'Criterio diagnóstico de la guía ESC' },
     { hallazgo: 'rocePericardico', cualitativo: 'sube', fuente: 'adler2015', nota: 'Criterio diagnóstico de la guía ESC' },
   ] },
-  { id: 'icc', nombre: 'Insuficiencia cardiaca', grave: false, sintomas: ['disnea', 'edema'], reglas: [
+  { id: 'icc', nombre: 'Insuficiencia cardiaca', estudios: 'Péptido natriurético tipo B: un BNP menor de 100 pg/mL ayuda a descartar.', grave: false, sintomas: ['disnea', 'edema'], reglas: [
     { hallazgo: 'iccPrevia', lrPos: 5.8, lrNeg: 0.45, fuente: 'wang2005' },
     { hallazgo: 'dpn', lrPos: 2.6, fuente: 'wang2005' },
     { hallazgo: 's3', lrPos: 11, fuente: 'wang2005' },
@@ -303,7 +305,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'dolorFid', cualitativo: 'sube', ausenteCuenta: true, fuente: 'wagner1996', nota: 'Su ausencia la hace menos probable' },
     { hallazgo: 'defensa', cualitativo: 'sube', ausenteCuenta: true, fuente: 'wagner1996', nota: 'Su ausencia la hace menos probable' },
   ] },
-  { id: 'colecistitis', nombre: 'Colecistitis aguda', grave: false, sintomas: ['abdominal'],
+  { id: 'colecistitis', nombre: 'Colecistitis aguda', estudios: 'Ecografía de hipocondrio derecho.', grave: false, sintomas: ['abdominal'],
     nota: 'Ningún hallazgo aislado la confirma ni la descarta; requiere ecografía.', reglas: [
     { hallazgo: 'murphy', lrPos: 2.8, fuente: 'trowbridge2003', nota: 'IC 95 % incluye 1' },
     { hallazgo: 'dolorHcd', lrNeg: 0.4, fuente: 'trowbridge2003', nota: 'IC 95 % incluye 1' },
@@ -321,7 +323,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     conteo: { hallazgos: ['pulsatil', 'dura4a72', 'unilateral', 'nauseaCefalea', 'incapacitante'], texto: 'Criterios POUND',
       tramos: [{ min: 4, lr: 24 }, { min: 3, lr: 3.5 }, { min: 0, lr: 0.41 }], fuente: 'detsky2006',
       nota: '4 o 5 criterios: LR 24 (IC 95 % 1,5–388); 3: LR 3,5; 2 o menos: LR 0,41' } },
-  { id: 'lesionIntracraneal', nombre: 'Lesión intracraneal significativa (indica neuroimagen)', grave: true, sintomas: ['cefalea'],
+  { id: 'lesionIntracraneal', nombre: 'Lesión intracraneal significativa (indica neuroimagen)', estudios: 'Neuroimagen ante cualquiera de estos hallazgos.', grave: true, sintomas: ['cefalea'],
     nota: 'Ningún hallazgo clínico permitió descartar una lesión intracraneal.', reglas: [
     { hallazgo: 'tipoRacimos', lrPos: 10.7, fuente: 'detsky2006' },
     { hallazgo: 'neuroAnormal', lrPos: 5.3, fuente: 'detsky2006' },
@@ -334,7 +336,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     nota: 'Paresia facial, caída del brazo o habla alterada. La neuroimagen distingue isquémico de hemorrágico; registre la hora de inicio.', reglas: [],
     conteo: { hallazgos: ['paresiaFacial', 'caidaBrazo', 'hablaAnormal'], texto: 'Paresia facial, caída del brazo o habla alterada',
       tramos: [{ min: 1, lr: 5.5 }, { min: 0, lr: 0.39 }], fuente: 'goldstein2005', nota: '1 o más hallazgos: LR 5,5; ninguno: LR 0,39' } },
-  { id: 'ectopico', nombre: 'Embarazo ectópico', grave: true, sintomas: ['abdominal'], soloSexo: 'Mujer', requiere: 'embarazoPosible',
+  { id: 'ectopico', nombre: 'Embarazo ectópico', estudios: 'Ecografía transvaginal y hCG cuantitativa.', grave: true, sintomas: ['abdominal'], soloSexo: 'Mujer', requiere: 'embarazoPosible',
     nota: 'Ningún dato de la historia tuvo LR mayor de 1,5. Ante dolor abdominal o sangrado en embarazo temprano: ecografía transvaginal y hCG cuantitativa.', reglas: [
     { hallazgo: 'movilizacionCervical', lrPos: 4.9, fuente: 'crochet2013' },
     { hallazgo: 'masaAnexial', lrPos: 2.4, fuente: 'crochet2013' },
@@ -345,18 +347,18 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'bunCr30', lrPos: 7.5, fuente: 'srygley2012' },
     { hallazgo: 'coagulosHeces', lrPos: 0.05, fuente: 'srygley2012' },
   ] },
-  { id: 'sangradoAltoGrave', nombre: 'Sangrado digestivo alto que requiere intervención urgente', grave: true, sintomas: ['sangradoDigestivo'],
+  { id: 'sangradoAltoGrave', nombre: 'Sangrado digestivo alto que requiere intervención urgente', estudios: 'Puntaje de Blatchford (0 = baja probabilidad de necesitar intervención urgente).', grave: true, sintomas: ['sangradoDigestivo'],
     nota: 'Un puntaje de Blatchford de 0 tuvo LR 0,02 para necesitar intervención urgente.', reglas: [
     { hallazgo: 'taquicardiaSangrado', lrPos: 4.9, fuente: 'srygley2012' },
     { hallazgo: 'hb8', lrPos: 4.5, fuente: 'srygley2012', nota: 'LR 4,5–6,2; se usa el valor menor' },
   ] },
-  { id: 'bacteriemia', nombre: 'Bacteriemia (indica hemocultivos)', grave: true, sintomas: ['fiebre'],
+  { id: 'bacteriemia', nombre: 'Bacteriemia (indica hemocultivos)', estudios: 'Hemocultivos solo si la probabilidad previa lo justifica; la fiebre o la leucocitosis aisladas no bastan.', grave: true, sintomas: ['fiebre'],
     nota: 'No aplica a pacientes inmunocomprometidos ni con sospecha de endocarditis. La fiebre o la leucocitosis aisladas no bastan para pedir hemocultivos.', reglas: [
     { hallazgo: 'fiebreMedida', lrPos: 1.9, fuente: 'coburn2012', nota: 'Temperatura de 38 °C o más' },
     { hallazgo: 'escalofriosIntensos', lrPos: 4.7, fuente: 'coburn2012' },
     { hallazgo: 'sirs', lrNeg: 0.09, fuente: 'coburn2012' },
   ] },
-  { id: 'hipovolemia', nombre: 'Hipovolemia', grave: true, sintomas: ['vomito', 'diarrea', 'sangradoDigestivo'],
+  { id: 'hipovolemia', nombre: 'Hipovolemia', estudios: 'Electrolitos, urea (BUN) y creatinina cuando se necesite certeza.', grave: true, sintomas: ['vomito', 'diarrea', 'sangradoDigestivo'],
     nota: 'La hipotensión y la taquicardia en decúbito suelen faltar aun con pérdidas de hasta 1150 ml. El llenado capilar y la turgencia de la piel no tienen valor probado en adultos.', reglas: [
     { hallazgo: 'pulsoPostural', cualitativo: 'sube', fuente: 'mcgee1999', nota: 'Sensibilidad 97 % y especificidad 98 % para pérdida grande de sangre' },
     { hallazgo: 'axilaSeca', lrPos: 2.8, fuente: 'mcgee1999', nota: 'En vómito, diarrea o poca ingesta' },
@@ -370,7 +372,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'frioAntes', lrPos: 0.16, fuente: 'albassam2019' },
     { hallazgo: 'cefaleaAntes', lrPos: 0.17, fuente: 'albassam2019' },
   ] },
-  { id: 'tvp', nombre: 'Trombosis venosa profunda', grave: true, sintomas: ['edema'],
+  { id: 'tvp', nombre: 'Trombosis venosa profunda', estudios: 'Dímero D si la probabilidad clínica es baja; ecografía si es alta o el dímero D es positivo.', grave: true, sintomas: ['edema'],
     nota: 'Reglas cualitativas basadas en el modelo clínico de Wells; con probabilidad baja y dímero D negativo se puede descartar. El resumen del artículo no enumera las variables: revisar contra el texto completo.', reglas: [
     { hallazgo: 'edemaUnilateral', cualitativo: 'sube', fuente: 'wells2003' },
     { hallazgo: 'dolorVenoso', cualitativo: 'sube', fuente: 'wells2003' },

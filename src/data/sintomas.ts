@@ -154,7 +154,9 @@ export const normalizar = (t: string) =>
 
 /** Devuelve los ids de los síntomas cuyas palabras clave aparecen en el texto. */
 export function detectarSintomas(texto: string): string[] {
-  const t = ' ' + normalizar(texto).replace(/[^a-zñ0-9]+/g, ' ') + ' '
+  // Lo negado no abre pestañas: «niega síncope», «sin fiebre», «no refiere disnea».
+  const afirmado = normalizar(texto).replace(/\b(niega|sin|no refiere|no presenta|no tiene|descarta)\b[^.\n]*/g, ' ')
+  const t = ' ' + afirmado.replace(/[^a-zñ0-9]+/g, ' ') + ' '
   return SINTOMAS.filter((s) =>
     s.claves.some((k) => {
       const nk = normalizar(k)

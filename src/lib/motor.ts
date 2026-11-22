@@ -71,6 +71,7 @@ export interface Resultado {
   razones: Razon[]
   fuentes: Fuente[]
   nota?: string
+  estudios?: string
   descartado: boolean
 }
 
@@ -124,7 +125,7 @@ export function diagnosticosEnVivo(h: Historia): Resultado[] {
         bajan: razones.filter((r) => r.tipo === 'cualitativo' && r.factor < 1).length,
       }
       const fuentes = [...new Set([...d.reglas.map((r) => r.fuente), ...(d.conteo ? [d.conteo.fuente] : [])])].map((id) => FUENTES[id])
-      return { id: d.id, nombre: d.nombre, grave: d.grave, factor, factorLR, cualitativos, razones, fuentes, nota: d.nota, descartado: descartados.has(d.id) }
+      return { id: d.id, nombre: d.nombre, grave: d.grave, factor, factorLR, cualitativos, razones, fuentes, nota: d.nota, estudios: d.estudios, descartado: descartados.has(d.id) }
     })
 
   // Orden: no descartados primero; luego por factor; a igual factor, los graves arriba.
@@ -141,4 +142,34 @@ export function formatoFactor(f: number): string {
   if (f >= 10) return `×${Math.round(f)}`
   if (f >= 1) return `×${f.toFixed(1).replace('.', ',')}`
   return `×${f.toFixed(2).replace('.', ',')}`
+}
+
+export interface PreguntaAfinar {
+  hallazgo: string
+  texto: string
+  /** Cómo cambia el diagnóstico según la respuesta. */
+  efecto: string
+}
+
+const coma = (n: number) => String(n).replace('.', ',')
+
+/** Hallazgos todavía sin responder que cambiarían el orden de este diagnóstico. */
+export function preguntasParaAfinar(h: Historia, diagnosticoId: string): PreguntaAfinar[] {
+  const d = DIAGNOSTICOS.find((x) => x.id === diagnosticoId)
+  if (!d) return []
+  const estados = estadoHallazgos(h)
+  const out: PreguntaAfinar[] = []
+  for (const r of d.reglas) {
+    if (estados[r.hallazgo] || HALLAZGOS.find((x) => x.id === r.hallazgo)?.automatico) continue
+    const hz = HALLAZGOS.find((x) => x.id === r.hallazgo)!
+    const efecto = r.cualitativo
+      ? r.soloAusente ? 'si falta, baja' : r.ausenteCuenta ? (r.cualitativo === 'sube' ? 'si está, sube; si falta, baja' : 'si está, baja') : r.cualitativo === 'sube' ? 'si está, sube' : 'si está, baja'
+      : [r.lrPos !== undefined && `si está: LR ${coma(r.lrPos)}`, r.lrNeg !== undefined && `si falta: LR ${coma(r.lrNeg)}`].filter(Boolean).join(' · ')
+    if (!out.some((x) => x.hallazgo === r.hallazgo)) out.push({ hallazgo: r.hallazgo, texto: hz.texto, efecto })
+  }
+  for (const id of d.conteo?.hallazgos ?? []) {
+    if (estados[id] || out.some((x) => x.hallazgo === id)) continue
+    out.push({ hallazgo: id, texto: HALLAZGOS.find((x) => x.id === id)!.texto, efecto: d.conteo!.texto })
+  }
+  return out
 }

@@ -267,7 +267,7 @@ export default function App() {
               onCambio={(campo, valor) => setHistoria((h) => ({ ...h, [seccion.id]: { ...h[seccion.id], [campo]: valor } }))}
               guia={historia.guia ?? {}}
               onGuia={(clave, valor) => setHistoria((h) => ({ ...h, guia: { ...h.guia, [clave]: valor } }))}
-              sexo={historia.filiacion?.sexo}>
+              sexo={historia.filiacion?.sexo} historia={historia}>
               {seccion.id === 'filiacion' && !historia.filiacion?.edad && !historia.motivo?.motivo && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-brand/40 bg-surface p-4">
                   <div>

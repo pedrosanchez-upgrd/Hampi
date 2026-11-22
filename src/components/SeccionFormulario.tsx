@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import type { Campo, Seccion } from '../data/secciones'
-import { avisoSigno, cedulaValida, imc, RANGOS } from '../lib/historia'
+import { avisoSigno, cedulaValida, imc, RANGOS, type Historia } from '../lib/historia'
+import { sugerenciasPara, type Sugerencia } from '../data/redaccionAyuda'
 import { Icono } from './Icono'
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   sexo?: string
   /** Bloque que va justo después de la guía (por ejemplo los antecedentes estructurados). */
   children?: ReactNode
+  /** Historia completa, para armar sugerencias de redacción. */
+  historia?: Historia
 }
 
 const claseInput =
@@ -119,7 +122,56 @@ function Guia({ seccion, guia, onGuia }: Pick<Props, 'seccion' | 'guia' | 'onGui
   )
 }
 
-export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, sexo, children }: Props) {
+/** Sugerencias de redacción debajo del campo: un toque para usarlas. */
+function Sugerencias({ lista, valor, onUsar, examen }: { lista: Sugerencia[]; valor: string; onUsar: (t: string) => void; examen?: boolean }) {
+  if (!lista.length) return null
+  const v = valor.trim()
+  const cortas = lista.filter((x) => x.texto.length <= 45 && x.etiqueta === x.texto)
+  const largas = lista.filter((x) => !cortas.includes(x))
+  const agregar = (t: string) => onUsar(v ? `${v}${v.endsWith('.') || t.includes('\n') ? '\n' : '; '}${t}` : t)
+  return (
+    <div className="mt-2 grid gap-2">
+      {cortas.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-medium text-ink-faint">Sugerencias:</span>
+          {cortas.map((x) => {
+            const usado = v.toLowerCase().includes(x.texto.toLowerCase())
+            return (
+              <button key={x.texto} type="button" disabled={usado} onClick={() => agregar(x.texto)}
+                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-brand/30 bg-brand-soft/40 px-3 text-sm text-brand-strong hover:bg-brand-soft disabled:border-line disabled:bg-transparent disabled:text-ink-faint">
+                <Icono nombre={usado ? 'check' : 'mas'} className="h-3.5 w-3.5" />{x.texto}
+              </button>
+            )
+          })}
+        </div>
+      )}
+      {largas.map((x) => {
+        const usado = v.includes(x.texto)
+        return (
+          <div key={x.etiqueta} className="rounded-xl border border-dashed border-brand/35 bg-brand-soft/25 p-3">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-brand-strong"><Icono nombre="libro" className="h-3.5 w-3.5" /> Sugerencia · {x.etiqueta}</p>
+            <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{x.texto}</p>
+            {examen && <p className="mt-1 text-xs text-ink-faint">Úsela solo si examinó esta región y la encontró normal.</p>}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {usado ? (
+                <span className="inline-flex min-h-9 items-center gap-1 text-sm font-medium text-ok"><Icono nombre="check" className="h-4 w-4" /> Usada</span>
+              ) : (
+                <>
+                  <button type="button" onClick={() => onUsar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
+                    {v ? 'Reemplazar con esta' : 'Usar este texto'}
+                  </button>
+                  {v && <button type="button" onClick={() => agregar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink hover:border-brand/60">Agregar al final</button>}
+                </>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, sexo, children, historia }: Props) {
   const grupos: { titulo?: string; campos: Campo[] }[] = []
   for (const c of seccion.campos.filter((x) => !x.soloSexo || x.soloSexo === sexo)) {
     const ultimo = grupos[grupos.length - 1]
@@ -192,6 +244,9 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
                       </div>
                     )}
                     {c.ayuda && <p id={`campo-${c.id}-ayuda`} className="mt-1.5 text-xs text-ink-faint">{c.ayuda}</p>}
+                    {historia && (c.tipo === 'parrafo' || c.tipo === 'texto') && (
+                      <Sugerencias lista={sugerenciasPara(seccion.id, c.id, historia)} valor={v} onUsar={(t) => onCambio(c.id, t)} examen={seccion.id === 'examen'} />
+                    )}
                     {a && <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-alarm"><Icono nombre="alerta" className="h-4 w-4" />{a}</p>}
                   </div>
                 )

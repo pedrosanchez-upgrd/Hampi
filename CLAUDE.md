@@ -11,6 +11,9 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 - `src/data/sintomas.ts`: 41 pestañas de síntoma (palabras clave, preguntas, signos de alarma Sí/No; los «No» salen como negativos pertinentes).
 - `src/data/antecedentes.ts`: patológicos, familiares por parentesco y epidemiológicos de Ecuador; algunos alimentan hallazgos del motor.
 - `src/data/casoEjemplo.ts`: caso ficticio de dolor torácico para probar.
+- `src/data/redaccionAyuda.ts`: sugerencias de redacción bajo cada campo (relato armado con ALICIA, examen físico normal por región, síndromes por síntoma, crónicos desde antecedentes, educación desde alarmas). Nunca inventan datos del paciente.
+- `src/data/considerar.ts`: «Otros a considerar» por síntoma (lista orientativa, sin puntaje). `Diagnostico.estudios`: solo exámenes que menciona el resumen del artículo citado. `preguntasParaAfinar` (motor): hallazgos sin responder que cambiarían el orden.
+- Lección aprendida (22-nov): lo negado («niega…», «sin…», «no refiere…») no abre pestañas de síntoma; ver prueba de regresión en `src/data/redaccionAyuda.test.ts`.
 - `src/data/conocimiento.ts`: fuentes (PMID/DOI verificados en PubMed), hallazgos, diagnósticos y reglas (LR o cualitativo). Para revisión médica: doc «Hampi: reglas de diagnóstico para revisión médica» (https://claude.ai/artifact/QSfWHA3DE64FrZQEgQF3tR). Toda regla nueva lleva fuente verificada.
 - `src/lib/historia.ts`: cédula, rangos de signos vitales (PROVISIONALES), pestañas abiertas, faltantes, redacción y `textoParaIA` (sin identificadores).
 - `src/lib/motor.ts`: diagnósticos en vivo (producto de LR, determinista). Reglas: `lrPos`/`lrNeg` (números del resumen del artículo), `cualitativo` (×2/×0,5), `soloAusente` (el artículo la valida solo para descartar, p. ej. fiebre en meningitis, Ottawa HSA) y `conteo` (POUND, ACV).

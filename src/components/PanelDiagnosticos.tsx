@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { diagnosticosEnVivo, formatoFactor, type Resultado } from '../lib/motor'
-import { alarmasMarcadas, avisos, faltantes, type Historia } from '../lib/historia'
+import { diagnosticosEnVivo, formatoFactor, preguntasParaAfinar, type Resultado } from '../lib/motor'
+import { CONSIDERAR } from '../data/considerar'
+import { alarmasMarcadas, avisos, faltantes, sintomasAbiertos, type Historia } from '../lib/historia'
 import { Icono } from './Icono'
 
 interface Props {
@@ -15,9 +16,15 @@ function alternarDescartado(h: Historia, id: string): Historia {
   return { ...h, diagnosticosVivo: { ...h.diagnosticosVivo, descartados: nueva.join(',') } }
 }
 
+/** Nombres de los diagnósticos escritos (una línea por diagnóstico, sin «(presuntivo)»). */
+export function nombresElegidos(h: Historia): Set<string> {
+  return new Set((h.impresion?.diagnosticos ?? '').split('\n').map((l) => l.replace(/\s*\(.*\)\s*$/, '').trim().toLowerCase()).filter(Boolean))
+}
+const estaElegido = (h: Historia, nombre: string) => nombresElegidos(h).has(nombre.toLowerCase())
+
 function agregarADiagnosticos(h: Historia, nombre: string): Historia {
   const actual = (h.impresion?.diagnosticos ?? '').trim()
-  if (actual.toLowerCase().includes(nombre.toLowerCase())) return h
+  if (estaElegido(h, nombre)) return h
   const linea = `${nombre} (presuntivo)`
   return { ...h, impresion: { ...h.impresion, diagnosticos: actual ? `${actual}\n${linea}` : linea } }
 }
@@ -37,7 +44,7 @@ function Tarjeta({ r, historia, setHistoria }: { r: Resultado } & Props) {
         <button className="shrink-0 rounded-lg px-2 py-1.5 text-sm text-ink-soft hover:bg-surface-2" onClick={() => setAbierta(true)}>Ver</button>
       </li>
     )
-  const yaAgregado = (historia.impresion?.diagnosticos ?? '').toLowerCase().includes(r.nombre.toLowerCase())
+  const yaAgregado = estaElegido(historia, r.nombre)
   // Barra centrada en ×1: a la derecha sube, a la izquierda baja (escala logarítmica).
   const log = Math.max(-1.5, Math.min(1.5, Math.log10(r.factor)))
   const sube = log >= 0
@@ -248,8 +255,70 @@ export function AsistenteFlotante(props: Props & { abierto?: boolean; setAbierto
 }
 
 function quitarDeDiagnosticos(h: Historia, nombre: string): Historia {
-  const lineas = (h.impresion?.diagnosticos ?? '').split('\n').filter((l) => !l.toLowerCase().includes(nombre.toLowerCase()))
+  const lineas = (h.impresion?.diagnosticos ?? '').split('\n').filter((l) => l.replace(/\s*\(.*\)\s*$/, '').trim().toLowerCase() !== nombre.toLowerCase())
   return { ...h, impresion: { ...h.impresion, diagnosticos: lineas.join('\n').trim() } }
+}
+
+/** Una fila de la lista para elegir: nombre, motivo, Elegir y «Afinar» con preguntas Sí/No. */
+function FilaDiagnostico({ r, i, historia, setHistoria }: { r: Resultado; i: number } & Props) {
+  const [abierta, setAbierta] = useState(false)
+  const elegido = estaElegido(historia, r.nombre)
+  const motivo = r.razones.find((x) => x.factor > 1) ?? r.razones[0]
+  const preguntas = preguntasParaAfinar(historia, r.id)
+  const responder = (id: string, v: string) => setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, [id]: v } }))
+  return (
+    <li className={`min-w-0 rounded-xl border transition-colors ${elegido ? 'border-brand bg-brand-soft/50' : 'border-line'}`}>
+      <div className="flex min-w-0 items-center gap-3 px-3 py-2.5">
+        <span className={`cifra flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${i === 0 ? 'bg-brand text-on-brand' : 'bg-surface-2 text-ink-soft'}`}>{i + 1}</span>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold leading-snug text-ink">
+            {r.nombre}
+            {r.grave && <span className="ml-2 inline-block rounded-full bg-alarm-soft px-2 py-0.5 align-middle text-[11px] font-semibold text-alarm">No te lo pierdas</span>}
+          </p>
+          <p className="truncate text-xs text-ink-soft">
+            {motivo ? `${motivo.factor > 1 ? '▲' : '▼'} ${motivo.presente ? motivo.texto : 'Sin ' + motivo.texto.charAt(0).toLowerCase() + motivo.texto.slice(1)}` : 'Sin hallazgos registrados todavía'}
+            {r.factorLR !== 1 && <span className="cifra ml-1.5 text-ink-faint">{formatoFactor(r.factorLR)}</span>}
+          </p>
+        </div>
+        <button aria-pressed={elegido}
+          onClick={() => setHistoria((h) => (elegido ? quitarDeDiagnosticos(h, r.nombre) : agregarADiagnosticos(h, r.nombre)))}
+          className={`inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors ${
+            elegido ? 'bg-brand text-on-brand' : 'border border-line bg-surface text-ink hover:border-brand/60'}`}>
+          <Icono nombre={elegido ? 'check' : 'mas'} className="h-4 w-4" />{elegido ? 'Elegido' : 'Elegir'}
+        </button>
+      </div>
+      {(preguntas.length > 0 || r.estudios) && (
+        <div className="border-t border-line/70 px-3 py-1.5">
+          <button className="flex min-h-9 w-full items-center justify-between gap-2 text-left text-sm font-medium text-brand" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
+            <span>{preguntas.length ? `Afinar: ${preguntas.length} ${preguntas.length === 1 ? 'dato' : 'datos'} por preguntar o examinar` : 'Exámenes que menciona la fuente'}</span>
+            <Icono nombre="flecha" className={`h-4 w-4 transition-transform ${abierta ? 'rotate-90' : ''}`} />
+          </button>
+          {abierta && (
+            <div className="grid gap-1.5 pb-2 pt-1">
+              {preguntas.slice(0, 6).map((q) => (
+                <div key={q.hallazgo} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface px-2.5 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-ink">{q.texto}</p>
+                    <p className="text-xs text-ink-faint">{q.efecto}</p>
+                  </div>
+                  <span className="flex shrink-0 overflow-hidden rounded-lg border border-line text-sm" role="group" aria-label={q.texto}>
+                    <button className="min-h-9 min-w-11 px-2.5 font-medium text-ink-soft hover:bg-brand-soft" onClick={() => responder(q.hallazgo, 'si')}>Sí</button>
+                    <button className="min-h-9 min-w-11 border-l border-line px-2.5 font-medium text-ink-soft hover:bg-surface-2" onClick={() => responder(q.hallazgo, 'no')}>No</button>
+                  </span>
+                </div>
+              ))}
+              {r.estudios && (
+                <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-sm text-ink-soft">
+                  <span className="font-semibold text-ink">Estudios que menciona la fuente: </span>{r.estudios}
+                  <span className="ml-1 text-xs text-ink-faint">({r.fuentes[0]?.cita.split('.')[0]})</span>
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </li>
+  )
 }
 
 /**
@@ -257,9 +326,11 @@ function quitarDeDiagnosticos(h: Historia, nombre: string): Historia {
  * `compacto`: tarjeta corta al final de cada apartado (los 3 primeros).
  */
 export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Props & { compacto?: boolean }) {
+  const [verTodos, setVerTodos] = useState(false)
   const todos = diagnosticosEnVivo(historia).filter((x) => !x.descartado)
-  const lista = compacto ? todos.slice(0, 3) : todos
-  const texto = (historia.impresion?.diagnosticos ?? '').toLowerCase()
+  const lista = compacto && !verTodos ? todos.slice(0, 3) : todos
+  const nombresMotor = new Set(todos.map((x) => x.nombre.toLowerCase()))
+  const otros = [...new Set(sintomasAbiertos(historia).flatMap((id) => CONSIDERAR[id] ?? []))].filter((n) => !nombresMotor.has(n.toLowerCase()))
   if (compacto && lista.length === 0) return null
 
   return (
@@ -270,13 +341,8 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand"><Icono nombre="lupa" className="h-4 w-4" /></span>
             {compacto ? 'Lo más probable hasta ahora' : '¿Cuál es más probable? Elija sus diagnósticos'}
           </h3>
-          <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registró. La decisión es suya.</p>
+          <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registró. Toque «Afinar» para saber qué preguntar. La decisión es suya.</p>
         </div>
-        {compacto && todos.length > 3 && irA && (
-          <button className="min-h-9 rounded-lg px-2.5 text-sm font-medium text-brand hover:bg-brand-soft" onClick={() => irA('impresion')}>
-            Ver los {todos.length}
-          </button>
-        )}
       </div>
 
       {lista.length === 0 ? (
@@ -285,32 +351,33 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
         </p>
       ) : (
         <ul className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2">
-          {lista.map((r, i) => {
-            const elegido = texto.includes(r.nombre.toLowerCase())
-            const motivo = r.razones.find((x) => x.factor > 1) ?? r.razones[0]
-            return (
-              <li key={r.id} className={`flex min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${elegido ? 'border-brand bg-brand-soft/50' : 'border-line'}`}>
-                <span className={`cifra flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${i === 0 ? 'bg-brand text-on-brand' : 'bg-surface-2 text-ink-soft'}`}>{i + 1}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold leading-snug text-ink">
-                    {r.nombre}
-                    {r.grave && <span className="ml-2 inline-block rounded-full bg-alarm-soft px-2 py-0.5 align-middle text-[11px] font-semibold text-alarm">No te lo pierdas</span>}
-                  </p>
-                  <p className="truncate text-xs text-ink-soft">
-                    {motivo ? `${motivo.factor > 1 ? '▲' : '▼'} ${motivo.presente ? motivo.texto : 'Sin ' + motivo.texto.charAt(0).toLowerCase() + motivo.texto.slice(1)}` : 'Sin hallazgos registrados todavía'}
-                    {r.factorLR !== 1 && <span className="cifra ml-1.5 text-ink-faint">{formatoFactor(r.factorLR)}</span>}
-                  </p>
-                </div>
-                <button aria-pressed={elegido}
-                  onClick={() => setHistoria((h) => (elegido ? quitarDeDiagnosticos(h, r.nombre) : agregarADiagnosticos(h, r.nombre)))}
-                  className={`inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors ${
-                    elegido ? 'bg-brand text-on-brand' : 'border border-line bg-surface text-ink hover:border-brand/60'}`}>
-                  <Icono nombre={elegido ? 'check' : 'mas'} className="h-4 w-4" />{elegido ? 'Elegido' : 'Elegir'}
-                </button>
-              </li>
-            )
-          })}
+          {lista.map((r, i) => <FilaDiagnostico key={r.id} r={r} i={i} historia={historia} setHistoria={setHistoria} irA={irA} />)}
         </ul>
+      )}
+
+      {compacto && todos.length > 3 && (
+        <button className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-brand hover:bg-brand-soft" onClick={() => setVerTodos(!verTodos)}>
+          <Icono nombre={verTodos ? 'atras' : 'mas'} className="h-4 w-4" />{verTodos ? 'Ver menos' : `Ver ${todos.length - 3} diagnósticos más`}
+        </button>
+      )}
+
+      {(!compacto || verTodos) && otros.length > 0 && (
+        <div className="mt-5 border-t border-line pt-4">
+          <h4 className="text-sm font-semibold text-ink">Otros a considerar</h4>
+          <p className="mt-0.5 text-xs text-ink-faint">Lista orientativa según los síntomas, sin puntaje. Pendiente de revisión médica.</p>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {otros.map((n) => {
+              const elegido = estaElegido(historia, n)
+              return (
+                <button key={n} aria-pressed={elegido}
+                  onClick={() => setHistoria((h) => (elegido ? quitarDeDiagnosticos(h, n) : agregarADiagnosticos(h, n)))}
+                  className={`inline-flex min-h-9 items-center gap-1 rounded-full border px-3 text-sm transition-colors ${elegido ? 'border-brand bg-brand text-on-brand' : 'border-line bg-surface text-ink hover:border-brand/60'}`}>
+                  <Icono nombre={elegido ? 'check' : 'mas'} className="h-3.5 w-3.5" />{n}
+                </button>
+              )
+            })}
+          </div>
+        </div>
       )}
     </section>
   )
