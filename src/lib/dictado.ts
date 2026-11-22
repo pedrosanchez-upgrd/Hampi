@@ -20,14 +20,30 @@ const constructor = (): Constructor | null => {
 }
 export const dictadoDisponible = () => constructor() !== null
 
+// «Coma» como palabra médica no es puntuación: «en coma», «estado de coma», «coma diabético».
+const ANTES_DE_COMA_MEDICO = new Set(['en', 'de', 'el', 'un', 'al', 'del', 'su'])
+const DESPUES_DE_COMA_MEDICO = /^(diabetico|hiperosmolar|etilico|mixedematoso|hepatico|barbiturico|vigil|inducido|profundo|metabolico|uremico)/
+const sinTilde = (w: string) => w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+
+function comas(t: string): string {
+  const w = t.split(/(\s+)/)
+  for (let i = 0; i < w.length; i++) {
+    if (sinTilde(w[i]) !== 'coma') continue
+    const antes = sinTilde(w[i - 2] ?? ''), despues = sinTilde(w[i + 2] ?? '')
+    if (ANTES_DE_COMA_MEDICO.has(antes) || DESPUES_DE_COMA_MEDICO.test(despues)) continue
+    w[i] = ','
+    if (i >= 1 && /^\s+$/.test(w[i - 1])) w[i - 1] = ''
+  }
+  return w.join('')
+}
+
 /** Puntuación dicha en voz alta. «Punto» solo no se cambia (puede ser «punto de McBurney»). */
 export function puntuarDictado(t: string): string {
-  return t
+  return comas(t
     .replace(/\s*\b(punto y aparte|nueva l[ií]nea)\b\s*/gi, '.\n')
     .replace(/\s*\bpunto y seguido\b\s*/gi, '. ')
     .replace(/\s*\bdos puntos\b\s*/gi, ': ')
-    .replace(/\s*\bpunto y coma\b\s*/gi, '; ')
-    .replace(/\s*\bcoma\b\s*/gi, ', ')
+    .replace(/\s*\bpunto y coma\b\s*/gi, '; '))
     .replace(/[ \t]+\n/g, '\n').replace(/[ \t]{2,}/g, ' ')
     .replace(/(^|[.\n]\s*)([a-záéíóúñ])/g, (_, a: string, b: string) => a + b.toUpperCase())
     .trim()

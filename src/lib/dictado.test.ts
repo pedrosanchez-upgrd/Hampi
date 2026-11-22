@@ -11,6 +11,14 @@ describe('dictado', () => {
   it('no cambia «punto» suelto (punto de McBurney)', () => {
     expect(puntuarDictado('dolor en el punto de McBurney')).toBe('Dolor en el punto de McBurney')
   })
+  it('«coma» médico no se cambia por una coma', () => {
+    expect(puntuarDictado('paciente en coma')).toBe('Paciente en coma')
+    expect(puntuarDictado('antecedente de coma diabético coma sin secuelas')).toBe('Antecedente de coma diabético, sin secuelas')
+    expect(puntuarDictado('estado de coma')).toBe('Estado de coma')
+  })
+  it('no toca los decimales', () => {
+    expect(puntuarDictado('losartán 1,5 mg coma vía oral')).toBe('Losartán 1,5 mg, vía oral')
+  })
   it('agrega al texto que ya había', () => {
     expect(agregarDictado('', 'niega fiebre')).toBe('Niega fiebre')
     expect(agregarDictado('Dolor torácico.', 'niega fiebre')).toBe('Dolor torácico. Niega fiebre')

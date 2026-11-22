@@ -3,7 +3,7 @@
 // Nunca los marca solo: el médico confirma con un toque. Pendiente de revisión médica.
 
 import { HALLAZGOS } from './conocimiento'
-import { normalizar } from './sintomas'
+import { normalizar, tramosNegados } from './sintomas'
 import { sintomasAbiertos, type Historia } from '../lib/historia'
 
 interface Patron {
@@ -91,12 +91,11 @@ const CAMPOS: [string, string, string][] = [
   ...['aspecto', 'cabezaCuello', 'torax', 'corazon', 'abdomen', 'extremidades', 'pielExamen', 'neurologico'].map((c) => ['examen', c, 'Examen físico'] as [string, string, string]),
 ]
 
-// Negación fuerte: hasta el final de la oración («niega fiebre, vómito»). Débil («no»): hasta la coma.
-const NEG_FUERTE = /\b(niega|sin|no refiere|no presenta|no tiene|descarta|ausencia de|tampoco)\b/g
+// Negación fuerte («niega», «sin»…): ver `tramosNegados`. Débil («no»): hasta la coma.
 const NEG_DEBIL = /\bno\b/g
 
 function negado(oracion: string, pos: number): boolean {
-  for (const m of oracion.matchAll(NEG_FUERTE)) if (m.index! < pos) return true
+  if (tramosNegados(oracion).some(([a, b]) => pos >= a && pos < b)) return true
   for (const m of oracion.matchAll(NEG_DEBIL)) {
     if (m.index! >= pos) continue
     if (!/[,;:]/.test(oracion.slice(m.index!, pos))) return true

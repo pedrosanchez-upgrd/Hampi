@@ -41,3 +41,10 @@ describe('regresión: lo negado no abre pestañas', () => {
     expect(sintomasAbiertos(h)).toEqual(antes)
   })
 })
+
+describe('pestañas y negación (revisión 23-nov)', () => {
+  it('lo dicho después de una frase negada sí abre su pestaña', () => {
+    expect(detectarSintomas('Dolor torácico sin irradiación, con disnea')).toContain('disnea')
+    expect(detectarSintomas('Niega fiebre, disnea ni síncope')).not.toContain('disnea')
+  })
+})

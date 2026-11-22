@@ -64,3 +64,18 @@ describe('en la historia', () => {
     expect(hallazgosEnLoEscrito(h)).toEqual([])
   })
 })
+
+describe('alcance de la negación (revisión 23-nov)', () => {
+  it('«sin…» no niega lo que viene en otra frase tras la coma', () => {
+    expect(est('Dolor torácico sin irradiación, de inicio súbito')).toMatchObject({ inicioSubito: 'si' })
+    expect(est('Niega fiebre, presenta tos con sangre')).toMatchObject({ hemoptisis: 'si' })
+    expect(est('Niega fiebre pero refiere tos con sangre')).toMatchObject({ hemoptisis: 'si' })
+  })
+  it('la lista negada sigue negada', () => {
+    expect(est('Niega fiebre, hemoptisis ni síncope')).toMatchObject({ hemoptisis: 'no' })
+    expect(est('Sin soplos, roce pericárdico ni galope')).toMatchObject({ rocePericardico: 'no', s3: 'no' })
+  })
+  it('«sin embargo» no es negación', () => {
+    expect(est('Sin embargo refiere tos con sangre')).toMatchObject({ hemoptisis: 'si' })
+  })
+})

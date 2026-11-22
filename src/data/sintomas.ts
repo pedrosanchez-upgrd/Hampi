@@ -152,10 +152,34 @@ export const SINTOMAS: Sintoma[] = [
 export const normalizar = (t: string) =>
   t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
+// Negación fuerte: «niega fiebre, vómito ni diarrea» niega toda la lista hasta el punto,
+// salvo que empiece otra frase: tras una coma («…, de inicio súbito», «…, presenta tos»)
+// o con «pero», «aunque», «sin embargo». «Sin embargo» no es negación.
+const NEGADOR = /\b(niega|sin(?! embargo)|no refiere|no presenta|no tiene|descarta|ausencia de|tampoco)\b/g
+const CORTE = /,\s*(?=(de|del|que|con|pero|aunque|luego|posteriormente|ademas|asociad\w*|acompanad\w*|irradiad\w*|localizad\w*|tipo|refiere|presenta|manifiesta|se|el|la|los|las|en)\b)|\b(pero|aunque|sin embargo)\b/g
+
+/** Tramos negados [inicio, fin) de una oración ya normalizada (sin tildes, en minúsculas). */
+export function tramosNegados(oracion: string): [number, number][] {
+  const cortes = [...oracion.matchAll(CORTE)].map((m) => m.index!)
+  return [...oracion.matchAll(NEGADOR)].map((m) => {
+    const ini = m.index!
+    return [ini, cortes.find((c) => c > ini) ?? oracion.length] as [number, number]
+  })
+}
+
+/** El texto (normalizado) con lo negado borrado, oración por oración. */
+export function quitarNegado(texto: string): string {
+  return normalizar(texto).split(/([.\n])/).map((o) => {
+    let r = o
+    for (const [a, b] of tramosNegados(o)) r = r.slice(0, a) + ' '.repeat(b - a) + r.slice(b)
+    return r
+  }).join('')
+}
+
 /** Devuelve los ids de los síntomas cuyas palabras clave aparecen en el texto. */
 export function detectarSintomas(texto: string): string[] {
   // Lo negado no abre pestañas: «niega síncope», «sin fiebre», «no refiere disnea».
-  const afirmado = normalizar(texto).replace(/\b(niega|sin|no refiere|no presenta|no tiene|descarta)\b[^.\n]*/g, ' ')
+  const afirmado = quitarNegado(texto)
   const t = ' ' + afirmado.replace(/[^a-zñ0-9]+/g, ' ') + ' '
   return SINTOMAS.filter((s) =>
     s.claves.some((k) => {

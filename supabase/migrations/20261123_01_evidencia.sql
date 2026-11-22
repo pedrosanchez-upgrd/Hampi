@@ -80,10 +80,14 @@ create index reglas_aprobada_por_idx on public.reglas_aprobadas (aprobada_por);
 create index reglas_confirmada_por_idx on public.reglas_aprobadas (confirmada_por);
 
 -- Consultas cruzadas entre evidencia y reglas sin que sus políticas se llamen entre sí (evita recursión).
-create function public.evidencia_aprobada(e uuid) returns boolean
+-- Van en un esquema privado: la API de Supabase no lo expone, así que no se pueden llamar desde la app.
+create schema if not exists privado;
+revoke all on schema privado from public, anon;
+grant usage on schema privado to authenticated;
+create function privado.evidencia_aprobada(e uuid) returns boolean
   language sql stable security definer set search_path = ''
 as $$ select exists (select 1 from public.evidencia where id = e and estado = 'aprobada') $$;
-create function public.tiene_regla_confirmada(e uuid) returns boolean
+create function privado.tiene_regla_confirmada(e uuid) returns boolean
   language sql stable security definer set search_path = ''
 as $$ select exists (select 1 from public.reglas_aprobadas where evidencia_id = e and confirmada_por is not null) $$;
 
@@ -102,7 +106,7 @@ create policy "revisores ven la evidencia" on public.evidencia
   for select to authenticated using ((select public.es_revisor()));
 -- La cita de una regla ya confirmada la puede ver cualquier usuario con sesión (para verificarla).
 create policy "ver artículos de reglas confirmadas" on public.evidencia
-  for select to authenticated using ((select public.tiene_regla_confirmada(id)));
+  for select to authenticated using ((select privado.tiene_regla_confirmada(id)));
 create policy "revisores aprueban o rechazan" on public.evidencia
   for update to authenticated
   using ((select public.es_revisor()))
@@ -116,7 +120,7 @@ create policy "revisor propone regla de evidencia aprobada" on public.reglas_apr
     (select public.es_revisor())
     and aprobada_por = (select auth.uid())
     and confirmada_por is null
-    and public.evidencia_aprobada(evidencia_id));
+    and privado.evidencia_aprobada(evidencia_id));
 create policy "otro revisor confirma" on public.reglas_aprobadas
   for update to authenticated
   using ((select public.es_revisor()) and confirmada_por is null and aprobada_por <> (select auth.uid()))
@@ -130,5 +134,5 @@ revoke delete on public.evidencia, public.reglas_aprobadas, public.revistas, pub
 revoke insert on public.evidencia, public.revistas, public.revisores from authenticated;
 
 revoke all on public.revisores, public.revistas, public.evidencia, public.reglas_aprobadas from anon;
-revoke execute on function public.es_revisor(), public.evidencia_aprobada(uuid), public.tiene_regla_confirmada(uuid) from anon, public;
-grant execute on function public.es_revisor(), public.evidencia_aprobada(uuid), public.tiene_regla_confirmada(uuid) to authenticated;
+revoke execute on function public.es_revisor(), privado.evidencia_aprobada(uuid), privado.tiene_regla_confirmada(uuid) from anon, public;
+grant execute on function public.es_revisor(), privado.evidencia_aprobada(uuid), privado.tiene_regla_confirmada(uuid) to authenticated;

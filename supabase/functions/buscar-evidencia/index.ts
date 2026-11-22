@@ -23,15 +23,20 @@ async function pubmed(termino: string): Promise<Articulo[]> {
   const clave = Deno.env.get('NCBI_API_KEY') ? `&api_key=${Deno.env.get('NCBI_API_KEY')}` : ''
   const base = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils'
   const b = await fetch(`${base}/esearch.fcgi?db=pubmed&retmode=json&sort=relevance&retmax=${POR_FUENTE}&term=${encodeURIComponent(consultaPubmed(termino))}${clave}&tool=hampi`)
+  if (!b.ok) throw new Error(`respondió ${b.status}`)
   const ids: string[] = (await b.json())?.esearchresult?.idlist ?? []
   if (!ids.length) return []
   const r = await fetch(`${base}/efetch.fcgi?db=pubmed&retmode=xml&id=${ids.join(',')}${clave}&tool=hampi`)
+  if (!r.ok) throw new Error(`respondió ${r.status}`)
   return leerPubmed(await r.text())
 }
 
 async function scielo(termino: string): Promise<Articulo[]> {
   const r = await fetch(`https://search.scielo.org/?q=${encodeURIComponent(termino)}&lang=es&count=${POR_FUENTE}&from=0&output=rss`)
-  return leerScielo(await r.text())
+  if (!r.ok) throw new Error(`respondió ${r.status}`)
+  const texto = await r.text()
+  if (!texto.includes('<rss')) throw new Error('no devolvió RSS (¿cambió el formato?)')
+  return leerScielo(texto)
 }
 
 async function elsevier(termino: string): Promise<Articulo[]> {
@@ -41,7 +46,7 @@ async function elsevier(termino: string): Promise<Articulo[]> {
   const r = await fetch(`https://api.elsevier.com/content/search/scopus?query=${encodeURIComponent(q)}&count=${POR_FUENTE}&sort=relevancy`, {
     headers: { 'X-ELS-APIKey': clave, Accept: 'application/json' },
   })
-  if (!r.ok) return []
+  if (!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'la clave no es válida o no tiene permiso' : `respondió ${r.status}`)
   return leerElsevier(await r.json())
 }
 
@@ -78,8 +83,10 @@ Deno.serve(async (req) => {
       return []
     })
     const issns = [...new Set(articulos.flatMap((a) => a.issn))]
-    const { data: filas } = issns.length ? await admin.from('revistas').select('issn, scimago_cuartil, latindex_catalogo, publindex').in('issn', issns) : { data: [] }
-    const revistas = new Map<string, Revista>((filas ?? []).map((r: Revista) => [r.issn, r]))
+    const { data: filas } = issns.length ? await admin.from('revistas').select('issn, nombre, scimago_cuartil, latindex_catalogo, publindex').in('issn', issns) : { data: [] }
+    const revistas = new Map<string, Revista & { nombre?: string }>((filas ?? []).map((r: Revista & { nombre?: string }) => [r.issn, r]))
+    // SciELO no da el nombre de la revista: se toma de la tabla de revistas.
+    for (const a of articulos) if (!a.revista) a.revista = a.issn.map((i) => revistas.get(i)?.nombre).find(Boolean) ?? ''
     const aceptados = articulos.map((a) => ({ a, q: calidad(a.issn, revistas) })).filter((x) => x.q)
     if (aceptados.length) {
       const { error } = await admin.from('evidencia').upsert(aceptados.map(({ a, q }) => ({

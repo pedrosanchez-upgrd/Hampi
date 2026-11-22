@@ -83,6 +83,9 @@ describe('evidencia con revisión', () => {
   })
   it('anon no ve nada', async () => {
     await db.exec(`set role anon`)
-    try { await falla(db.query('select * from public.revistas')) } finally { await db.exec('reset role') }
+    try {
+      await falla(db.query('select * from public.revistas'))
+      await falla(db.query(`select privado.evidencia_aprobada('${evId}')`))
+    } finally { await db.exec('reset role') }
   })
 })

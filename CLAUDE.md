@@ -20,6 +20,8 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 - `preguntasClave` (motor): «Pregunte o examine esto ahora», 3 hallazgos sin responder que más moverían la lista (peso por LR y por puesto, una por diagnóstico primero). Revisión por sistemas: tras «Niega» se ofrece escribir qué niega. Plan → exámenes: estudios de la fuente de los diagnósticos elegidos.
 - `src/lib/historia.ts`: cédula, rangos de signos vitales (PROVISIONALES), pestañas abiertas, faltantes, redacción y `textoParaIA` (sin identificadores).
 - `src/lib/motor.ts`: diagnósticos en vivo (producto de LR, determinista). Reglas: `lrPos`/`lrNeg` (números del resumen del artículo), `cualitativo` (×2/×0,5), `soloAusente` (el artículo la valida solo para descartar, p. ej. fiebre en meningitis, Ottawa HSA) y `conteo` (POUND, ACV).
+- Lección aprendida (23-nov, revisión): «niega/sin…» niega la lista hasta el punto, pero se corta cuando empieza otra frase (tras coma: «de…», «presenta…»; o «pero», «aunque»). «Sin embargo» no niega. Lógica única en `tramosNegados` (sintomas.ts), usada por pestañas y hallazgos.
+- Revisión de tipos de `supabase/` (no la cubre `tsc -b`): usar un tsconfig aparte con `allowImportingTsExtensions` y una declaración mínima de `Deno`.
 - Lección aprendida (23-nov): una regla validada para descartar no debe subir el diagnóstico cuando el hallazgo está presente. Probar cada regla nueva con un caso donde no corresponde (ver `src/lib/fase2.test.ts`).
 - Solo se usan números que aparecen en el resumen de PubMed; si el resumen no está disponible (Holleman 1995, Deyo 1992, Williams 1992), no se usa el artículo.
 - Revisión de accesibilidad: `npm run build`, `npx vite preview --port 4173` y `npm run revisar:accesibilidad` (axe, claro y oscuro).
@@ -27,7 +29,7 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 - Carrington Medidas se transfirió el 22-nov a la organización «Carrington» de los papás de Pedro (Pedro es miembro, no dueño). No tocar.
 - `supabase/functions/redactar/`: redacción con Claude. **No desplegada.**
 - **Fase 3 (empezada el 22-nov-2026, a pedido del dueño):**
-  - Migración `20261123_01_evidencia.sql` (**NO aplicada**): `revisores` (solo administración los agrega), `revistas` (calidad por ISSN), `evidencia` (artículos encontrados; la app no puede insertar), `reglas_aprobadas` (cuentan solo con `confirmada_por` ≠ `aprobada_por`). Funciones `security definer` para evitar recursión entre políticas. Pruebas: `supabase/test/evidencia.test.ts`.
+  - Migración `20261123_01_evidencia.sql` (**NO aplicada**): `revisores` (solo administración los agrega), `revistas` (calidad por ISSN), `evidencia` (artículos encontrados; la app no puede insertar), `reglas_aprobadas` (cuentan solo con `confirmada_por` ≠ `aprobada_por`). Funciones `security definer` en el esquema `privado` (no expuesto por la API) para evitar recursión entre políticas. Pruebas: `supabase/test/evidencia.test.ts`.
   - `supabase/functions/_shared/evidencia.ts`: lee PubMed (efetch XML), SciELO (buscador, `output=rss`; el PID trae ISSN y año) y Elsevier (Scopus Search JSON); filtro de calidad Q1/Q2 (Scimago), A1/A2 (Publindex) o catálogo Latindex. Ejemplos reales en `_shared/ejemplos/`. Pruebas: `supabase/test/fuentes.test.ts`.
   - `supabase/functions/buscar-evidencia/`: busca y guarda como pendiente (**NO desplegada**). Secretos opcionales `ELSEVIER_API_KEY`, `NCBI_API_KEY`.
   - `scripts/revistas.mjs`: arma el SQL de `revistas` desde los CSV de Scimago, Latindex y Publindex (revisar encabezados con los archivos reales).

@@ -42,10 +42,9 @@ export interface ReglaGuardada extends ReglaPropuesta {
 }
 
 const normal = (t: string) => t.replace(/\s+/g, ' ').trim().toLowerCase()
-const numeroEn = (n: number, texto: string) => {
-  const v = String(n)
-  return [v, v.replace('.', ','), n.toFixed(1), n.toFixed(2)].some((x) => texto.includes(x))
-}
+/** El número aparece como cifra completa en el texto («2» no vale si solo dice «2.4» o «12»). */
+const numeroEn = (n: number, texto: string) =>
+  [...texto.matchAll(/\d+(?:[.,]\d+)?/g)].some((m) => Math.abs(Number(m[0].replace(',', '.')) - n) < 1e-9)
 
 /**
  * Controles antes de proponer una regla. La cita debe copiarse del resumen y contener el número:
@@ -53,6 +52,7 @@ const numeroEn = (n: number, texto: string) => {
  */
 export function validarRegla(p: ReglaPropuesta, resumen: string | null): string | null {
   if (!resumen) return 'Este artículo no trae resumen: no se pueden sacar números de él.'
+  if (!p.diagnostico || !p.hallazgo) return 'Elija el diagnóstico y el hallazgo.'
   if (p.cita_textual.trim().length < 20) return 'Copie la frase completa del resumen donde aparece el dato.'
   if (!normal(resumen).includes(normal(p.cita_textual))) return 'La cita debe copiarse tal cual del resumen (no se encontró en el texto).'
   const nums = [p.lr_pos, p.lr_neg].filter((x): x is number => x !== null)
@@ -106,7 +106,8 @@ export async function buscarEvidencia(diagnostico: string, c = supabase) {
 
 /** Convierte las reglas confirmadas por dos revisores al formato del motor. */
 export function reglasParaMotor(filas: ReglaGuardada[]): { diagnostico: string; regla: Regla; fuente: Fuente }[] {
-  return filas.filter((f) => f.confirmada_por && f.evidencia).map((f) => {
+  // Solo de artículos que siguen aprobados (si un revisor luego rechaza el artículo, la regla deja de contar).
+  return filas.filter((f) => f.confirmada_por && f.evidencia?.estado === 'aprobada').map((f) => {
     const e = f.evidencia!
     const id = `ev:${f.id}`
     const regla: Regla = {

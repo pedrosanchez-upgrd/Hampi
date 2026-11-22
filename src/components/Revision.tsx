@@ -69,7 +69,7 @@ function Proponer({ e, usuarioId, onListo }: { e: Evidencia; usuarioId: string; 
   if (!abierto)
     return <button className="mt-2 inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-brand/50 px-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft" onClick={() => setAbierto(true)}><Icono nombre="mas" className="h-4 w-4" /> Proponer una regla de este artículo</button>
   const enviar = () => {
-    const p: ReglaPropuesta = { evidencia_id: e.id, diagnostico: dx, hallazgo: hz || hallazgos[0]?.id, lr_pos: n(lrPos), lr_neg: n(lrNeg), cualitativo: cual || null, solo_ausente: soloAusente, cita_textual: cita.trim() }
+    const p: ReglaPropuesta = { evidencia_id: e.id, diagnostico: dx, hallazgo: hz, lr_pos: n(lrPos), lr_neg: n(lrNeg), cualitativo: cual || null, solo_ausente: soloAusente, cita_textual: cita.trim() }
     const v = validarRegla(p, e.resumen)
     if (v) return setError(v)
     proponerRegla(p, usuarioId).then(() => { setAbierto(false); onListo() }).catch((x) => setError(mensajeError(x)))
@@ -81,7 +81,10 @@ function Proponer({ e, usuarioId, onListo }: { e: Evidencia; usuarioId: string; 
         <select className={campo} value={dx} onChange={(x) => { setDx(x.target.value); setHz('') }}>{DIAGNOSTICOS.map((d) => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select>
       </label>
       <label className="grid gap-1 font-medium text-ink">Hallazgo
-        <select className={campo} value={hz || hallazgos[0]?.id} onChange={(x) => setHz(x.target.value)}>{hallazgos.map((h) => <option key={h.id} value={h.id}>{h.texto}</option>)}</select>
+        <select className={campo} value={hz} onChange={(x) => setHz(x.target.value)}>
+          <option value="">Elegir hallazgo…</option>
+          {hallazgos.map((h) => <option key={h.id} value={h.id}>{h.texto}</option>)}
+        </select>
       </label>
       <div className="grid grid-cols-2 gap-2">
         <label className="grid gap-1 font-medium text-ink">LR positivo<input inputMode="decimal" className={campo} value={lrPos} onChange={(x) => setLrPos(x.target.value)} /></label>

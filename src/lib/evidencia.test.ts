@@ -17,6 +17,14 @@ describe('validar regla propuesta', () => {
   it('rechaza un número que no está en la cita', () => {
     expect(validarRegla({ ...base, lr_pos: 2.5 }, RESUMEN)).toMatch(/2,5 no aparece/)
   })
+  it('el número debe aparecer completo, no como parte de otro', () => {
+    expect(validarRegla({ ...base, lr_pos: 1 }, RESUMEN)).toMatch(/no aparece/) // la cita dice 1.6 y 1.1, no 1
+    expect(validarRegla({ ...base, lr_pos: 1.1, cita_textual: base.cita_textual }, RESUMEN)).toBeNull() // 1.1 sí está (IC)
+    expect(validarRegla({ ...base, lr_pos: 6 }, RESUMEN)).toMatch(/no aparece/)
+  })
+  it('exige diagnóstico y hallazgo', () => {
+    expect(validarRegla({ ...base, hallazgo: '' }, RESUMEN)).toMatch(/Elija/)
+  })
   it('rechaza artículos sin resumen y propuestas vacías', () => {
     expect(validarRegla(base, null)).toMatch(/no trae resumen/)
     expect(validarRegla({ ...base, lr_pos: null }, RESUMEN)).toMatch(/Indique/)
@@ -33,6 +41,10 @@ describe('reglas aprobadas en el motor', () => {
   it('solo pasan las confirmadas por el segundo revisor', () => {
     expect(reglasParaMotor([fila(null)])).toEqual([])
     expect(reglasParaMotor([fila('b')])[0].regla).toMatchObject({ hallazgo: 'hemoptisis', lrPos: 1.6, fuente: 'ev:r1' })
+  })
+  it('si el artículo deja de estar aprobado, la regla deja de contar', () => {
+    const f = fila('b')
+    expect(reglasParaMotor([{ ...f, evidencia: { ...f.evidencia!, estado: 'rechazada' } }])).toEqual([])
   })
   it('el motor la usa y muestra su fuente', () => {
     const h = historiaVacia()
