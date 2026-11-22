@@ -173,3 +173,54 @@ export function preguntasParaAfinar(h: Historia, diagnosticoId: string): Pregunt
   }
   return out
 }
+
+export interface PreguntaClave {
+  hallazgo: string
+  texto: string
+  /** Diagnósticos (entre los primeros) cuyo orden cambiaría con la respuesta. */
+  diagnosticos: string[]
+  /** Hay un diagnóstico grave entre ellos. */
+  grave: boolean
+}
+
+/**
+ * Las preguntas o maniobras que más moverían la lista ahora mismo: hallazgos sin responder
+ * de los primeros diagnósticos (no descartados). El peso de cada hallazgo es el log de su razón
+ * de verosimilitud más fuerte (cualitativo = ×2), dividido por el puesto del diagnóstico y sumado
+ * entre diagnósticos. Para no repetir, primero va la mejor pregunta de cada diagnóstico.
+ */
+export function preguntasClave(h: Historia, max = 3, entre = 5): PreguntaClave[] {
+  const estados = estadoHallazgos(h)
+  const top = diagnosticosEnVivo(h).filter((r) => !r.descartado).slice(0, entre)
+  const acum = new Map<string, { peso: number; diagnosticos: string[]; grave: boolean; mejorDe: number }>()
+  const sumar = (id: string, peso: number, d: { nombre: string; grave: boolean }, puesto: number) => {
+    const a = acum.get(id) ?? { peso: 0, diagnosticos: [], grave: false, mejorDe: puesto }
+    a.peso += peso / (puesto + 1)
+    if (!a.diagnosticos.includes(d.nombre)) a.diagnosticos.push(d.nombre)
+    a.grave ||= d.grave
+    a.mejorDe = Math.min(a.mejorDe, puesto)
+    acum.set(id, a)
+  }
+  top.forEach((r, puesto) => {
+    const d = DIAGNOSTICOS.find((x) => x.id === r.id)!
+    for (const rg of d.reglas) {
+      if (estados[rg.hallazgo] || HALLAZGOS.find((x) => x.id === rg.hallazgo)?.automatico) continue
+      const peso = rg.cualitativo
+        ? Math.log(PESO_CUALITATIVO)
+        : Math.max(...[rg.lrPos, rg.lrNeg].filter((x): x is number => x !== undefined).map((x) => Math.abs(Math.log(Math.max(x, LR_MINIMO)))), 0)
+      sumar(rg.hallazgo, peso, d, puesto)
+    }
+    for (const id of d.conteo?.hallazgos ?? []) if (!estados[id]) sumar(id, Math.log(PESO_CUALITATIVO), d, puesto)
+  })
+  const orden = [...acum.entries()].filter(([, a]) => a.peso > 0)
+    .sort((a, b) => b[1].peso - a[1].peso || Number(b[1].grave) - Number(a[1].grave))
+  // Primero la mejor pregunta de cada diagnóstico (en el orden de la lista); luego el resto.
+  const elegidas: typeof orden = []
+  for (let puesto = 0; puesto < top.length; puesto++) {
+    const mejor = orden.find(([id, a]) => a.mejorDe === puesto && !elegidas.some(([e]) => e === id))
+    if (mejor) elegidas.push(mejor)
+  }
+  for (const x of orden) if (!elegidas.includes(x)) elegidas.push(x)
+  return elegidas.slice(0, max)
+    .map(([id, a]) => ({ hallazgo: id, texto: HALLAZGOS.find((x) => x.id === id)!.texto, diagnosticos: a.diagnosticos, grave: a.grave }))
+}

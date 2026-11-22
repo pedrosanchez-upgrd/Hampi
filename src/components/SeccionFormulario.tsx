@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import type { Campo, Seccion } from '../data/secciones'
 import { avisoSigno, cedulaValida, imc, RANGOS, type Historia } from '../lib/historia'
 import { sugerenciasPara, type Sugerencia } from '../data/redaccionAyuda'
+import { abreviaturasEn, escribirCompleto } from '../data/abreviaturas'
 import { Icono } from './Icono'
 
 interface Props {
@@ -123,7 +124,25 @@ function Guia({ seccion, guia, onGuia }: Pick<Props, 'seccion' | 'guia' | 'onGui
 }
 
 /** Sugerencias de redacción debajo del campo: un toque para usarlas. */
-function Sugerencias({ lista, valor, onUsar, examen }: { lista: Sugerencia[]; valor: string; onUsar: (t: string) => void; examen?: boolean }) {
+/** Aviso suave cuando el texto tiene abreviaturas: un toque las escribe completas. */
+function Abreviaturas({ valor, onUsar }: { valor: string; onUsar: (t: string) => void }) {
+  const ab = abreviaturasEn(valor)
+  if (!ab.length) return null
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-sm">
+      <span className="text-ink-soft">
+        <span className="font-medium text-ink">Mejor sin abreviaturas: </span>
+        {ab.map((a) => `${a.abrev} → ${a.completo}`).join(' · ')}
+      </span>
+      <button type="button" onClick={() => onUsar(escribirCompleto(valor))}
+        className="inline-flex min-h-8 items-center gap-1 rounded-lg border border-brand/40 bg-surface px-2.5 text-sm font-semibold text-brand-strong hover:bg-brand-soft">
+        <Icono nombre="check" className="h-3.5 w-3.5" /> Escribir completo
+      </button>
+    </div>
+  )
+}
+
+function Sugerencias({ lista, valor, onUsar, aviso }: { lista: Sugerencia[]; valor: string; onUsar: (t: string) => void; aviso?: string }) {
   if (!lista.length) return null
   const v = valor.trim()
   const cortas = lista.filter((x) => x.texto.length <= 45 && x.etiqueta === x.texto)
@@ -151,7 +170,7 @@ function Sugerencias({ lista, valor, onUsar, examen }: { lista: Sugerencia[]; va
           <div key={x.etiqueta} className="rounded-xl border border-dashed border-brand/35 bg-brand-soft/25 p-3">
             <p className="flex items-center gap-1.5 text-xs font-semibold text-brand-strong"><Icono nombre="libro" className="h-3.5 w-3.5" /> Sugerencia · {x.etiqueta}</p>
             <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{x.texto}</p>
-            {examen && <p className="mt-1 text-xs text-ink-faint">Úsela solo si examinó esta región y la encontró normal.</p>}
+            {aviso && x.etiqueta !== 'Formato' && <p className="mt-1 text-xs text-ink-faint">{aviso}</p>}
             <div className="mt-2 flex flex-wrap gap-2">
               {usado ? (
                 <span className="inline-flex min-h-9 items-center gap-1 text-sm font-medium text-ok"><Icono nombre="check" className="h-4 w-4" /> Usada</span>
@@ -160,7 +179,7 @@ function Sugerencias({ lista, valor, onUsar, examen }: { lista: Sugerencia[]; va
                   <button type="button" onClick={() => onUsar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
                     {v ? 'Reemplazar con esta' : 'Usar este texto'}
                   </button>
-                  {v && <button type="button" onClick={() => agregar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink hover:border-brand/60">Agregar al final</button>}
+                  {v && !/^niega\.?$/i.test(v) && <button type="button" onClick={() => agregar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink hover:border-brand/60">Agregar al final</button>}
                 </>
               )}
             </div>
@@ -245,8 +264,10 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
                     )}
                     {c.ayuda && <p id={`campo-${c.id}-ayuda`} className="mt-1.5 text-xs text-ink-faint">{c.ayuda}</p>}
                     {historia && (c.tipo === 'parrafo' || c.tipo === 'texto') && (
-                      <Sugerencias lista={sugerenciasPara(seccion.id, c.id, historia)} valor={v} onUsar={(t) => onCambio(c.id, t)} examen={seccion.id === 'examen'} />
+                      <Sugerencias lista={sugerenciasPara(seccion.id, c.id, historia)} valor={v} onUsar={(t) => onCambio(c.id, t)}
+                        aviso={seccion.id === 'examen' ? 'Úsela solo si examinó esta región y la encontró normal.' : seccion.id === 'sistemas' ? 'Úsela solo si preguntó cada una de estas cosas.' : undefined} />
                     )}
+                    {(c.tipo === 'parrafo' || c.tipo === 'texto') && seccion.id !== 'motivo' && <Abreviaturas valor={v} onUsar={(t) => onCambio(c.id, t)} />}
                     {a && <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-alarm"><Icono nombre="alerta" className="h-4 w-4" />{a}</p>}
                   </div>
                 )

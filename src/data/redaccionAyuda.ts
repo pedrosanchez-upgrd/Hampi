@@ -7,6 +7,7 @@
 import { PATOLOGICOS } from './antecedentes'
 import { SINTOMAS } from './sintomas'
 import { sintomasAbiertos, type Historia } from '../lib/historia'
+import { diagnosticosEnVivo } from '../lib/motor'
 
 export interface Sugerencia {
   etiqueta: string
@@ -26,6 +27,22 @@ export const EXAMEN_NORMAL: Record<string, string> = {
   extremidades: 'Extremidades simétricas, sin edema. Pulsos distales presentes y simétricos. Llenado capilar menor de 2 segundos.',
   pielExamen: 'Piel y faneras sin lesiones, sin ictericia ni petequias.',
   neurologico: 'Glasgow 15/15. Pares craneales sin alteraciones. Fuerza 5/5 y sensibilidad conservada en las cuatro extremidades. Reflejos osteotendinosos conservados. Sin signos meníngeos.',
+}
+
+/** Revisión por sistemas sin hallazgos: solo si se preguntó cada cosa. */
+export const SISTEMAS_NIEGA: Record<string, string> = {
+  general: 'Niega fiebre, pérdida de peso, sudoración nocturna y astenia.',
+  piel: 'Niega lesiones, prurito y cambios de coloración.',
+  cabeza: 'Niega cefalea, alteraciones visuales, otalgia, rinorrea y odinofagia.',
+  cardio: 'Niega dolor torácico, palpitaciones, edema y ortopnea.',
+  respiratorio: 'Niega tos, expectoración, hemoptisis y disnea.',
+  digestivo: 'Niega hiporexia, náusea, vómito, dolor abdominal, cambios en las deposiciones y sangrado digestivo.',
+  genitourinario: 'Niega disuria, polaquiuria, hematuria y secreciones.',
+  musculo: 'Niega artralgias, inflamación articular y debilidad.',
+  neuro: 'Niega mareo, síncope, convulsiones y pérdida de fuerza o sensibilidad.',
+  endocrino: 'Niega polidipsia, poliuria e intolerancia al frío o al calor.',
+  hemato: 'Niega equimosis, sangrados y adenopatías.',
+  mental: 'Niega alteraciones del ánimo, ansiedad, insomnio e ideas de autolesión.',
 }
 
 /** Síndrome que suele corresponder a cada síntoma (para la impresión diagnóstica). */
@@ -103,6 +120,15 @@ export function sugerenciasPara(seccionId: string, campoId: string, h: Historia)
     const alarmas = sintomasAbiertos(h).flatMap((id) => SINTOMAS.find((s) => s.id === id)!.alarmas.map(minus))
     if (alarmas.length)
       out.push({ etiqueta: 'Signos de alarma de sus síntomas', texto: `Se explica al paciente que debe regresar de inmediato si presenta: ${[...new Set(alarmas)].join('; ')}.` })
+  }
+  // Aparece después de tocar «Niega»: para escribir qué se preguntó y negó.
+  if (seccionId === 'sistemas' && SISTEMAS_NIEGA[campoId] && /^niega\.?$/i.test(limpio(h.sistemas?.[campoId])))
+    out.push({ etiqueta: 'Escribir qué niega', texto: SISTEMAS_NIEGA[campoId] })
+  if (seccionId === 'plan' && campoId === 'examenes') {
+    const elegidos = new Set((h.impresion?.diagnosticos ?? '').split('\n').map((l) => l.replace(/\s*\(.*\)\s*$/, '').trim().toLowerCase()).filter(Boolean))
+    const con = diagnosticosEnVivo(h).filter((r) => r.estudios && elegidos.has(r.nombre.toLowerCase()))
+    if (con.length)
+      out.push({ etiqueta: 'Lo que mencionan las fuentes de sus diagnósticos', texto: con.map((r) => `${r.nombre}: ${r.estudios}`).join('\n') })
   }
   if (seccionId === 'plan' && campoId === 'examenes')
     out.push({ etiqueta: 'Formato', texto: 'Examen: … (motivo: …)' })

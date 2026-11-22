@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { diagnosticosEnVivo, formatoFactor, preguntasParaAfinar, type Resultado } from '../lib/motor'
+import { diagnosticosEnVivo, formatoFactor, preguntasClave, preguntasParaAfinar, type Resultado } from '../lib/motor'
 import { CONSIDERAR } from '../data/considerar'
 import { alarmasMarcadas, avisos, faltantes, sintomasAbiertos, type Historia } from '../lib/historia'
 import { Icono } from './Icono'
@@ -188,6 +188,37 @@ function Pendientes({ historia, irA }: Props) {
   )
 }
 
+/** Las 3 preguntas o maniobras que más moverían la lista ahora: se responden ahí mismo. */
+export function PregunteAhora({ historia, setHistoria }: Props) {
+  const lista = preguntasClave(historia)
+  if (!lista.length) return null
+  const responder = (id: string, v: string) => setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, [id]: v } }))
+  return (
+    <div className="rounded-xl border border-brand/30 bg-brand-soft/30 p-3">
+      <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
+        <Icono nombre="mensaje" className="h-4 w-4" /> Pregunte o examine esto ahora
+      </p>
+      <p className="mt-0.5 text-xs text-ink-faint">Son los datos que más cambiarían el orden de la lista.</p>
+      <ul className="mt-2 grid gap-1.5">
+        {lista.map((q) => (
+          <li key={q.hallazgo} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface px-2.5 py-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-ink">{q.texto}</p>
+              <p className="text-xs text-ink-faint">
+                Cambia: {q.diagnosticos.slice(0, 3).join(', ')}{q.diagnosticos.length > 3 ? ` y ${q.diagnosticos.length - 3} más` : ''}
+              </p>
+            </div>
+            <span className="flex shrink-0 overflow-hidden rounded-lg border border-line text-sm" role="group" aria-label={q.texto}>
+              <button className="min-h-10 min-w-12 px-2.5 font-medium text-ink-soft hover:bg-brand-soft" onClick={() => responder(q.hallazgo, 'si')}>Sí</button>
+              <button className="min-h-10 min-w-12 border-l border-line px-2.5 font-medium text-ink-soft hover:bg-surface-2" onClick={() => responder(q.hallazgo, 'no')}>No</button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 /** Contenido del asistente: diagnósticos en vivo y pendientes. */
 export function Asistente(props: Props) {
   const [pestana, setPestana] = useState<'dx' | 'pend'>('dx')
@@ -208,6 +239,7 @@ export function Asistente(props: Props) {
           <p className="text-xs leading-relaxed text-ink-faint">
             Ayuda, no diagnóstico. El número (×) combina razones de verosimilitud publicadas; las flechas ▲▼ son factores cualitativos sin número publicado. Pendiente de revisión médica.
           </p>
+          <PregunteAhora {...props} />
           <ListaDiagnosticos {...props} />
         </>
       ) : <Pendientes {...props} />}
@@ -344,6 +376,8 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
           <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registró. Toque «Afinar» para saber qué preguntar. La decisión es suya.</p>
         </div>
       </div>
+
+      {lista.length > 0 && <div className="mt-4"><PregunteAhora historia={historia} setHistoria={setHistoria} /></div>}
 
       {lista.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-line p-4 text-center text-sm text-ink-soft">
