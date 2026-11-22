@@ -6,13 +6,18 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
   const texto = redactar(historia)
   const falta = faltantes(historia)
 
+  // Dentro de un marco (vista de prueba) el navegador no deja imprimir.
+  const enMarco = (() => { try { return window.self !== window.top } catch { return true } })()
+
   const copiar = async () => {
     try {
       await navigator.clipboard.writeText(texto)
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2000)
     } catch {
-      setCopiado(false)
+      // Si el navegador no deja copiar, se selecciona el texto para copiarlo a mano.
+      const pre = document.getElementById('texto-redactado')
+      if (pre) { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel?.removeAllRanges(); sel?.addRange(r) }
     }
   }
 
@@ -42,12 +47,14 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
         <button onClick={copiar} className="rounded-lg bg-marca px-4 py-2 font-medium text-white hover:bg-marca-oscuro">
           {copiado ? 'Copiado' : 'Copiar texto'}
         </button>
-        <button onClick={() => window.print()} className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium">
-          Imprimir o guardar PDF
-        </button>
+        {!enMarco && (
+          <button onClick={() => window.print()} className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium">
+            Imprimir o guardar PDF
+          </button>
+        )}
       </div>
 
-      <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-5 font-sans text-[15px] leading-relaxed">
+      <pre id="texto-redactado" className="mt-4 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-5 font-sans text-[15px] leading-relaxed">
         {texto}
       </pre>
     </section>

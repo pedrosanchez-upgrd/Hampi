@@ -29,6 +29,7 @@ export default function App() {
   )
   const [historia, setHistoria] = useState<Historia>(() => ({ ...historiaVacia(), ...leer(CLAVE_BORRADOR, {}) }))
   const [actual, setActual] = useState<string>(SECCIONES[0].id)
+  const [confirmar, setConfirmar] = useState(false)
 
   useEffect(() => guardar(CLAVE_BORRADOR, historia), [historia])
 
@@ -57,14 +58,20 @@ export default function App() {
           <span className="text-xl font-semibold text-marca">Hampi</span>
           <span className="ml-2 text-sm text-slate-500">Medicina interna</span>
         </div>
-        <button
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-          onClick={() => {
-            if (confirm('¿Borrar esta historia y empezar una nueva?')) { setHistoria(historiaVacia()); irA(SECCIONES[0].id) }
-          }}
-        >
-          Nueva historia
-        </button>
+        {confirmar ? (
+          <span className="flex items-center gap-2 text-sm">
+            <span className="hidden sm:inline">¿Borrar esta historia?</span>
+            <button className="rounded-lg bg-alarma px-3 py-1.5 font-medium text-white"
+              onClick={() => { setHistoria(historiaVacia()); irA(SECCIONES[0].id); setConfirmar(false) }}>
+              Sí, borrar
+            </button>
+            <button className="rounded-lg border border-slate-300 px-3 py-1.5" onClick={() => setConfirmar(false)}>Cancelar</button>
+          </span>
+        ) : (
+          <button className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm" onClick={() => setConfirmar(true)}>
+            Nueva historia
+          </button>
+        )}
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 pt-6 pb-24 md:grid-cols-[220px_1fr]">
