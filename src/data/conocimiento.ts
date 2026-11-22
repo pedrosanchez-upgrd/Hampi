@@ -258,7 +258,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'cefaleaAntes', lrPos: 0.17, fuente: 'albassam2019' },
   ] },
   { id: 'tvp', nombre: 'Trombosis venosa profunda', grave: true, sintomas: ['edema'],
-    nota: 'Reglas cualitativas basadas en el modelo clínico de Wells; con probabilidad baja y dímero D negativo se puede descartar.', reglas: [
+    nota: 'Reglas cualitativas basadas en el modelo clínico de Wells; con probabilidad baja y dímero D negativo se puede descartar. El resumen del artículo no enumera las variables: revisar contra el texto completo.', reglas: [
     { hallazgo: 'edemaUnilateral', cualitativo: 'sube', fuente: 'wells2003' },
     { hallazgo: 'dolorVenoso', cualitativo: 'sube', fuente: 'wells2003' },
     { hallazgo: 'inmovilizacion', cualitativo: 'sube', fuente: 'wells2003' },

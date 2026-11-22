@@ -7,8 +7,13 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 ## Cómo está armado
 - React + TypeScript + Vite + Tailwind 4. `npm run dev`, `npm test` (Vitest), `npm run build`.
 - `src/data/secciones.ts`: los apartados, campos y preguntas guía.
-- `src/lib/historia.ts`: validación de cédula, rangos de signos vitales (PROVISIONALES), faltantes y redacción.
-- `supabase/migrations/`: esquema con RLS. **No aplicado** en ningún proyecto todavía.
+- `src/data/sintomas.ts`: 41 pestañas de síntoma (palabras clave, preguntas, signos de alarma).
+- `src/data/conocimiento.ts`: fuentes (PMID/DOI verificados en PubMed), hallazgos, diagnósticos y reglas (LR o cualitativo). Para revisión médica: doc «Hampi: reglas de diagnóstico para revisión médica» (https://claude.ai/artifact/QSfWHA3DE64FrZQEgQF3tR). Toda regla nueva lleva fuente verificada.
+- `src/lib/historia.ts`: cédula, rangos de signos vitales (PROVISIONALES), pestañas abiertas, faltantes, redacción y `textoParaIA` (sin identificadores).
+- `src/lib/motor.ts`: diagnósticos en vivo (producto de LR, determinista).
+- `supabase/migrations/`: esquema con RLS. **No aplicado** en ningún proyecto todavía. Pruebas: `supabase/test/rls.test.ts` (PGlite).
+- `supabase/functions/redactar/`: redacción con Claude. **No desplegada.**
+- Vista de prueba (Artifact privado): https://claude.ai/artifact/Q7nDf8RaNk2H7kbCA8akc4 — se rearma con `npm run build && node scripts/artifact.mjs <salida.html>` y se publica en la misma dirección.
 
 ## Reglas (obligatorias)
 - Responder siempre en **español**; el dueño trabaja desde un iPad: explicar paso a paso.
