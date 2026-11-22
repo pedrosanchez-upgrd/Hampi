@@ -7,6 +7,8 @@ export type Historia = Record<string, Record<string, string>>
 export const historiaVacia = (): Historia => ({
   ...Object.fromEntries(SECCIONES.map((s) => [s.id, {}])),
   sintomas: {},
+  hallazgos: {},
+  diagnosticosVivo: {},
 })
 
 const lista = (v: string | undefined) => (v ? v.split(',').filter(Boolean) : [])

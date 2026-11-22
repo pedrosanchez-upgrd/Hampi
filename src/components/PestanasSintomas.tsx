@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SINTOMAS } from '../data/sintomas'
 import { abrirSintoma, cerrarSintoma, sintomasAbiertos, type Historia } from '../lib/historia'
+import { hallazgosAutomaticos, hallazgosDeSintoma } from '../lib/motor'
 
 interface Props {
   historia: Historia
@@ -103,6 +104,38 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                   ))}
                 </ul>
               </div>
+              {hallazgosDeSintoma(s.id).length > 0 && (
+                <div className="md:col-span-2">
+                  <h4 className="text-sm font-semibold text-marca-oscuro">Hallazgos clave (alimentan los diagnósticos en vivo)</h4>
+                  <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200">
+                    {hallazgosDeSintoma(s.id).map((hz) => {
+                      const manual = historia.hallazgos?.[hz.id] ?? ''
+                      const auto = hallazgosAutomaticos(historia)[hz.id]
+                      const valor = manual || auto || ''
+                      return (
+                        <li key={hz.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                          <span className="text-sm">
+                            {hz.texto}
+                            {hz.automatico && !manual && (
+                              <span className="ml-1 text-xs text-slate-500">({auto ? 'automático' : hz.automatico.toLowerCase()})</span>
+                            )}
+                          </span>
+                          <span className="flex overflow-hidden rounded-lg border border-slate-300 text-sm" role="group" aria-label={hz.texto}>
+                            {([['si', 'Sí'], ['no', 'No'], ['', '?']] as const).map(([v, t]) => (
+                              <button key={t}
+                                aria-pressed={valor === v}
+                                className={`min-w-11 px-3 py-1.5 ${valor === v ? (v === 'si' ? 'bg-marca text-white' : v === 'no' ? 'bg-slate-600 text-white' : 'bg-slate-200') : 'bg-white'}`}
+                                onClick={() => setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, [hz.id]: v } }))}>
+                                {t}
+                              </button>
+                            ))}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
               <div className="md:col-span-2">
                 <label htmlFor={`notas-${s.id}`} className="mb-1 block text-sm font-medium">Hallazgos de esta pestaña</label>
                 <textarea id={`notas-${s.id}`} rows={3}

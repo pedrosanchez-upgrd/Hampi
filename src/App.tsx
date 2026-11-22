@@ -5,6 +5,7 @@ import { Terminos, VERSION_TERMINOS } from './components/Terminos'
 import { SeccionFormulario } from './components/SeccionFormulario'
 import { Redaccion } from './components/Redaccion'
 import { PestanasSintomas } from './components/PestanasSintomas'
+import { PanelDiagnosticos, ListaDiagnosticos } from './components/PanelDiagnosticos'
 
 const CLAVE_TERMINOS = 'hampi.terminos'
 const CLAVE_BORRADOR = 'hampi.borrador'
@@ -66,7 +67,7 @@ export default function App() {
         </button>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-[220px_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 pt-6 pb-24 md:grid-cols-[220px_1fr]">
         <nav className="no-imprimir min-w-0 md:sticky md:top-4 md:h-fit">
           <ol className="flex gap-2 overflow-x-auto pb-2 md:flex-col md:gap-1 md:overflow-visible md:pb-0">
             {[...SECCIONES.map((s) => ({ id: s.id, n: s.numero, t: s.titulo })), { id: 'redaccion', n: 10, t: 'Redacción final' }].map((s) => {
@@ -104,6 +105,12 @@ export default function App() {
             <Redaccion historia={historia} irA={irA} />
           )}
           {seccion?.id === 'enfermedad' && <PestanasSintomas historia={historia} setHistoria={setHistoria} />}
+          {seccion?.id === 'impresion' && (
+            <section className="mt-8 rounded-xl border border-slate-200 bg-white p-4">
+              <h3 className="text-lg font-semibold">Diagnósticos en vivo</h3>
+              <div className="mt-2"><ListaDiagnosticos historia={historia} setHistoria={setHistoria} /></div>
+            </section>
+          )}
           {seccion && (
             <div className="no-imprimir mt-8 flex justify-end">
               <button
@@ -116,6 +123,7 @@ export default function App() {
           )}
         </main>
       </div>
+      {seccion?.id !== 'impresion' && <PanelDiagnosticos historia={historia} setHistoria={setHistoria} />}
     </div>
   )
 }
