@@ -4,6 +4,7 @@ import { historiaVacia, faltantes, type Historia } from './lib/historia'
 import { Terminos, VERSION_TERMINOS } from './components/Terminos'
 import { SeccionFormulario } from './components/SeccionFormulario'
 import { Redaccion } from './components/Redaccion'
+import { PestanasSintomas } from './components/PestanasSintomas'
 
 const CLAVE_TERMINOS = 'hampi.terminos'
 const CLAVE_BORRADOR = 'hampi.borrador'
@@ -102,6 +103,7 @@ export default function App() {
           ) : (
             <Redaccion historia={historia} irA={irA} />
           )}
+          {seccion?.id === 'enfermedad' && <PestanasSintomas historia={historia} setHistoria={setHistoria} />}
           {seccion && (
             <div className="no-imprimir mt-8 flex justify-end">
               <button

@@ -1,10 +1,53 @@
 import { SECCIONES, type Campo } from '../data/secciones'
+import { SINTOMAS, detectarSintomas } from '../data/sintomas'
 
 /** Valores de la historia: seccionId -> campoId -> texto. */
 export type Historia = Record<string, Record<string, string>>
 
-export const historiaVacia = (): Historia =>
-  Object.fromEntries(SECCIONES.map((s) => [s.id, {}]))
+export const historiaVacia = (): Historia => ({
+  ...Object.fromEntries(SECCIONES.map((s) => [s.id, {}])),
+  sintomas: {},
+})
+
+const lista = (v: string | undefined) => (v ? v.split(',').filter(Boolean) : [])
+
+/** Texto donde se buscan síntomas: motivo de consulta y enfermedad actual. */
+export const textoClinico = (h: Historia) =>
+  [...Object.values(h.motivo ?? {}), ...Object.values(h.enfermedad ?? {})].join(' ')
+
+/**
+ * Pestañas de síntoma abiertas: las detectadas en el texto más las agregadas a mano,
+ * menos las que el usuario cerró. Se respeta el orden de la lista de síntomas.
+ */
+export function sintomasAbiertos(h: Historia): string[] {
+  const sx = h.sintomas ?? {}
+  const cerrados = new Set(lista(sx.cerrados))
+  const ids = new Set([...detectarSintomas(textoClinico(h)), ...lista(sx.manuales)])
+  return SINTOMAS.map((s) => s.id).filter((id) => ids.has(id) && !cerrados.has(id))
+}
+
+export function abrirSintoma(h: Historia, id: string): Historia {
+  const sx = h.sintomas ?? {}
+  return { ...h, sintomas: { ...sx,
+    manuales: [...new Set([...lista(sx.manuales), id])].join(','),
+    cerrados: lista(sx.cerrados).filter((x) => x !== id).join(',') } }
+}
+
+export function cerrarSintoma(h: Historia, id: string): Historia {
+  const sx = h.sintomas ?? {}
+  return { ...h, sintomas: { ...sx,
+    manuales: lista(sx.manuales).filter((x) => x !== id).join(','),
+    cerrados: [...new Set([...lista(sx.cerrados), id])].join(',') } }
+}
+
+/** Signos de alarma marcados como presentes en las pestañas abiertas. */
+export function alarmasMarcadas(h: Historia): { sintoma: string; alarma: string }[] {
+  const sx = h.sintomas ?? {}
+  return sintomasAbiertos(h).flatMap((id) => {
+    const s = SINTOMAS.find((x) => x.id === id)!
+    return s.alarmas.filter((_, i) => sx[`${id}.a${i}`] === '1').map((a) => ({ sintoma: s.nombre, alarma: a }))
+  })
+}
 
 /** Valida una cédula ecuatoriana (10 dígitos, provincia y dígito verificador módulo 10). */
 export function cedulaValida(cedula: string): boolean {
@@ -91,7 +134,8 @@ export function redactar(h: Historia): string {
       const a = avisoSigno(id, v)
       return a ? `${a} (${v} ${SECCIONES[6].campos.find((c) => c.id === id)?.unidad ?? ''})` : null
     })
-    .filter(Boolean)
+    .filter(Boolean) as string[]
+  for (const a of alarmasMarcadas(h)) alertas.push(`${a.sintoma}: ${a.alarma}`)
   if (alertas.length) partes.push('SIGNOS DE ALARMA\n' + alertas.map((a) => `- ${a}`).join('\n'))
 
   for (const s of SECCIONES) {
@@ -102,6 +146,12 @@ export function redactar(h: Historia): string {
       if (!v) continue
       if (c.grupo && c.grupo !== grupo) { grupo = c.grupo; lineas.push(`${grupo}:`) }
       lineas.push(c.tipo === 'parrafo' && s.campos.length === 1 ? v : lineaCampo(c, v))
+    }
+    if (s.id === 'enfermedad') {
+      for (const id of sintomasAbiertos(h)) {
+        const notas = (h.sintomas?.[`${id}.notas`] ?? '').trim()
+        if (notas) lineas.push(`${SINTOMAS.find((x) => x.id === id)!.nombre}: ${notas}`)
+      }
     }
     if (s.id === 'examen') {
       const i = imc(Number(valor(h, 'examen', 'peso')), Number(valor(h, 'examen', 'talla')))

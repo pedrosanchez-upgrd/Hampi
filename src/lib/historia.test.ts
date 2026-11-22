@@ -42,3 +42,28 @@ describe('historia', () => {
     expect(t).toContain('IMC: 24.2 kg/m²')
   })
 })
+
+import { detectarSintomas } from '../data/sintomas'
+import { sintomasAbiertos, cerrarSintoma, abrirSintoma } from './historia'
+
+describe('pestañas de síntoma', () => {
+  it('detecta síntomas sin importar tildes ni mayúsculas', () => {
+    expect(detectarSintomas('Dolor en el PECHO y falta de aire')).toEqual(['toracico', 'disnea'])
+    expect(detectarSintomas('cefalea intensa con vómito')).toEqual(expect.arrayContaining(['cefalea', 'vomito']))
+    expect(detectarSintomas('tose mucho')).toEqual([]) // «tos» solo como palabra completa
+    expect(detectarSintomas('tiene tos con flema')).toEqual(['tos'])
+  })
+  it('abre, cierra y lleva las alarmas a la redacción', () => {
+    let h = historiaVacia()
+    h.motivo = { motivo: 'me duele el pecho', tiempo: '1 hora' }
+    expect(sintomasAbiertos(h)).toEqual(['toracico'])
+    h = { ...h, sintomas: { ...h.sintomas, 'toracico.a2': '1', 'toracico.notas': 'Opresivo, irradia a brazo izquierdo' } }
+    const t = redactar(h)
+    expect(t).toContain('- Dolor torácico: Síncope')
+    expect(t).toContain('Dolor torácico: Opresivo, irradia a brazo izquierdo')
+    h = cerrarSintoma(h, 'toracico')
+    expect(sintomasAbiertos(h)).toEqual([])
+    h = abrirSintoma(h, 'fiebre')
+    expect(sintomasAbiertos(h)).toEqual(['fiebre'])
+  })
+})
