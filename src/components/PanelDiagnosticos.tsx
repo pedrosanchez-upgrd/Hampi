@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { diagnosticosEnVivo, formatoFactor, preguntasClave, preguntasParaAfinar, type Resultado } from '../lib/motor'
 import { CONSIDERAR } from '../data/considerar'
+import { hallazgosEnLoEscrito } from '../data/detectarHallazgos'
 import { alarmasMarcadas, avisos, faltantes, sintomasAbiertos, type Historia } from '../lib/historia'
 import { Icono } from './Icono'
 
@@ -159,7 +160,7 @@ function Pendientes({ historia, irA }: Props) {
       <section>
         <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-alarm">Signos de alarma marcados</h4>
         {alarmas.length === 0 ? <p className="mt-1.5 text-sm text-ink-soft">Ninguno por ahora.</p> : (
-          <ul className="mt-2 grid gap-1.5">
+          <ul className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-1.5">
             {alarmas.map((a, i) => (
               <li key={i} className="flex gap-2 rounded-xl bg-alarm-soft px-3 py-2 text-sm">
                 <Icono nombre="alerta" className="mt-0.5 h-4 w-4 shrink-0 text-alarm" />
@@ -188,21 +189,69 @@ function Pendientes({ historia, irA }: Props) {
   )
 }
 
+/** Lo que Hampi encontró en el texto escrito: el médico confirma con un toque. */
+export function LoQueEscribio({ historia, setHistoria }: Props) {
+  const lista = hallazgosEnLoEscrito(historia)
+  if (!lista.length) return null
+  const confirmar = (items: typeof lista) =>
+    setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, ...Object.fromEntries(items.map((d) => [d.hallazgo, d.estado])) } }))
+  const ignorar = (id: string) => setHistoria((h) => {
+    const prev = (h.diagnosticosVivo?.ignorados ?? '').split(',').filter(Boolean)
+    return { ...h, diagnosticosVivo: { ...h.diagnosticosVivo, ignorados: [...prev, id].join(',') } }
+  })
+  return (
+    <div className="min-w-0 rounded-xl border border-ok/40 bg-ok-soft/40 p-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <Icono nombre="libro" className="h-4 w-4 text-ok" /> Encontré esto en lo que escribió
+          </p>
+          <p className="mt-0.5 text-xs text-ink-faint">Confírmelo para que cuente en los diagnósticos.</p>
+        </div>
+        {lista.length > 1 && (
+          <button onClick={() => confirmar(lista)} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
+            <Icono nombre="check" className="h-4 w-4" /> Confirmar los {lista.length}
+          </button>
+        )}
+      </div>
+      <ul className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-1.5">
+        {lista.map((d) => (
+          <li key={d.hallazgo} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface px-2.5 py-2">
+            <div className="min-w-0 flex-[1_1_12rem]">
+              <p className="break-words text-sm font-medium text-ink">
+                <span className={`mr-1.5 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${d.estado === 'si' ? 'bg-brand-soft text-brand-strong' : 'bg-surface-2 text-ink-soft'}`}>{d.estado === 'si' ? 'Presente' : 'Ausente'}</span>
+                {d.texto}
+              </p>
+              <p className="truncate text-xs text-ink-faint">{d.donde}: «{d.fragmento}»</p>
+            </div>
+            <span className="flex shrink-0 gap-1.5">
+              <button onClick={() => confirmar([d])} className="inline-flex min-h-10 items-center gap-1 rounded-lg border border-brand/50 bg-surface px-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft">
+                <Icono nombre="check" className="h-4 w-4" /> Confirmar
+              </button>
+              <button onClick={() => ignorar(d.hallazgo)} className="min-h-10 rounded-lg px-2.5 text-sm text-ink-soft hover:bg-surface-2">No corresponde</button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 /** Las 3 preguntas o maniobras que más moverían la lista ahora: se responden ahí mismo. */
 export function PregunteAhora({ historia, setHistoria }: Props) {
   const lista = preguntasClave(historia)
   if (!lista.length) return null
   const responder = (id: string, v: string) => setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, [id]: v } }))
   return (
-    <div className="rounded-xl border border-brand/30 bg-brand-soft/30 p-3">
+    <div className="min-w-0 rounded-xl border border-brand/30 bg-brand-soft/30 p-3">
       <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
         <Icono nombre="mensaje" className="h-4 w-4" /> Pregunte o examine esto ahora
       </p>
       <p className="mt-0.5 text-xs text-ink-faint">Son los datos que más cambiarían el orden de la lista.</p>
-      <ul className="mt-2 grid gap-1.5">
+      <ul className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-1.5">
         {lista.map((q) => (
           <li key={q.hallazgo} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface px-2.5 py-2">
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-[1_1_12rem]">
               <p className="text-sm font-medium text-ink">{q.texto}</p>
               <p className="text-xs text-ink-faint">
                 Cambia: {q.diagnosticos.slice(0, 3).join(', ')}{q.diagnosticos.length > 3 ? ` y ${q.diagnosticos.length - 3} más` : ''}
@@ -225,7 +274,7 @@ export function Asistente(props: Props) {
   const n = diagnosticosEnVivo(props.historia).filter((x) => !x.descartado).length
   const p = alarmasMarcadas(props.historia).length + faltantes(props.historia).length + avisos(props.historia).length
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">
         {([['dx', 'Diagnósticos', n], ['pend', 'Pendientes', p]] as const).map(([id, t, c]) => (
           <button key={id} role="tab" aria-selected={pestana === id} onClick={() => setPestana(id)}
@@ -239,6 +288,7 @@ export function Asistente(props: Props) {
           <p className="text-xs leading-relaxed text-ink-faint">
             Ayuda, no diagnóstico. El número (×) combina razones de verosimilitud publicadas; las flechas ▲▼ son factores cualitativos sin número publicado. Pendiente de revisión médica.
           </p>
+          <LoQueEscribio {...props} />
           <PregunteAhora {...props} />
           <ListaDiagnosticos {...props} />
         </>
@@ -302,7 +352,7 @@ function FilaDiagnostico({ r, i, historia, setHistoria }: { r: Resultado; i: num
     <li className={`min-w-0 rounded-xl border transition-colors ${elegido ? 'border-brand bg-brand-soft/50' : 'border-line'}`}>
       <div className="flex min-w-0 items-center gap-3 px-3 py-2.5">
         <span className={`cifra flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${i === 0 ? 'bg-brand text-on-brand' : 'bg-surface-2 text-ink-soft'}`}>{i + 1}</span>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-[1_1_12rem]">
           <p className="font-semibold leading-snug text-ink">
             {r.nombre}
             {r.grave && <span className="ml-2 inline-block rounded-full bg-alarm-soft px-2 py-0.5 align-middle text-[11px] font-semibold text-alarm">No te lo pierdas</span>}
@@ -329,7 +379,7 @@ function FilaDiagnostico({ r, i, historia, setHistoria }: { r: Resultado; i: num
             <div className="grid gap-1.5 pb-2 pt-1">
               {preguntas.slice(0, 6).map((q) => (
                 <div key={q.hallazgo} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface px-2.5 py-2">
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-[1_1_12rem]">
                     <p className="text-sm text-ink">{q.texto}</p>
                     <p className="text-xs text-ink-faint">{q.efecto}</p>
                   </div>
@@ -377,7 +427,12 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
         </div>
       </div>
 
-      {lista.length > 0 && <div className="mt-4"><PregunteAhora historia={historia} setHistoria={setHistoria} /></div>}
+      {lista.length > 0 && (
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
+          <LoQueEscribio historia={historia} setHistoria={setHistoria} />
+          <PregunteAhora historia={historia} setHistoria={setHistoria} />
+        </div>
+      )}
 
       {lista.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-line p-4 text-center text-sm text-ink-soft">
