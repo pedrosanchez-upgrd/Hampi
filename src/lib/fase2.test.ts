@@ -121,3 +121,15 @@ describe('regresión: la fiebre sola no sube meningitis ni neumonía', () => {
     expect(diagnosticosEnVivo(h).find((x) => x.id === 'meningitis')!.factor).toBeLessThan(1)
   })
 })
+
+describe('regresión: Ottawa HSA solo descarta', () => {
+  it('la edad de 40 o más sola no sube la HSA; todos ausentes la bajan', () => {
+    const h = historiaVacia()
+    h.filiacion = { edad: '55' }
+    h.motivo = { motivo: 'dolor de cabeza' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'hsa')!.factor).toBe(1)
+    h.filiacion = { edad: '30' }
+    h.hallazgos = { cuelloDolor: 'no', perdidaConciencia: 'no', cefaleaEsfuerzo: 'no', enTrueno: 'no', flexionLimitada: 'no' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'hsa')!.factor).toBeLessThan(0.05)
+  })
+})
