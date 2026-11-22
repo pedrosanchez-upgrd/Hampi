@@ -128,3 +128,18 @@ describe('reglas por conteo y diagnósticos nuevos', () => {
     expect(diagnosticosEnVivo(h).map((x) => x.id)).toContain('ectopico')
   })
 })
+
+describe('bacteriemia e hipovolemia', () => {
+  it('sin criterios de SIRS la bacteriemia baja a ×0,09', () => {
+    const h = historiaVacia()
+    h.motivo = { motivo: 'fiebre' }
+    h.hallazgos = { sirs: 'no' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'bacteriemia')!.factor).toBeCloseTo(0.09)
+  })
+  it('axila seca sube la hipovolemia en diarrea', () => {
+    const h = historiaVacia()
+    h.motivo = { motivo: 'diarrea' }
+    h.hallazgos = { axilaSeca: 'si' }
+    expect(diagnosticosEnVivo(h)[0].id).toBe('hipovolemia')
+  })
+})

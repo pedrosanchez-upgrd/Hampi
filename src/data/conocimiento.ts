@@ -72,6 +72,12 @@ export const FUENTES: Record<string, Fuente> = {
   srygley2012: { id: 'srygley2012', pmid: '22416103', doi: '10.1001/jama.2012.253',
     cita: 'Srygley FD, et al. JAMA. 2012;307(10):1072-9',
     titulo: 'Does this patient have a severe upper gastrointestinal bleed?' },
+  coburn2012: { id: 'coburn2012', pmid: '22851117', doi: '10.1001/jama.2012.8262',
+    cita: 'Coburn B, et al. JAMA. 2012;308(5):502-11',
+    titulo: 'Does this adult patient with suspected bacteremia require blood cultures?' },
+  mcgee1999: { id: 'mcgee1999', pmid: '10086438', doi: '10.1001/jama.281.11.1022',
+    cita: 'McGee S, Abernethy WB, Simel DL. JAMA. 1999;281(11):1022-9',
+    titulo: 'The rational clinical examination. Is this patient hypovolemic?' },
   wells2003: { id: 'wells2003', pmid: '14507948', doi: '10.1056/NEJMoa023153',
     cita: 'Wells PS, et al. N Engl J Med. 2003;349(13):1227-35',
     titulo: 'Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis' },
@@ -172,6 +178,13 @@ export const HALLAZGOS: Hallazgo[] = [
   { id: 'bunCr30', texto: 'Relación BUN/creatinina mayor de 30', sintomas: ['sangradoDigestivo'] },
   { id: 'taquicardiaSangrado', texto: 'Frecuencia cardiaca mayor de 100', sintomas: ['sangradoDigestivo'], automatico: 'Se calcula de la frecuencia cardiaca' },
   { id: 'hb8', texto: 'Hemoglobina menor de 8 g/dL', sintomas: ['sangradoDigestivo'] },
+  // Bacteriemia
+  { id: 'escalofriosIntensos', texto: 'Escalofríos intensos con temblor (tiritona)', sintomas: ['fiebre'] },
+  { id: 'sirs', texto: 'Cumple 2 o más criterios de SIRS (T > 38 o < 36 °C, FC > 90, FR > 20, leucocitos alterados)', sintomas: ['fiebre'] },
+  // Hipovolemia
+  { id: 'pulsoPostural', texto: 'Al ponerse de pie, el pulso sube 30 lpm o más, o mareo intenso que impide pararse', sintomas: ['vomito', 'diarrea', 'sangradoDigestivo'] },
+  { id: 'axilaSeca', texto: 'Axila seca', sintomas: ['vomito', 'diarrea'] },
+  { id: 'mucosasHumedas', texto: 'Mucosas húmedas y lengua sin surcos', sintomas: ['vomito', 'diarrea'] },
   // Síncope
   { id: 'sincope35', texto: 'Primer síncope a los 35 años o más', sintomas: ['sincope'] },
   { id: 'fibrilacion', texto: 'Antecedente de fibrilación o flutter auricular', sintomas: ['sincope', 'palpitaciones'] },
@@ -334,6 +347,18 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     nota: 'Un puntaje de Blatchford de 0 tuvo LR 0,02 para necesitar intervención urgente.', reglas: [
     { hallazgo: 'taquicardiaSangrado', lrPos: 4.9, fuente: 'srygley2012' },
     { hallazgo: 'hb8', lrPos: 4.5, fuente: 'srygley2012', nota: 'LR 4,5–6,2; se usa el valor menor' },
+  ] },
+  { id: 'bacteriemia', nombre: 'Bacteriemia (indica hemocultivos)', grave: true, sintomas: ['fiebre'],
+    nota: 'No aplica a pacientes inmunocomprometidos ni con sospecha de endocarditis. La fiebre o la leucocitosis aisladas no bastan para pedir hemocultivos.', reglas: [
+    { hallazgo: 'fiebreMedida', lrPos: 1.9, fuente: 'coburn2012', nota: 'Temperatura de 38 °C o más' },
+    { hallazgo: 'escalofriosIntensos', lrPos: 4.7, fuente: 'coburn2012' },
+    { hallazgo: 'sirs', lrNeg: 0.09, fuente: 'coburn2012' },
+  ] },
+  { id: 'hipovolemia', nombre: 'Hipovolemia', grave: true, sintomas: ['vomito', 'diarrea', 'sangradoDigestivo'],
+    nota: 'La hipotensión y la taquicardia en decúbito suelen faltar aun con pérdidas de hasta 1150 ml. El llenado capilar y la turgencia de la piel no tienen valor probado en adultos.', reglas: [
+    { hallazgo: 'pulsoPostural', cualitativo: 'sube', fuente: 'mcgee1999', nota: 'Sensibilidad 97 % y especificidad 98 % para pérdida grande de sangre' },
+    { hallazgo: 'axilaSeca', lrPos: 2.8, fuente: 'mcgee1999', nota: 'En vómito, diarrea o poca ingesta' },
+    { hallazgo: 'mucosasHumedas', lrPos: 0.3, fuente: 'mcgee1999' },
   ] },
   { id: 'sincopeCardiaco', nombre: 'Síncope de causa cardiaca', grave: true, sintomas: ['sincope'], reglas: [
     { hallazgo: 'sincope35', lrPos: 3.3, lrNeg: 0.13, fuente: 'albassam2019' },

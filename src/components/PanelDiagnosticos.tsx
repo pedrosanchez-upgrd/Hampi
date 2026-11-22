@@ -117,7 +117,7 @@ export function ListaDiagnosticos({ historia, setHistoria }: Props) {
         <p className="mt-2 font-medium text-ink">Aún sin diagnósticos</p>
         <p className="mt-1 text-sm text-ink-soft">
           Aparecen al abrir una pestaña de síntoma con diagnósticos cargados: dolor torácico, disnea, fiebre, tos, dolor abdominal,
-          cefalea, síncope, síntomas urinarios, edema, confusión, debilidad o adormecimiento, mareo y sangrado digestivo.
+          cefalea, síncope, síntomas urinarios, edema, confusión, debilidad o adormecimiento, mareo, vómito, diarrea y sangrado digestivo.
         </p>
       </div>
     )
