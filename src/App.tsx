@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { SECCIONES } from './data/secciones'
 import { SINTOMAS } from './data/sintomas'
 import { alarmasMarcadas, faltantes, historiaVacia, progresoSeccion, sintomasAbiertos, type Historia } from './lib/historia'
@@ -11,9 +12,28 @@ import { Asistente, AsistenteFlotante, ListaDiagnosticos } from './components/Pa
 import { Icono, Logo } from './components/Icono'
 import { AntecedentesFamiliares, AntecedentesPersonales } from './components/Antecedentes'
 import { casoEjemplo } from './data/casoEjemplo'
+import { Cuenta } from './components/Cuenta'
+import { MisHistorias } from './components/MisHistorias'
+import { asegurarPerfil, auditar, guardarHistoria, registrarAceptacion, salir, supabase } from './lib/nube'
 
 const CLAVE_TERMINOS = 'hampi.terminos'
 const CLAVE_BORRADOR = 'hampi.borrador'
+const CLAVE_SIN_CUENTA = 'hampi.sinCuenta'
+const CLAVE_HISTORIA_ID = 'hampi.historiaId'
+const VACIA = JSON.stringify(historiaVacia())
+
+type EstadoGuardado = 'local' | 'guardando' | 'guardado' | 'error'
+
+/** Indicador de dónde está guardada la historia. */
+function Guardado({ estado }: { estado: EstadoGuardado }) {
+  const t = { local: 'En este dispositivo', guardando: 'Guardando…', guardado: 'Guardado en su cuenta', error: 'Sin conexión: guardado en el dispositivo' }[estado]
+  return (
+    <span className={`hidden items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium lg:flex ${
+      estado === 'error' ? 'bg-warn-soft text-warn' : estado === 'guardado' ? 'bg-ok-soft text-ok' : 'bg-surface-2 text-ink-soft'}`} role="status">
+      <Icono nombre={estado === 'guardado' ? 'check' : estado === 'error' ? 'alerta' : 'documento'} className="h-3.5 w-3.5" />{t}
+    </span>
+  )
+}
 
 function leer<T>(clave: string, porDefecto: T): T {
   try { const v = localStorage.getItem(clave); return v ? (JSON.parse(v) as T) : porDefecto } catch { return porDefecto }
@@ -68,8 +88,56 @@ export default function App() {
   const [actual, setActual] = useState<string>(SECCIONES[0].id)
   const [confirmar, setConfirmar] = useState(false)
   const [tema, cambiarTema] = useTema()
+  const [sesion, setSesion] = useState<Session | null>(null)
+  const [cargandoSesion, setCargandoSesion] = useState(true)
+  const [sinCuenta, setSinCuenta] = useState(() => leer<boolean>(CLAVE_SIN_CUENTA, false))
+  const [recuperando, setRecuperando] = useState(false)
+  const [historiaId, setHistoriaId] = useState<string | null>(() => leer<string | null>(CLAVE_HISTORIA_ID, null))
+  const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>('local')
+  const [verHistorias, setVerHistorias] = useState(false)
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const enCurso = useRef<Promise<void> | null>(null)
+  const idActual = useRef<string | null>(historiaId)
+  useEffect(() => { idActual.current = historiaId }, [historiaId])
 
   useEffect(() => guardar(CLAVE_BORRADOR, historia), [historia])
+  useEffect(() => guardar(CLAVE_HISTORIA_ID, historiaId), [historiaId])
+
+  // Sesión de Supabase: se recupera al abrir y se escucha si cambia.
+  useEffect(() => {
+    let vivo = true
+    supabase.auth.getSession().then(({ data }) => { if (vivo) { setSesion(data.session); setCargandoSesion(false) } })
+      .catch(() => { if (vivo) setCargandoSesion(false) })
+    const { data } = supabase.auth.onAuthStateChange((evento, s) => {
+      setSesion(s)
+      if (evento === 'PASSWORD_RECOVERY') setRecuperando(true)
+    })
+    return () => { vivo = false; data.subscription.unsubscribe() }
+  }, [])
+
+  // Al entrar: perfil y aceptación de términos quedan registrados en la nube.
+  useEffect(() => {
+    if (!sesion) return
+    asegurarPerfil(sesion).catch(() => {})
+    registrarAceptacion(sesion, VERSION_TERMINOS).catch(() => {})
+  }, [sesion?.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Guardado automático en la cuenta, 1,5 s después del último cambio.
+  useEffect(() => {
+    if (!sesion) { setEstadoGuardado('local'); return }
+    if (JSON.stringify(historia) === VACIA) return
+    if (temporizador.current) clearTimeout(temporizador.current)
+    setEstadoGuardado('guardando')
+    temporizador.current = setTimeout(() => {
+      // Cada guardado espera al anterior: así la primera vez no se crean dos historias.
+      const previo = enCurso.current ?? Promise.resolve()
+      const ahora = previo.catch(() => {}).then(() => guardarHistoria(idActual.current, historia))
+        .then((id) => { idActual.current = id; setHistoriaId(id); setEstadoGuardado('guardado') })
+        .catch(() => setEstadoGuardado('error'))
+      enCurso.current = ahora
+    }, 1500)
+    return () => { if (temporizador.current) clearTimeout(temporizador.current) }
+  }, [historia, sesion?.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
   // En el teléfono, el apartado activo siempre visible en el carrusel.
   useEffect(() => {
     document.querySelector('[aria-current="step"]')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
@@ -77,6 +145,12 @@ export default function App() {
 
   if (!aceptado)
     return <Terminos onAceptar={() => { guardar(CLAVE_TERMINOS, { version: VERSION_TERMINOS, fecha: new Date().toISOString() }); setAceptado(true) }} />
+  if (recuperando) return <Cuenta recuperando onListo={() => setRecuperando(false)} />
+  if (cargandoSesion) return <main className="flex min-h-screen items-center justify-center"><Logo className="h-12 w-12 animate-pulse" /></main>
+  if (!sesion && !sinCuenta)
+    return <Cuenta onListo={() => { setSinCuenta(false); guardar(CLAVE_SIN_CUENTA, false) }} onSinCuenta={() => { setSinCuenta(true); guardar(CLAVE_SIN_CUENTA, true) }} />
+
+  const nuevaHistoria = () => { setHistoria(historiaVacia()); setHistoriaId(null); irA(SECCIONES[0].id); setConfirmar(false); setVerHistorias(false) }
 
   const falta = faltantes(historia)
   const irA = (id: string) => { setActual(id); window.scrollTo({ top: 0, behavior: 'smooth' }) }
@@ -100,6 +174,19 @@ export default function App() {
           <span className="hidden h-8 w-px bg-line md:block" />
           <BandaPaciente historia={historia} />
           <div className="flex shrink-0 items-center gap-1">
+            <Guardado estado={sesion ? estadoGuardado : 'local'} />
+            {sesion ? (
+              <>
+                <button onClick={() => setVerHistorias(true)} className="flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-soft hover:bg-surface-2" title={sesion.user.email ?? ''}>
+                  <Icono nombre="lista" className="h-4 w-4" /><span className="hidden sm:inline">Mis historias</span>
+                </button>
+                <button onClick={async () => { await salir(); setHistoria(historiaVacia()); setHistoriaId(null) }} className="hidden min-h-10 rounded-full px-3 text-sm text-ink-soft hover:bg-surface-2 sm:block">Salir</button>
+              </>
+            ) : (
+              <button onClick={() => { setSinCuenta(false); guardar(CLAVE_SIN_CUENTA, false) }} className="flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-brand hover:bg-brand-soft">
+                <Icono nombre="persona" className="h-4 w-4" /><span className="hidden sm:inline">Entrar</span>
+              </button>
+            )}
             <button onClick={cambiarTema} className="flex h-10 w-10 items-center justify-center rounded-full text-ink-soft hover:bg-surface-2"
               aria-label={`Tema: ${tema}. Cambiar`} title={`Tema: ${tema}`}>
               <Icono nombre={tema === 'oscuro' ? 'luna' : tema === 'claro' ? 'sol' : 'sistema'} className="h-5 w-5" />
@@ -107,7 +194,7 @@ export default function App() {
             {confirmar ? (
               <span className="flex items-center gap-1.5">
                 <button className="min-h-10 rounded-full bg-alarm px-3 text-sm font-semibold text-on-alarm"
-                  onClick={() => { setHistoria(historiaVacia()); irA(SECCIONES[0].id); setConfirmar(false) }}>Borrar todo</button>
+                  onClick={nuevaHistoria}>{sesion ? 'Empezar otra' : 'Borrar todo'}</button>
                 <button className="min-h-10 rounded-full px-3 text-sm text-ink-soft hover:bg-surface-2" onClick={() => setConfirmar(false)}>Cancelar</button>
               </span>
             ) : (
@@ -209,6 +296,10 @@ export default function App() {
       </div>
 
       <AsistenteFlotante historia={historia} setHistoria={setHistoria} irA={irA} />
+      {sesion && (
+        <MisHistorias abierto={verHistorias} actualId={historiaId} onCerrar={() => setVerHistorias(false)} onNueva={nuevaHistoria}
+          onAbrir={(h) => { setHistoria({ ...historiaVacia(), ...h.contenido }); setHistoriaId(h.id); setVerHistorias(false); irA(SECCIONES[0].id); auditar('abrir', h.id) }} />
+      )}
     </div>
   )
 }

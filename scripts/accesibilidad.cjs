@@ -14,6 +14,8 @@ const axeSrc = require('fs').readFileSync(require.resolve('axe-core/axe.min.js')
     };
     await run('terminos');
     await p.check('#acepto-terminos'); await p.getByRole('button', { name: /Aceptar/ }).click();
+    await run('cuenta');
+    await p.getByRole('button', { name: 'Seguir sin cuenta' }).click();
     await p.getByRole('button', { name: 'Cargar caso de ejemplo' }).click();
     await run('filiacion');
     await p.getByRole('button', { name: /Enfermedad actual/ }).first().click(); await run('enfermedad');
