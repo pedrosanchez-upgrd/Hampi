@@ -280,3 +280,36 @@ export function avisos(h: Historia): Aviso[] {
     out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Palpitaciones: pregunte por origen en zona de Chagas' })
   return out
 }
+
+/**
+ * Presentación oral del caso (1–2 minutos), en el orden que se enseña en semiología:
+ * identificación, motivo, enfermedad actual, antecedentes pertinentes, positivos y negativos,
+ * examen, impresión diagnóstica y plan. Solo usa lo que el usuario registró.
+ */
+export function presentacionOral(h: Historia): string {
+  const f = h.filiacion ?? {}, m = h.motivo ?? {}, e = h.enfermedad ?? {}, x = h.examen ?? {}, a = h.antecedentes ?? {}
+  const partes: string[] = []
+  const quien = [f.sexo === 'Mujer' ? 'Mujer' : f.sexo === 'Hombre' ? 'Hombre' : 'Paciente', f.edad && `de ${f.edad} años`, f.ocupacion && `, ${f.ocupacion.toLowerCase()}`].filter(Boolean).join(' ').replace(' ,', ',')
+  const ant = PATOLOGICOS.filter((p) => a[`p.${p.id}`] === 'si').map((p) => minus(p.nombre))
+  const pa = paquetesAnio(h)
+  if (pa) ant.push(`tabaquismo de ${String(pa).replace('.', ',')} paquetes/año`)
+  partes.push(`${quien}${ant.length ? `, con antecedentes de ${ant.join(', ')},` : ''} que consulta por «${m.motivo ?? '—'}»${m.tiempo ? ` de ${m.tiempo} de evolución` : ''}.`)
+  const alicia = [e.caracter && `de carácter ${e.caracter.toLowerCase()}`, e.localizacion && `de localización ${e.localizacion.toLowerCase()}`,
+    e.intensidad && `intensidad ${e.intensidad}/10`, e.irradiacion && `irradiado a ${e.irradiacion.toLowerCase()}`, e.atenuantes && e.atenuantes.toLowerCase()].filter(Boolean)
+  if (e.sintoma && alicia.length) partes.push(`${e.sintoma}: ${alicia.join(', ')}.`)
+  if (e.acompanantes) partes.push(`Se acompaña de ${e.acompanantes.toLowerCase()}.`)
+  const positivas = alarmasMarcadas(h).map((z) => minus(z.alarma))
+  if (positivas.length) partes.push(`Signos de alarma presentes: ${positivas.join('; ')}.`)
+  const negativos = sintomasAbiertos(h).flatMap((id) => {
+    const sx = SINTOMAS.find((s) => s.id === id)!
+    return sx.alarmas.filter((_, i) => h.sintomas?.[`${id}.a${i}`] === '0').map(minus)
+  })
+  if (negativos.length) partes.push(`Niega ${negativos.join('; ')}.`)
+  const vit = [x.pas && x.pad && `PA ${x.pas}/${x.pad} mmHg`, x.fc && `FC ${x.fc} lpm`, x.fr && `FR ${x.fr} rpm`, x.temp && `T ${x.temp} °C`, x.sat && `SatO₂ ${x.sat} %${x.oxigeno === 'Con oxígeno' ? ' con oxígeno' : ''}`].filter(Boolean)
+  if (vit.length || x.aspecto) partes.push(`Al examen: ${[vit.join(', '), x.aspecto].filter(Boolean).join('. ')}${/[.]$/.test(x.aspecto ?? '') ? '' : '.'}`)
+  const im = h.impresion ?? {}
+  if (im.sindromes) partes.push(`Síndromes: ${im.sindromes.trim()}.`.replace('..', '.'))
+  partes.push(im.diagnosticos?.trim() ? `Impresión diagnóstica: ${im.diagnosticos.trim().split('\n').join('; ')}.` : 'Impresión diagnóstica: pendiente.')
+  if (h.plan?.manejo?.trim()) partes.push(`Plan: ${h.plan.manejo.trim()}${h.plan.examenes?.trim() ? `; exámenes: ${h.plan.examenes.trim()}` : ''}.`)
+  return partes.join(' ').replace(/\.\./g, '.')
+}

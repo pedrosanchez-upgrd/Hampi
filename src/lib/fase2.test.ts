@@ -88,3 +88,17 @@ describe('caso de ejemplo', () => {
     expect(redactar(h)).toContain('Dolor torácico: Dolor de más de 20 min en reposo')
   })
 })
+
+import { presentacionOral } from './historia'
+
+describe('presentación oral', () => {
+  it('resume el caso de ejemplo en el orden de semiología', () => {
+    const t = presentacionOral(casoEjemplo())
+    expect(t.startsWith('Hombre de 58 años, chofer de bus, con antecedentes de hipertensión arterial, diabetes, dislipidemia, tabaquismo de 30 paquetes/año, que consulta por «dolor en el pecho» de 2 horas de evolución.')).toBe(true)
+    expect(t).toContain('Dolor torácico: de carácter opresivo')
+    expect(t).toContain('Niega dolor desgarrante hacia la espalda')
+    expect(t).toContain('Al examen: PA 150/95 mmHg, FC 98 lpm')
+    expect(t).toContain('Impresión diagnóstica: pendiente.')
+    expect(t).not.toContain('..')
+  })
+})

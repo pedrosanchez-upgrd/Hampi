@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { faltantes, redactar, type Historia } from '../lib/historia'
+import { faltantes, presentacionOral, redactar, type Historia } from '../lib/historia'
 import { Icono } from './Icono'
 
 export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccionId: string) => void }) {
   const [copiado, setCopiado] = useState<'no' | 'si' | 'manual'>('no')
-  const texto = redactar(historia)
+  const [vista, setVista] = useState<'historia' | 'oral'>('historia')
+  const oral = presentacionOral(historia)
+  const texto = vista === 'historia' ? redactar(historia) : oral
   const falta = faltantes(historia)
   // Dentro de un marco (vista de prueba) el navegador no deja imprimir.
   const enMarco = (() => { try { return window.self !== window.top } catch { return true } })()
@@ -52,6 +54,13 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
         </p>
       )}
 
+      <div role="tablist" aria-label="Tipo de texto" className="no-imprimir grid w-full max-w-md grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">
+        {([['historia', 'Historia completa'], ['oral', 'Presentación oral']] as const).map(([id, t]) => (
+          <button key={id} role="tab" aria-selected={vista === id} onClick={() => { setVista(id); setCopiado('no') }}
+            className={`min-h-10 rounded-lg text-sm font-semibold transition-colors ${vista === id ? 'bg-surface text-ink shadow-card' : 'text-ink-soft'}`}>{t}</button>
+        ))}
+      </div>
+
       <div className="no-imprimir flex flex-wrap gap-2">
         <button onClick={copiar} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-4 font-semibold text-on-brand hover:bg-brand-strong">
           <Icono nombre={copiado === 'si' ? 'check' : 'copiar'} className="h-5 w-5" />
@@ -64,6 +73,13 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
         )}
       </div>
 
+      {vista === 'oral' ? (
+        <article className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">Para presentar en la visita · 1 a 2 minutos</p>
+          <p id="texto-redactado" className="mt-3 max-w-[68ch] text-[17px] leading-relaxed text-ink">{oral}</p>
+          <p className="mt-5 text-xs text-ink-faint">Orden: identificación, motivo, enfermedad actual, antecedentes pertinentes, positivos y negativos, examen, impresión y plan. Léala en voz alta y ajústela a su estilo.</p>
+        </article>
+      ) : (
       <article className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
         <div className="mb-5 flex items-center justify-between border-b border-line pb-4">
           <p className="font-display text-lg font-bold text-ink">Historia clínica · Medicina interna</p>
@@ -79,6 +95,7 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
         </div>
         <p className="mt-8 border-t border-line pt-4 text-xs text-ink-faint">Firma y sello del profesional: ________________________</p>
       </article>
+      )}
     </section>
   )
 }
