@@ -39,7 +39,11 @@ Tipos: Plus Jakarta Sans para títulos, Inter para texto y formularios, JetBrain
 - 2026-11-22 — Panel «Asistente» (diagnósticos + guía) a la derecha en pantallas anchas y en hoja deslizable en iPad vertical y teléfono — el médico no debe perder el formulario de vista.
 - 2026-11-22 — Banda del paciente fija arriba (sexo, edad, motivo, alarmas) — como la cabecera de una historia en papel.
 
+- 2026-11-23 — Flechas ▲▼ para factores cualitativos y número solo para LR publicados — evitar falsa precisión.
+- 2026-11-23 — Contraste revisado con axe-core (WCAG AA) en claro y oscuro; token on-alarm para texto sobre rojo.
+
 ## Preguntas abiertas
+- ¿Coma o punto decimal? Se usa coma (36,8 °C) (supuesto); confirmar el uso en los hospitales de Cuenca.
 - ¿Le gusta a Pedro el verde eucalipto como color principal, o prefiere otro?
 - ¿«Usted» o «tú» en los textos de la app?
 - ¿Qué referencias le gustan y qué tomar/evitar de cada una?

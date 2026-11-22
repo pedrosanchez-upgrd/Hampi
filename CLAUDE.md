@@ -7,10 +7,16 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 ## Cómo está armado
 - React + TypeScript + Vite + Tailwind 4. `npm run dev`, `npm test` (Vitest), `npm run build`.
 - `src/data/secciones.ts`: los apartados, campos y preguntas guía.
-- `src/data/sintomas.ts`: 41 pestañas de síntoma (palabras clave, preguntas, signos de alarma).
+- `DESIGN.md`: brief de diseño (supuestos marcados). Tokens en `src/index.css` (claro y oscuro). Íconos propios en `src/components/Icono.tsx`.
+- `src/data/sintomas.ts`: 41 pestañas de síntoma (palabras clave, preguntas, signos de alarma Sí/No; los «No» salen como negativos pertinentes).
+- `src/data/antecedentes.ts`: patológicos, familiares por parentesco y epidemiológicos de Ecuador; algunos alimentan hallazgos del motor.
+- `src/data/casoEjemplo.ts`: caso ficticio de dolor torácico para probar.
 - `src/data/conocimiento.ts`: fuentes (PMID/DOI verificados en PubMed), hallazgos, diagnósticos y reglas (LR o cualitativo). Para revisión médica: doc «Hampi: reglas de diagnóstico para revisión médica» (https://claude.ai/artifact/QSfWHA3DE64FrZQEgQF3tR). Toda regla nueva lleva fuente verificada.
 - `src/lib/historia.ts`: cédula, rangos de signos vitales (PROVISIONALES), pestañas abiertas, faltantes, redacción y `textoParaIA` (sin identificadores).
-- `src/lib/motor.ts`: diagnósticos en vivo (producto de LR, determinista).
+- `src/lib/motor.ts`: diagnósticos en vivo (producto de LR, determinista). Reglas: `lrPos`/`lrNeg` (números del resumen del artículo), `cualitativo` (×2/×0,5), `soloAusente` (el artículo la valida solo para descartar, p. ej. fiebre en meningitis, Ottawa HSA) y `conteo` (POUND, ACV).
+- Lección aprendida (23-nov): una regla validada para descartar no debe subir el diagnóstico cuando el hallazgo está presente. Probar cada regla nueva con un caso donde no corresponde (ver `src/lib/fase2.test.ts`).
+- Solo se usan números que aparecen en el resumen de PubMed; si el resumen no está disponible (Holleman 1995, Deyo 1992, Williams 1992), no se usa el artículo.
+- Revisión de accesibilidad: `npm run build`, `npx vite preview --port 4173` y `npm run revisar:accesibilidad` (axe, claro y oscuro).
 - `supabase/migrations/`: esquema con RLS. **No aplicado** en ningún proyecto todavía. Pruebas: `supabase/test/rls.test.ts` (PGlite).
 - `supabase/functions/redactar/`: redacción con Claude. **No desplegada.**
 - Vista de prueba (Artifact privado): https://claude.ai/artifact/Q7nDf8RaNk2H7kbCA8akc4 — se rearma con `npm run build && node scripts/artifact.mjs <salida.html>` y se publica en la misma dirección.
