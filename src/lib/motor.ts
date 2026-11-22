@@ -20,7 +20,9 @@ const num = (v: string | undefined) => {
 export function hallazgosAutomaticos(h: Historia): Record<string, Estado> {
   const out: Record<string, Estado> = {}
   const fc = num(h.examen?.fc), t = num(h.examen?.temp), fr = num(h.examen?.fr), edad = num(h.filiacion?.edad)
-  if (fc !== null) out.taquicardia = fc > 100 ? 'si' : 'no'
+  if (fc !== null) out.taquicardia = out.taquicardiaSangrado = fc > 100 ? 'si' : 'no'
+  const emb = h.personales?.embarazo
+  if (emb) out.embarazoPosible = emb === 'No' ? 'no' : 'si'
   if (t !== null) out.fiebreMedida = t >= 38 ? 'si' : 'no'
   if (fr !== null) out.taquipnea = fr > 24 ? 'si' : 'no'
   if (edad !== null) out.edad40 = edad >= 40 ? 'si' : 'no'
@@ -99,8 +101,19 @@ export function diagnosticosEnVivo(h: Historia): Resultado[] {
         const hz = HALLAZGOS.find((x) => x.id === r.hallazgo)!
         razones.push({ texto: hz.texto, presente: e === 'si', nota: r.nota, fuente: FUENTES[r.fuente], ...f })
       }
+      if (d.conteo) {
+        const c = d.conteo
+        const presentes = c.hallazgos.filter((x) => estados[x] === 'si').length
+        const sinResponder = c.hallazgos.filter((x) => !estados[x]).length
+        const tramo = (n: number) => c.tramos.find((t) => n >= t.min)!
+        // Se aplica solo si lo que falta responder ya no puede cambiar el tramo.
+        if (sinResponder < c.hallazgos.length && tramo(presentes) === tramo(presentes + sinResponder)) {
+          const t = tramo(presentes)
+          razones.push({ texto: `${c.texto}: ${presentes} de ${c.hallazgos.length}`, presente: true, nota: c.nota, fuente: FUENTES[c.fuente], factor: t.lr, tipo: 'lr' })
+        }
+      }
       const factor = razones.reduce((acc, r) => acc * r.factor, 1)
-      const fuentes = [...new Set(d.reglas.map((r) => r.fuente))].map((id) => FUENTES[id])
+      const fuentes = [...new Set([...d.reglas.map((r) => r.fuente), ...(d.conteo ? [d.conteo.fuente] : [])])].map((id) => FUENTES[id])
       return { id: d.id, nombre: d.nombre, grave: d.grave, factor, razones, fuentes, nota: d.nota, descartado: descartados.has(d.id) }
     })
 

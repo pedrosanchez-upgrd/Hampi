@@ -95,3 +95,36 @@ describe('motor', () => {
     expect(formatoFactor(11)).toBe('×11')
   })
 })
+
+describe('reglas por conteo y diagnósticos nuevos', () => {
+  const cefalea = () => { const h = historiaVacia(); h.motivo = { motivo: 'dolor de cabeza' }; return h }
+  it('migraña: 4 criterios POUND dan LR 24', () => {
+    const h = cefalea()
+    h.hallazgos = { pulsatil: 'si', dura4a72: 'si', unilateral: 'si', nauseaCefalea: 'si' }
+    const m = diagnosticosEnVivo(h).find((x) => x.id === 'migrana')!
+    expect(m.factor).toBe(24)
+  })
+  it('migraña: con 2 presentes y 3 sin responder todavía no concluye', () => {
+    const h = cefalea()
+    h.hallazgos = { pulsatil: 'si', unilateral: 'si' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'migrana')!.razones).toHaveLength(0)
+    h.hallazgos = { pulsatil: 'si', unilateral: 'si', dura4a72: 'no', nauseaCefalea: 'no', incapacitante: 'no' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'migrana')!.factor).toBe(0.41)
+  })
+  it('ACV: un hallazgo basta para LR 5,5; ninguno de los tres da 0,39', () => {
+    const h = historiaVacia()
+    h.motivo = { motivo: 'boca torcida' }
+    h.hallazgos = { paresiaFacial: 'si' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'acv')!.factor).toBe(5.5)
+    h.hallazgos = { paresiaFacial: 'no', caidaBrazo: 'no', hablaAnormal: 'no' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'acv')!.factor).toBe(0.39)
+  })
+  it('ectópico solo en mujer con posible embarazo', () => {
+    const h = historiaVacia()
+    h.motivo = { motivo: 'dolor abdominal' }
+    h.filiacion = { sexo: 'Mujer' }
+    expect(diagnosticosEnVivo(h).map((x) => x.id)).not.toContain('ectopico')
+    h.personales = { embarazo: 'No sabe' }
+    expect(diagnosticosEnVivo(h).map((x) => x.id)).toContain('ectopico')
+  })
+})

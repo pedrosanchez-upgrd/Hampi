@@ -60,6 +60,18 @@ export const FUENTES: Record<string, Fuente> = {
   albassam2019: { id: 'albassam2019', pmid: '31237649', doi: '10.1001/jama.2019.8001',
     cita: 'Albassam OT, et al. JAMA. 2019;321(24):2448-57',
     titulo: 'Did This Patient Have Cardiac Syncope? The Rational Clinical Examination Systematic Review' },
+  detsky2006: { id: 'detsky2006', pmid: '16968852', doi: '10.1001/jama.296.10.1274',
+    cita: 'Detsky ME, et al. JAMA. 2006;296(10):1274-83',
+    titulo: 'Does this patient with headache have a migraine or need neuroimaging?' },
+  crochet2013: { id: 'crochet2013', pmid: '23613077', doi: '10.1001/jama.2013.3914',
+    cita: 'Crochet JR, Bastian LA, Chireau MV. JAMA. 2013;309(16):1722-9',
+    titulo: 'Does this woman have an ectopic pregnancy? The rational clinical examination systematic review' },
+  goldstein2005: { id: 'goldstein2005', pmid: '15900010', doi: '10.1001/jama.293.19.2391',
+    cita: 'Goldstein LB, Simel DL. JAMA. 2005;293(19):2391-402',
+    titulo: 'Is this patient having a stroke?' },
+  srygley2012: { id: 'srygley2012', pmid: '22416103', doi: '10.1001/jama.2012.253',
+    cita: 'Srygley FD, et al. JAMA. 2012;307(10):1072-9',
+    titulo: 'Does this patient have a severe upper gastrointestinal bleed?' },
   wells2003: { id: 'wells2003', pmid: '14507948', doi: '10.1056/NEJMoa023153',
     cita: 'Wells PS, et al. N Engl J Med. 2003;349(13):1227-35',
     titulo: 'Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis' },
@@ -133,6 +145,33 @@ export const HALLAZGOS: Hallazgo[] = [
   { id: 'vomitoAntesDolor', texto: 'El vómito empezó antes que el dolor', sintomas: ['abdominal'] },
   { id: 'murphy', texto: 'Signo de Murphy positivo', sintomas: ['abdominal'] },
   { id: 'dolorHcd', texto: 'Dolor a la palpación en el hipocondrio derecho', sintomas: ['abdominal'] },
+  // Cefalea: migraña (POUND) y signos de lesión intracraneal
+  { id: 'pulsatil', texto: 'Dolor pulsátil', sintomas: ['cefalea'] },
+  { id: 'dura4a72', texto: 'Cada crisis dura de 4 a 72 horas', sintomas: ['cefalea'] },
+  { id: 'unilateral', texto: 'Dolor de un solo lado', sintomas: ['cefalea'] },
+  { id: 'nauseaCefalea', texto: 'Náusea con el dolor de cabeza', sintomas: ['cefalea'] },
+  { id: 'incapacitante', texto: 'Dolor incapacitante (no puede hacer sus actividades)', sintomas: ['cefalea'] },
+  { id: 'tipoRacimos', texto: 'Cefalea tipo racimos (en salvas, periocular, con lagrimeo)', sintomas: ['cefalea'] },
+  { id: 'neuroAnormal', texto: 'Examen neurológico anormal', sintomas: ['cefalea'] },
+  { id: 'cefaleaIndefinida', texto: 'Cefalea que no encaja en migraña, tensional ni racimos', sintomas: ['cefalea'] },
+  { id: 'aura', texto: 'Aura antes del dolor', sintomas: ['cefalea'] },
+  { id: 'agravaValsalva', texto: 'Empeora con el esfuerzo, la tos o al pujar', sintomas: ['cefalea'] },
+  { id: 'vomitoCefalea', texto: 'Vómito con el dolor de cabeza', sintomas: ['cefalea'] },
+  // Déficit neurológico: ACV
+  { id: 'paresiaFacial', texto: 'Paresia facial aguda', sintomas: ['deficit', 'mareo', 'confusion'] },
+  { id: 'caidaBrazo', texto: 'Caída del brazo (pronador)', sintomas: ['deficit', 'mareo', 'confusion'] },
+  { id: 'hablaAnormal', texto: 'Alteración del habla', sintomas: ['deficit', 'mareo', 'confusion'] },
+  // Embarazo ectópico (mujer con posible embarazo)
+  { id: 'embarazoPosible', texto: 'Posibilidad de embarazo', sintomas: ['abdominal'], automatico: 'Se toma de antecedentes gineco-obstétricos' },
+  { id: 'movilizacionCervical', texto: 'Dolor a la movilización cervical', sintomas: ['abdominal'] },
+  { id: 'masaAnexial', texto: 'Masa anexial al examen', sintomas: ['abdominal'] },
+  { id: 'dolorAnexial', texto: 'Dolor anexial a la palpación', sintomas: ['abdominal'] },
+  // Sangrado digestivo
+  { id: 'melenaReferida', texto: 'Refiere heces negras (melena)', sintomas: ['sangradoDigestivo'] },
+  { id: 'coagulosHeces', texto: 'Coágulos de sangre en las heces', sintomas: ['sangradoDigestivo'] },
+  { id: 'bunCr30', texto: 'Relación BUN/creatinina mayor de 30', sintomas: ['sangradoDigestivo'] },
+  { id: 'taquicardiaSangrado', texto: 'Frecuencia cardiaca mayor de 100', sintomas: ['sangradoDigestivo'], automatico: 'Se calcula de la frecuencia cardiaca' },
+  { id: 'hb8', texto: 'Hemoglobina menor de 8 g/dL', sintomas: ['sangradoDigestivo'] },
   // Síncope
   { id: 'sincope35', texto: 'Primer síncope a los 35 años o más', sintomas: ['sincope'] },
   { id: 'fibrilacion', texto: 'Antecedente de fibrilación o flutter auricular', sintomas: ['sincope', 'palpitaciones'] },
@@ -153,6 +192,19 @@ export interface Regla {
   nota?: string
 }
 
+/**
+ * Regla por conteo: el artículo da una razón de verosimilitud según cuántos hallazgos de un
+ * grupo están presentes (por ejemplo, POUND para migraña). Se aplica solo cuando los hallazgos
+ * sin responder ya no pueden cambiar el tramo.
+ */
+export interface ReglaConteo {
+  hallazgos: string[]
+  tramos: { min: number; lr: number }[]
+  texto: string
+  fuente: string
+  nota?: string
+}
+
 export interface Diagnostico {
   id: string
   nombre: string
@@ -164,6 +216,7 @@ export interface Diagnostico {
   requiere?: string
   nota?: string
   reglas: Regla[]
+  conteo?: ReglaConteo
 }
 
 export const DIAGNOSTICOS: Diagnostico[] = [
@@ -248,6 +301,39 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'cefaleaEsfuerzo', cualitativo: 'sube', ausenteCuenta: true, fuente: 'perry2013' },
     { hallazgo: 'enTrueno', cualitativo: 'sube', ausenteCuenta: true, fuente: 'perry2013' },
     { hallazgo: 'flexionLimitada', cualitativo: 'sube', ausenteCuenta: true, fuente: 'perry2013' },
+  ] },
+  { id: 'migrana', nombre: 'Migraña', grave: false, sintomas: ['cefalea'], reglas: [],
+    conteo: { hallazgos: ['pulsatil', 'dura4a72', 'unilateral', 'nauseaCefalea', 'incapacitante'], texto: 'Criterios POUND',
+      tramos: [{ min: 4, lr: 24 }, { min: 3, lr: 3.5 }, { min: 0, lr: 0.41 }], fuente: 'detsky2006',
+      nota: '4 o 5 criterios: LR 24 (IC 95 % 1,5–388); 3: LR 3,5; 2 o menos: LR 0,41' } },
+  { id: 'lesionIntracraneal', nombre: 'Lesión intracraneal significativa (indica neuroimagen)', grave: true, sintomas: ['cefalea'],
+    nota: 'Ningún hallazgo clínico permitió descartar una lesión intracraneal.', reglas: [
+    { hallazgo: 'tipoRacimos', lrPos: 10.7, fuente: 'detsky2006' },
+    { hallazgo: 'neuroAnormal', lrPos: 5.3, fuente: 'detsky2006' },
+    { hallazgo: 'cefaleaIndefinida', lrPos: 3.8, fuente: 'detsky2006' },
+    { hallazgo: 'aura', lrPos: 3.2, fuente: 'detsky2006' },
+    { hallazgo: 'agravaValsalva', lrPos: 2.3, fuente: 'detsky2006' },
+    { hallazgo: 'vomitoCefalea', lrPos: 1.8, fuente: 'detsky2006' },
+  ] },
+  { id: 'acv', nombre: 'Accidente cerebrovascular', grave: true, sintomas: ['deficit', 'mareo', 'confusion'],
+    nota: 'Paresia facial, caída del brazo o habla alterada. La neuroimagen distingue isquémico de hemorrágico; registre la hora de inicio.', reglas: [],
+    conteo: { hallazgos: ['paresiaFacial', 'caidaBrazo', 'hablaAnormal'], texto: 'Paresia facial, caída del brazo o habla alterada',
+      tramos: [{ min: 1, lr: 5.5 }, { min: 0, lr: 0.39 }], fuente: 'goldstein2005', nota: '1 o más hallazgos: LR 5,5; ninguno: LR 0,39' } },
+  { id: 'ectopico', nombre: 'Embarazo ectópico', grave: true, sintomas: ['abdominal'], soloSexo: 'Mujer', requiere: 'embarazoPosible',
+    nota: 'Ningún dato de la historia tuvo LR mayor de 1,5. Ante dolor abdominal o sangrado en embarazo temprano: ecografía transvaginal y hCG cuantitativa.', reglas: [
+    { hallazgo: 'movilizacionCervical', lrPos: 4.9, fuente: 'crochet2013' },
+    { hallazgo: 'masaAnexial', lrPos: 2.4, fuente: 'crochet2013' },
+    { hallazgo: 'dolorAnexial', lrPos: 1.9, fuente: 'crochet2013' },
+  ] },
+  { id: 'sangradoAlto', nombre: 'Sangrado digestivo de origen alto', grave: false, sintomas: ['sangradoDigestivo'], reglas: [
+    { hallazgo: 'melenaReferida', lrPos: 5.1, fuente: 'srygley2012', nota: 'LR 5,1–5,9; se usa el valor menor' },
+    { hallazgo: 'bunCr30', lrPos: 7.5, fuente: 'srygley2012' },
+    { hallazgo: 'coagulosHeces', lrPos: 0.05, fuente: 'srygley2012' },
+  ] },
+  { id: 'sangradoAltoGrave', nombre: 'Sangrado digestivo alto que requiere intervención urgente', grave: true, sintomas: ['sangradoDigestivo'],
+    nota: 'Un puntaje de Blatchford de 0 tuvo LR 0,02 para necesitar intervención urgente.', reglas: [
+    { hallazgo: 'taquicardiaSangrado', lrPos: 4.9, fuente: 'srygley2012' },
+    { hallazgo: 'hb8', lrPos: 4.5, fuente: 'srygley2012', nota: 'LR 4,5–6,2; se usa el valor menor' },
   ] },
   { id: 'sincopeCardiaco', nombre: 'Síncope de causa cardiaca', grave: true, sintomas: ['sincope'], reglas: [
     { hallazgo: 'sincope35', lrPos: 3.3, lrNeg: 0.13, fuente: 'albassam2019' },
