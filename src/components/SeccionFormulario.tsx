@@ -70,8 +70,8 @@ function SignoVital({ c, v, onCambio }: { c: Campo; v: string; onCambio: (v: str
       estado === 'alerta' ? 'border-alarm/40 bg-alarm-soft' : estado === 'normal' ? 'border-ok/30 bg-ok-soft' : 'border-line bg-surface'}`}>
       <label htmlFor={id} className="flex items-start justify-between gap-2 text-xs font-medium text-ink-soft">
         <span>{c.etiqueta}{c.obligatorio && <span className="text-alarm"> *</span>}</span>
-        {estado === 'alerta' && <span className="rounded-full bg-alarm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">{a!.split(' ').pop()}</span>}
-        {estado === 'normal' && <span className="rounded-full bg-ok/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ok">en rango</span>}
+        {estado === 'alerta' && <span className="rounded-full bg-alarm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-on-alarm">{a!.split(' ').pop()}</span>}
+        {estado === 'normal' && <span className="rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ok">en rango</span>}
       </label>
       <div className="mt-1 flex items-baseline gap-1.5">
         <input id={id} inputMode="decimal" value={v} onChange={(e) => onCambio(e.target.value)} placeholder="—"

@@ -72,7 +72,7 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                   className={`flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors ${
                     sel ? 'border-brand bg-brand text-on-brand' : 'border-line bg-surface text-ink hover:border-brand/60'}`}>
                   {x.nombre}
-                  {alarmas > 0 && <span className="cifra rounded-full bg-alarm px-1.5 text-xs text-white">{alarmas}</span>}
+                  {alarmas > 0 && <span className="cifra rounded-full bg-alarm px-1.5 text-xs text-on-alarm">{alarmas}</span>}
                 </button>
               )
             })}
@@ -102,7 +102,7 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                           {([['1', 'Sí'], ['0', 'No']] as const).map(([val, t]) => (
                             <button key={val} aria-pressed={v === val} onClick={() => poner(`${s.id}.a${i}`, v === val ? '' : val)}
                               className={`min-h-10 min-w-11 px-2.5 font-medium transition-colors ${v === val
-                                ? val === '1' ? 'bg-alarm text-white' : 'bg-ink-soft text-surface' : 'bg-surface text-ink-soft hover:bg-surface-2'}`}>
+                                ? val === '1' ? 'bg-alarm text-on-alarm' : 'bg-ink-soft text-surface' : 'bg-surface text-ink-soft hover:bg-surface-2'}`}>
                               {t}
                             </button>
                           ))}

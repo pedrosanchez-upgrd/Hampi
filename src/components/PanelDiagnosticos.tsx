@@ -32,7 +32,7 @@ function Tarjeta({ r, historia, setHistoria }: { r: Resultado } & Props) {
       <li className={`flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 ${r.descartado ? 'border-line bg-surface-2 opacity-60' : 'border-line bg-surface'}`}>
         <div className="min-w-0">
           <p className={`font-medium leading-snug text-ink ${r.descartado ? 'line-through' : ''}`}>{r.nombre}</p>
-          <p className="text-xs text-ink-faint">{r.grave && !r.descartado ? <span className="font-semibold text-alarm">No te lo pierdas · </span> : null}sin hallazgos registrados</p>
+          <p className="text-xs text-ink-faint">{r.grave && !r.descartado ? <span className="font-semibold text-alarm">No te lo pierdas · </span> : null}sin hallazgos que cambien el orden</p>
         </div>
         <button className="shrink-0 rounded-lg px-2 py-1.5 text-sm text-ink-soft hover:bg-surface-2" onClick={() => setAbierta(true)}>Ver</button>
       </li>
@@ -221,7 +221,7 @@ export function AsistenteFlotante(props: Props) {
         className="no-imprimir fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-20 flex min-h-12 items-center gap-2 rounded-full bg-brand pl-4 pr-3 font-semibold text-on-brand shadow-card hover:bg-brand-strong xl:hidden">
         <Icono nombre="pulso" className="h-5 w-5" /> Asistente
         {n > 0 && <span className="cifra rounded-full bg-on-brand/20 px-2 text-sm">{n}</span>}
-        {alarmas > 0 && <span className="cifra rounded-full bg-alarm px-2 text-sm text-white">{alarmas}</span>}
+        {alarmas > 0 && <span className="cifra rounded-full bg-alarm px-2 text-sm text-on-alarm">{alarmas}</span>}
       </button>
       {abierto && (
         <div className="no-imprimir fixed inset-0 z-30 flex justify-end bg-ink/30 backdrop-blur-[2px] xl:hidden" onClick={() => setAbierto(false)}>

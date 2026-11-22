@@ -115,7 +115,7 @@ export const SINTOMAS: Sintoma[] = [
   { id: 'confusion', sistema: 'Neurológico', nombre: 'Confusión', claves: ['confundid', 'no reconoce', 'somnolient', 'desorientad', 'confusion'],
     preguntas: ['(Al familiar) ¿Desde cuándo?', 'Fiebre', 'Fármacos y alcohol', 'Glucosa', 'Trauma', 'Enfermedad renal o hepática'],
     alarmas: ['Glasgow bajo', 'Fiebre con rigidez de nuca', 'Hipoglucemia', 'Déficit focal'] },
-  { id: 'convulsion', sistema: 'Neurológico', nombre: 'Convulsiones', claves: ['convulsion', 'ataque', 'epilepsia', 'convulsiono'],
+  { id: 'convulsion', sistema: 'Neurológico', nombre: 'Convulsiones', claves: ['convulsion', 'ataque epileptico', 'epilepsia', 'convulsiono', 'crisis convulsiva'],
     preguntas: ['Descripción del testigo', 'Duración', 'Mordedura, relajación de esfínteres', '¿Primera vez o epilepsia conocida?', 'Adherencia, alcohol'],
     alarmas: ['Más de 5 min o repetidas sin despertar', 'Primera convulsión en adulto', 'Fiebre', 'Trauma'] },
   // Musculoesquelético

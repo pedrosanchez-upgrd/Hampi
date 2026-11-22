@@ -76,3 +76,15 @@ describe('avisos de datos importantes', () => {
     expect(progresoSeccion(h, 'personales').llenos).toBe(antes + 1)
   })
 })
+
+import { casoEjemplo } from '../data/casoEjemplo'
+import { faltantes } from './historia'
+
+describe('caso de ejemplo', () => {
+  it('pone el síndrome coronario arriba y deja solo pendientes de impresión y plan', () => {
+    const h = casoEjemplo()
+    expect(diagnosticosEnVivo(h)[0].id).toBe('sca')
+    expect(faltantes(h).map((f) => f.seccionId).sort()).toEqual(['impresion', 'plan'])
+    expect(redactar(h)).toContain('Dolor torácico: Dolor de más de 20 min en reposo')
+  })
+})

@@ -10,6 +10,7 @@ import { PestanasSintomas } from './components/PestanasSintomas'
 import { Asistente, AsistenteFlotante, ListaDiagnosticos } from './components/PanelDiagnosticos'
 import { Icono, Logo } from './components/Icono'
 import { AntecedentesFamiliares, AntecedentesPersonales } from './components/Antecedentes'
+import { casoEjemplo } from './data/casoEjemplo'
 
 const CLAVE_TERMINOS = 'hampi.terminos'
 const CLAVE_BORRADOR = 'hampi.borrador'
@@ -105,7 +106,7 @@ export default function App() {
             </button>
             {confirmar ? (
               <span className="flex items-center gap-1.5">
-                <button className="min-h-10 rounded-full bg-alarm px-3 text-sm font-semibold text-white"
+                <button className="min-h-10 rounded-full bg-alarm px-3 text-sm font-semibold text-on-alarm"
                   onClick={() => { setHistoria(historiaVacia()); irA(SECCIONES[0].id); setConfirmar(false) }}>Borrar todo</button>
                 <button className="min-h-10 rounded-full px-3 text-sm text-ink-soft hover:bg-surface-2" onClick={() => setConfirmar(false)}>Cancelar</button>
               </span>
@@ -134,7 +135,7 @@ export default function App() {
                     className={`flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[15px] transition-colors ${
                       activo ? 'bg-brand text-on-brand shadow-card' : 'text-ink hover:bg-surface'}`}>
                     <span className={activo ? 'text-on-brand' : 'text-ink-faint'}><Anillo id={s.id} historia={historia} activo={activo} /></span>
-                    <span className="whitespace-nowrap md:whitespace-normal"><span className="cifra mr-1 opacity-60">{s.n}</span>{s.t}</span>
+                    <span className="whitespace-nowrap md:whitespace-normal"><span className={`cifra mr-1 ${activo ? "" : "text-ink-soft"}`}>{s.n}</span>{s.t}</span>
                     {pendiente && <span className={`ml-auto h-2 w-2 shrink-0 rounded-full ${activo ? 'bg-on-brand' : 'bg-warn'}`} aria-label="faltan datos obligatorios" />}
                   </button>
                 </li>
@@ -153,6 +154,23 @@ export default function App() {
               guia={historia.guia ?? {}}
               onGuia={(clave, valor) => setHistoria((h) => ({ ...h, guia: { ...h.guia, [clave]: valor } }))}
               sexo={historia.filiacion?.sexo}>
+              {seccion.id === 'filiacion' && !historia.filiacion?.edad && !historia.motivo?.motivo && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-brand/40 bg-surface p-4">
+                  <div>
+                    <p className="font-semibold text-ink">¿Primera vez en Hampi?</p>
+                    <p className="text-sm text-ink-soft">Cargue un caso ficticio de dolor torácico para ver cómo se abren las pestañas y cómo se ordenan los diagnósticos.</p>
+                  </div>
+                  <button className="min-h-11 rounded-xl bg-brand-soft px-4 font-semibold text-brand-strong hover:bg-brand/15" onClick={() => setHistoria(casoEjemplo())}>
+                    Cargar caso de ejemplo
+                  </button>
+                </div>
+              )}
+              {seccion.id === 'sistemas' && (
+                <button className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-medium text-ink hover:border-brand/60"
+                  onClick={() => setHistoria((h) => ({ ...h, sistemas: Object.fromEntries(seccion.campos.map((c) => [c.id, (h.sistemas?.[c.id] ?? '').trim() || 'Niega'])) }))}>
+                  <Icono nombre="check" className="h-4 w-4 text-brand" /> Escribir «Niega» en los sistemas vacíos
+                </button>
+              )}
               {seccion.id === 'personales' && <AntecedentesPersonales historia={historia} setHistoria={setHistoria} />}
               {seccion.id === 'familiares' && <AntecedentesFamiliares historia={historia} setHistoria={setHistoria} />}
             </SeccionFormulario>
