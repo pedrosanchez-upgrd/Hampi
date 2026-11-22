@@ -246,3 +246,72 @@ export function AsistenteFlotante(props: Props & { abierto?: boolean; setAbierto
     </>
   )
 }
+
+function quitarDeDiagnosticos(h: Historia, nombre: string): Historia {
+  const lineas = (h.impresion?.diagnosticos ?? '').split('\n').filter((l) => !l.toLowerCase().includes(nombre.toLowerCase()))
+  return { ...h, impresion: { ...h.impresion, diagnosticos: lineas.join('\n').trim() } }
+}
+
+/**
+ * Elegir el diagnóstico más probable ahí mismo, debajo del formulario.
+ * `compacto`: tarjeta corta al final de cada apartado (los 3 primeros).
+ */
+export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Props & { compacto?: boolean }) {
+  const todos = diagnosticosEnVivo(historia).filter((x) => !x.descartado)
+  const lista = compacto ? todos.slice(0, 3) : todos
+  const texto = (historia.impresion?.diagnosticos ?? '').toLowerCase()
+  if (compacto && lista.length === 0) return null
+
+  return (
+    <section className="no-imprimir min-w-0 rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h3 className="flex items-center gap-2 font-display text-base font-bold text-ink">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand"><Icono nombre="lupa" className="h-4 w-4" /></span>
+            {compacto ? 'Lo más probable hasta ahora' : '¿Cuál es más probable? Elija sus diagnósticos'}
+          </h3>
+          <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registró. La decisión es suya.</p>
+        </div>
+        {compacto && todos.length > 3 && irA && (
+          <button className="min-h-9 rounded-lg px-2.5 text-sm font-medium text-brand hover:bg-brand-soft" onClick={() => irA('impresion')}>
+            Ver los {todos.length}
+          </button>
+        )}
+      </div>
+
+      {lista.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-dashed border-line p-4 text-center text-sm text-ink-soft">
+          Aún no hay sugerencias. Escriba el motivo de consulta y marque los hallazgos clave en Enfermedad actual.
+        </p>
+      ) : (
+        <ul className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2">
+          {lista.map((r, i) => {
+            const elegido = texto.includes(r.nombre.toLowerCase())
+            const motivo = r.razones.find((x) => x.factor > 1) ?? r.razones[0]
+            return (
+              <li key={r.id} className={`flex min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${elegido ? 'border-brand bg-brand-soft/50' : 'border-line'}`}>
+                <span className={`cifra flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${i === 0 ? 'bg-brand text-on-brand' : 'bg-surface-2 text-ink-soft'}`}>{i + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold leading-snug text-ink">
+                    {r.nombre}
+                    {r.grave && <span className="ml-2 inline-block rounded-full bg-alarm-soft px-2 py-0.5 align-middle text-[11px] font-semibold text-alarm">No te lo pierdas</span>}
+                  </p>
+                  <p className="truncate text-xs text-ink-soft">
+                    {motivo ? `${motivo.factor > 1 ? '▲' : '▼'} ${motivo.presente ? motivo.texto : 'Sin ' + motivo.texto.charAt(0).toLowerCase() + motivo.texto.slice(1)}` : 'Sin hallazgos registrados todavía'}
+                    {r.factorLR !== 1 && <span className="cifra ml-1.5 text-ink-faint">{formatoFactor(r.factorLR)}</span>}
+                  </p>
+                </div>
+                <button aria-pressed={elegido}
+                  onClick={() => setHistoria((h) => (elegido ? quitarDeDiagnosticos(h, r.nombre) : agregarADiagnosticos(h, r.nombre)))}
+                  className={`inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors ${
+                    elegido ? 'bg-brand text-on-brand' : 'border border-line bg-surface text-ink hover:border-brand/60'}`}>
+                  <Icono nombre={elegido ? 'check' : 'mas'} className="h-4 w-4" />{elegido ? 'Elegido' : 'Elegir'}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </section>
+  )
+}

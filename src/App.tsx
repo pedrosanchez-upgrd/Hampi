@@ -8,7 +8,7 @@ import { Terminos, VERSION_TERMINOS } from './components/Terminos'
 import { SeccionFormulario } from './components/SeccionFormulario'
 import { Redaccion } from './components/Redaccion'
 import { PestanasSintomas } from './components/PestanasSintomas'
-import { Asistente, AsistenteFlotante, ListaDiagnosticos } from './components/PanelDiagnosticos'
+import { Asistente, AsistenteFlotante, ElegirDiagnosticos } from './components/PanelDiagnosticos'
 import { Icono, Logo } from './components/Icono'
 import { AntecedentesFamiliares, AntecedentesPersonales } from './components/Antecedentes'
 import { casoEjemplo } from './data/casoEjemplo'
@@ -285,6 +285,7 @@ export default function App() {
                   <Icono nombre="check" className="h-4 w-4 text-brand" /> Escribir «Niega» en los sistemas vacíos
                 </button>
               )}
+              {seccion.id === 'impresion' && <ElegirDiagnosticos historia={historia} setHistoria={setHistoria} irA={irA} />}
               {seccion.id === 'personales' && <AntecedentesPersonales historia={historia} setHistoria={setHistoria} />}
               {seccion.id === 'familiares' && <AntecedentesFamiliares historia={historia} setHistoria={setHistoria} />}
             </SeccionFormulario>
@@ -293,11 +294,8 @@ export default function App() {
           )}
 
           {seccion?.id === 'enfermedad' && <div className="mt-5"><PestanasSintomas historia={historia} setHistoria={setHistoria} /></div>}
-          {seccion?.id === 'impresion' && (
-            <section className="mt-5 rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5 xl:hidden">
-              <h3 className="mb-3 font-display text-lg font-bold text-ink">Diagnósticos en vivo</h3>
-              <ListaDiagnosticos historia={historia} setHistoria={setHistoria} />
-            </section>
+          {seccion && seccion.id !== 'impresion' && (
+            <div className="mt-5"><ElegirDiagnosticos compacto historia={historia} setHistoria={setHistoria} irA={irA} /></div>
           )}
 
           <div className="no-imprimir mt-8 hidden items-center justify-between gap-3 md:flex">
