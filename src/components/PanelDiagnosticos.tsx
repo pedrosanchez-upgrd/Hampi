@@ -51,9 +51,13 @@ function Tarjeta({ r, historia, setHistoria }: { r: Resultado } & Props) {
             {r.descartado && <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold text-ink-soft">Descartado</span>}
           </div>
         </div>
-        <span className={`cifra shrink-0 rounded-lg px-2 py-1 text-sm font-semibold ${!r.razones.length ? 'text-ink-faint' : sube ? 'bg-brand-soft text-brand-strong' : 'bg-surface-2 text-ink-soft'}`}
-          title="Razón de verosimilitud combinada de los hallazgos registrados">
-          {r.razones.length ? formatoFactor(r.factor) : 'sin datos'}
+        <span className={`shrink-0 rounded-lg px-2 py-1 text-right text-sm font-semibold ${!r.razones.length ? 'text-ink-faint' : sube ? 'bg-brand-soft text-brand-strong' : 'bg-surface-2 text-ink-soft'}`}
+          title="Número: razón de verosimilitud combinada de los estudios. Flechas: factores cualitativos (sin número publicado).">
+          {r.factorLR !== 1 && <span className="cifra">{formatoFactor(r.factorLR)}</span>}
+          {(r.cualitativos.suben > 0 || r.cualitativos.bajan > 0) && (
+            <span className={`${r.factorLR !== 1 ? 'ml-1.5' : ''} cifra text-xs`}>{'▲'.repeat(Math.min(r.cualitativos.suben, 3))}{'▼'.repeat(Math.min(r.cualitativos.bajan, 3))}</span>
+          )}
+          {!r.razones.length && 'sin datos'}
         </span>
       </div>
 
@@ -195,7 +199,7 @@ export function Asistente(props: Props) {
       {pestana === 'dx' ? (
         <>
           <p className="text-xs leading-relaxed text-ink-faint">
-            Ayuda, no diagnóstico. El orden combina las razones de verosimilitud de los hallazgos que registró (×1 = sin cambio). Pendiente de revisión médica.
+            Ayuda, no diagnóstico. El número (×) combina razones de verosimilitud publicadas; las flechas ▲▼ son factores cualitativos sin número publicado. Pendiente de revisión médica.
           </p>
           <ListaDiagnosticos {...props} />
         </>

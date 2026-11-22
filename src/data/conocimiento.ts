@@ -202,6 +202,8 @@ export interface Regla {
   cualitativo?: 'sube' | 'baja'
   /** Cuando el hallazgo ausente también cuenta en forma cualitativa (opuesto). */
   ausenteCuenta?: boolean
+  /** Solo cuenta cuando está ausente (el artículo lo valida para descartar, no para confirmar). */
+  soloAusente?: boolean
   nota?: string
 }
 
@@ -266,15 +268,15 @@ export const DIAGNOSTICOS: Diagnostico[] = [
   ] },
   { id: 'neumonia', nombre: 'Neumonía adquirida en la comunidad', grave: false, sintomas: ['tos', 'fiebre', 'disnea'],
     nota: 'Ningún hallazgo aislado confirma neumonía; signos vitales y auscultación normales la hacen poco probable.', reglas: [
-    { hallazgo: 'fiebreMedida', cualitativo: 'sube', ausenteCuenta: true, fuente: 'metlay1997' },
-    { hallazgo: 'taquipnea', cualitativo: 'sube', ausenteCuenta: true, fuente: 'metlay1997' },
-    { hallazgo: 'crepitantes', cualitativo: 'sube', ausenteCuenta: true, fuente: 'metlay1997' },
+    { hallazgo: 'fiebreMedida', cualitativo: 'sube', ausenteCuenta: true, soloAusente: true, fuente: 'metlay1997' },
+    { hallazgo: 'taquipnea', cualitativo: 'sube', ausenteCuenta: true, soloAusente: true, fuente: 'metlay1997' },
+    { hallazgo: 'crepitantes', cualitativo: 'sube', ausenteCuenta: true, soloAusente: true, fuente: 'metlay1997' },
   ] },
   { id: 'meningitis', nombre: 'Meningitis aguda', grave: true, sintomas: ['fiebre', 'cefalea', 'confusion'],
     nota: 'La ausencia de fiebre, rigidez de nuca y alteración mental prácticamente la descarta (sensibilidad 99–100 % de tener al menos uno).', reglas: [
-    { hallazgo: 'fiebreMedida', cualitativo: 'sube', ausenteCuenta: true, fuente: 'attia1999' },
-    { hallazgo: 'rigidezNuca', cualitativo: 'sube', ausenteCuenta: true, fuente: 'attia1999' },
-    { hallazgo: 'alteracionMental', cualitativo: 'sube', ausenteCuenta: true, fuente: 'attia1999' },
+    { hallazgo: 'fiebreMedida', cualitativo: 'sube', ausenteCuenta: true, soloAusente: true, fuente: 'attia1999' },
+    { hallazgo: 'rigidezNuca', cualitativo: 'sube', ausenteCuenta: true, soloAusente: true, fuente: 'attia1999' },
+    { hallazgo: 'alteracionMental', cualitativo: 'sube', ausenteCuenta: true, soloAusente: true, fuente: 'attia1999' },
     { hallazgo: 'jolt', lrPos: 2.2, lrNeg: 0, fuente: 'attia1999', nota: 'En pacientes con fiebre y cefalea' },
   ] },
   { id: 'dengueAlarma', nombre: 'Dengue con signos de alarma', grave: true, sintomas: ['fiebre'], requiere: 'viajeEndemico',

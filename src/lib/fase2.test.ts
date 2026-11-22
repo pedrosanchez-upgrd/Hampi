@@ -102,3 +102,22 @@ describe('presentación oral', () => {
     expect(t).not.toContain('..')
   })
 })
+
+describe('regresión: la fiebre sola no sube meningitis ni neumonía', () => {
+  it('caso de la guía de prueba (mujer de 26 años con dolor abdominal)', () => {
+    const h = historiaVacia()
+    h.filiacion = { edad: '26', sexo: 'Mujer' }
+    h.motivo = { motivo: 'dolor de barriga', tiempo: '1 día' }
+    h.enfermedad = { relato: 'Dolor que empezó en el ombligo, ahora abajo a la derecha. Vomitó una vez. Fiebre.' }
+    h.personales = { embarazo: 'Sí' }
+    h.examen = { temp: '38,2', fc: '104' }
+    h.hallazgos = { migracionFid: 'si', dolorFid: 'si', defensa: 'si', psoas: 'si' }
+    const r = diagnosticosEnVivo(h)
+    expect(r[0].id).toBe('apendicitis')
+    expect(r.find((x) => x.id === 'meningitis')!.factor).toBe(1)
+    expect(r.find((x) => x.id === 'neumonia')!.factor).toBe(1)
+    // Sin fiebre, la meningitis sí baja (la ausencia descarta).
+    h.examen = { temp: '36,8' }
+    expect(diagnosticosEnVivo(h).find((x) => x.id === 'meningitis')!.factor).toBeLessThan(1)
+  })
+})

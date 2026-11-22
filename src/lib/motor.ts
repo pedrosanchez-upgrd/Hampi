@@ -62,8 +62,12 @@ export interface Resultado {
   id: string
   nombre: string
   grave: boolean
-  /** Producto de los factores (equivale a una razón de verosimilitud combinada). */
+  /** Producto de todos los factores: ordena la lista. */
   factor: number
+  /** Producto solo de las razones de verosimilitud publicadas (lo que se muestra como número). */
+  factorLR: number
+  /** Cuántos factores cualitativos suben y bajan. */
+  cualitativos: { suben: number; bajan: number }
   razones: Razon[]
   fuentes: Fuente[]
   nota?: string
@@ -73,6 +77,7 @@ export interface Resultado {
 function factorDe(r: Regla, estado: Estado): { factor: number; tipo: 'lr' | 'cualitativo' } | null {
   if (r.cualitativo) {
     const sube = r.cualitativo === 'sube'
+    if (estado === 'si' && r.soloAusente) return null
     if (estado === 'si') return { factor: sube ? PESO_CUALITATIVO : 1 / PESO_CUALITATIVO, tipo: 'cualitativo' }
     if (r.ausenteCuenta) return { factor: sube ? 1 / PESO_CUALITATIVO : PESO_CUALITATIVO, tipo: 'cualitativo' }
     return null
@@ -113,8 +118,13 @@ export function diagnosticosEnVivo(h: Historia): Resultado[] {
         }
       }
       const factor = razones.reduce((acc, r) => acc * r.factor, 1)
+      const factorLR = razones.filter((r) => r.tipo === 'lr').reduce((acc, r) => acc * r.factor, 1)
+      const cualitativos = {
+        suben: razones.filter((r) => r.tipo === 'cualitativo' && r.factor > 1).length,
+        bajan: razones.filter((r) => r.tipo === 'cualitativo' && r.factor < 1).length,
+      }
       const fuentes = [...new Set([...d.reglas.map((r) => r.fuente), ...(d.conteo ? [d.conteo.fuente] : [])])].map((id) => FUENTES[id])
-      return { id: d.id, nombre: d.nombre, grave: d.grave, factor, razones, fuentes, nota: d.nota, descartado: descartados.has(d.id) }
+      return { id: d.id, nombre: d.nombre, grave: d.grave, factor, factorLR, cualitativos, razones, fuentes, nota: d.nota, descartado: descartados.has(d.id) }
     })
 
   // Orden: no descartados primero; luego por factor; a igual factor, los graves arriba.
