@@ -39,7 +39,7 @@ describe('historia', () => {
     expect(t.startsWith('RESUMEN\nHombre de 58 años, consulta por «dolor en el pecho», de 2 horas de evolución.')).toBe(true)
     expect(t.indexOf('SIGNOS DE ALARMA')).toBeLessThan(t.indexOf('1. DATOS'))
     expect(t).toContain('Presión sistólica baja (85 mmHg)')
-    expect(t).toContain('IMC: 24.2 kg/m²')
+    expect(t).toContain('IMC: 24,2 kg/m²')
   })
 })
 

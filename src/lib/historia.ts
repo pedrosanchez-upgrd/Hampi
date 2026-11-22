@@ -9,6 +9,7 @@ export const historiaVacia = (): Historia => ({
   sintomas: {},
   hallazgos: {},
   diagnosticosVivo: {},
+  guia: {},
 })
 
 const lista = (v: string | undefined) => (v ? v.split(',').filter(Boolean) : [])
@@ -157,7 +158,7 @@ export function redactar(h: Historia): string {
     }
     if (s.id === 'examen') {
       const i = imc(Number(valor(h, 'examen', 'peso')), Number(valor(h, 'examen', 'talla')))
-      if (i) lineas.push(`IMC: ${i} kg/m²`)
+      if (i) lineas.push(`IMC: ${String(i).replace(".", ",")} kg/m²`)
     }
     if (lineas.length) partes.push(`${s.numero}. ${s.titulo.toUpperCase()}\n${lineas.join('\n')}`)
   }
@@ -172,4 +173,16 @@ export function textoParaIA(h: Historia): string {
   const filiacion = { ...(h.filiacion ?? {}) }
   for (const c of CAMPOS_IDENTIFICADORES) delete filiacion[c]
   return redactar({ ...h, filiacion })
+}
+
+export interface Progreso { llenos: number; total: number; obligatoriosFaltan: number }
+
+/** Cuántos campos de un apartado tienen datos y cuántos obligatorios faltan. */
+export function progresoSeccion(h: Historia, seccionId: string): Progreso {
+  const s = SECCIONES.find((x) => x.id === seccionId)
+  if (!s) return { llenos: 0, total: 0, obligatoriosFaltan: 0 }
+  const v = h[seccionId] ?? {}
+  const llenos = s.campos.filter((c) => (v[c.id] ?? '').trim()).length
+  const obligatoriosFaltan = s.campos.filter((c) => c.obligatorio && !(v[c.id] ?? '').trim()).length
+  return { llenos, total: s.campos.length, obligatoriosFaltan }
 }

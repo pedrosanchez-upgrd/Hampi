@@ -1,62 +1,84 @@
 import { useState } from 'react'
 import { faltantes, redactar, type Historia } from '../lib/historia'
+import { Icono } from './Icono'
 
 export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccionId: string) => void }) {
-  const [copiado, setCopiado] = useState(false)
+  const [copiado, setCopiado] = useState<'no' | 'si' | 'manual'>('no')
   const texto = redactar(historia)
   const falta = faltantes(historia)
-
   // Dentro de un marco (vista de prueba) el navegador no deja imprimir.
   const enMarco = (() => { try { return window.self !== window.top } catch { return true } })()
 
   const copiar = async () => {
     try {
       await navigator.clipboard.writeText(texto)
-      setCopiado(true)
-      setTimeout(() => setCopiado(false), 2000)
+      setCopiado('si')
+      setTimeout(() => setCopiado('no'), 2500)
     } catch {
       // Si el navegador no deja copiar, se selecciona el texto para copiarlo a mano.
       const pre = document.getElementById('texto-redactado')
       if (pre) { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel?.removeAllRanges(); sel?.addRange(r) }
+      setCopiado('manual')
     }
   }
 
-  return (
-    <section>
-      <h2 className="text-2xl font-semibold no-imprimir">10. Redacción final</h2>
-      <p className="mt-1 text-slate-600 no-imprimir">
-        Revise el texto antes de firmarlo. En una próxima etapa la IA mejorará la redacción.
-      </p>
+  // Separa los bloques para darles formato (título en mayúsculas + contenido).
+  const bloques = texto.split('\n\n').map((b) => { const [t, ...resto] = b.split('\n'); return { t, resto } })
 
-      {falta.length > 0 && (
-        <div className="no-imprimir mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
-          <p className="font-medium text-amber-900">Faltan {falta.length} datos obligatorios:</p>
-          <ul className="mt-2 space-y-1 text-sm">
+  return (
+    <section className="grid gap-5">
+      <header className="no-imprimir">
+        <p className="cifra text-sm font-semibold text-brand">Apartado 10 de 10</p>
+        <h2 className="mt-0.5 font-display text-[28px] font-bold leading-tight tracking-tight text-ink">Redacción final</h2>
+        <p className="mt-1 text-ink-soft">Revise el texto antes de firmarlo. Más adelante la IA pulirá la redacción; hoy se ordena sin IA.</p>
+      </header>
+
+      {falta.length > 0 ? (
+        <div className="no-imprimir rounded-2xl border border-warn/30 bg-warn-soft p-4">
+          <p className="flex items-center gap-2 font-semibold text-warn"><Icono nombre="alerta" className="h-5 w-5" /> Faltan {falta.length} datos obligatorios</p>
+          <ul className="mt-2 flex flex-wrap gap-2">
             {falta.map((f) => (
               <li key={f.seccionId + f.campo}>
-                <button className="text-left underline decoration-amber-400" onClick={() => irA(f.seccionId)}>
-                  {f.seccion}: {f.campo}
+                <button className="min-h-9 rounded-full border border-warn/30 bg-surface px-3 text-sm text-ink hover:border-warn" onClick={() => irA(f.seccionId)}>
+                  {f.campo} <span className="text-ink-faint">· {f.seccion}</span>
                 </button>
               </li>
             ))}
           </ul>
         </div>
+      ) : (
+        <p className="no-imprimir flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok-soft p-4 font-semibold text-ok">
+          <Icono nombre="check" className="h-5 w-5" /> Todos los datos obligatorios están completos.
+        </p>
       )}
 
-      <div className="no-imprimir mt-4 flex gap-3">
-        <button onClick={copiar} className="rounded-lg bg-marca px-4 py-2 font-medium text-white hover:bg-marca-oscuro">
-          {copiado ? 'Copiado' : 'Copiar texto'}
+      <div className="no-imprimir flex flex-wrap gap-2">
+        <button onClick={copiar} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-4 font-semibold text-on-brand hover:bg-brand-strong">
+          <Icono nombre={copiado === 'si' ? 'check' : 'copiar'} className="h-5 w-5" />
+          {copiado === 'si' ? 'Copiado' : copiado === 'manual' ? 'Texto seleccionado: use Copiar' : 'Copiar texto'}
         </button>
         {!enMarco && (
-          <button onClick={() => window.print()} className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium">
-            Imprimir o guardar PDF
+          <button onClick={() => window.print()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-surface px-4 font-semibold text-ink hover:bg-surface-2">
+            <Icono nombre="documento" className="h-5 w-5" /> Imprimir o guardar PDF
           </button>
         )}
       </div>
 
-      <pre id="texto-redactado" className="mt-4 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-5 font-sans text-[15px] leading-relaxed">
-        {texto}
-      </pre>
+      <article className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
+        <div className="mb-5 flex items-center justify-between border-b border-line pb-4">
+          <p className="font-display text-lg font-bold text-ink">Historia clínica · Medicina interna</p>
+          <p className="cifra text-sm text-ink-faint">{new Date().toLocaleDateString('es-EC')}</p>
+        </div>
+        <div id="texto-redactado" className="grid gap-5 text-[15px] leading-relaxed">
+          {bloques.map((b, i) => (
+            <div key={i} className={b.t === 'SIGNOS DE ALARMA' ? 'rounded-xl bg-alarm-soft p-4' : b.t === 'RESUMEN' ? 'rounded-xl bg-brand-soft p-4' : ''}>
+              <p className={`text-xs font-semibold uppercase tracking-[0.12em] ${b.t === 'SIGNOS DE ALARMA' ? 'text-alarm' : 'text-brand'}`}>{b.t}</p>
+              <div className="mt-1 whitespace-pre-wrap text-ink">{b.resto.join('\n')}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-8 border-t border-line pt-4 text-xs text-ink-faint">Firma y sello del profesional: ________________________</p>
+      </article>
     </section>
   )
 }

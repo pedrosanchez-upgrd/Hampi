@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SINTOMAS } from '../data/sintomas'
 import { abrirSintoma, cerrarSintoma, sintomasAbiertos, type Historia } from '../lib/historia'
 import { hallazgosAutomaticos, hallazgosDeSintoma } from '../lib/motor'
+import { Icono } from './Icono'
 
 interface Props {
   historia: Historia
@@ -10,121 +11,117 @@ interface Props {
 
 const SISTEMAS = [...new Set(SINTOMAS.map((s) => s.sistema))]
 
+function Casilla({ marcada, onCambio, texto, tono }: { marcada: boolean; onCambio: (v: boolean) => void; texto: string; tono: 'brand' | 'alarm' }) {
+  return (
+    <label className={`flex min-h-11 cursor-pointer items-start gap-2.5 rounded-lg px-2 py-2 text-[15px] leading-snug transition-colors ${
+      marcada && tono === 'alarm' ? 'bg-alarm-soft' : 'hover:bg-surface-2'}`}>
+      <input type="checkbox" className={`mt-0.5 h-[18px] w-[18px] shrink-0 ${tono === 'alarm' ? 'accent-[var(--alarm)]' : 'accent-[var(--brand)]'}`}
+        checked={marcada} onChange={(e) => onCambio(e.target.checked)} />
+      <span className={marcada ? (tono === 'alarm' ? 'font-semibold text-alarm' : 'text-ink-faint line-through decoration-ink-faint/50') : 'text-ink'}>{texto}</span>
+    </label>
+  )
+}
+
 export function PestanasSintomas({ historia, setHistoria }: Props) {
   const abiertos = sintomasAbiertos(historia)
   const [elegido, setElegido] = useState<string | null>(null)
   const activo = abiertos.includes(elegido ?? '') ? elegido! : abiertos[0]
   const s = SINTOMAS.find((x) => x.id === activo)
   const sx = historia.sintomas ?? {}
+  const auto = hallazgosAutomaticos(historia)
   const poner = (clave: string, valor: string) =>
     setHistoria((h) => ({ ...h, sintomas: { ...h.sintomas, [clave]: valor } }))
 
   return (
-    <section className="mt-8 rounded-xl border border-slate-200 bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-lg font-semibold">Pestañas de síntoma</h3>
-        <select
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2"
-          value=""
-          aria-label="Agregar síntoma"
-          onChange={(e) => {
-            const id = e.target.value
-            if (!id) return
-            setHistoria((h) => abrirSintoma(h, id))
-            setElegido(id)
-          }}
-        >
-          <option value="">+ Agregar síntoma</option>
-          {SISTEMAS.map((sis) => (
-            <optgroup key={sis} label={sis}>
-              {SINTOMAS.filter((x) => x.sistema === sis && !abiertos.includes(x.id)).map((x) => (
-                <option key={x.id} value={x.id}>{x.nombre}</option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+    <section className="rounded-2xl border border-line bg-surface shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
+        <div>
+          <h3 className="font-display text-lg font-bold text-ink">Pestañas de síntoma</h3>
+          <p className="text-sm text-ink-soft">Se abren solas al escribir el síntoma en el motivo o en el relato.</p>
+        </div>
+        <label className="relative">
+          <span className="sr-only">Agregar síntoma</span>
+          <select id="agregar-sintoma" className="min-h-11 appearance-none rounded-xl border border-line bg-surface-2 py-2 pl-9 pr-4 text-[15px] font-medium text-ink focus:border-brand focus:outline-none"
+            value="" onChange={(e) => { const id = e.target.value; if (!id) return; setHistoria((h) => abrirSintoma(h, id)); setElegido(id) }}>
+            <option value="">Agregar síntoma</option>
+            {SISTEMAS.map((sis) => (
+              <optgroup key={sis} label={sis}>
+                {SINTOMAS.filter((x) => x.sistema === sis && !abiertos.includes(x.id)).map((x) => <option key={x.id} value={x.id}>{x.nombre}</option>)}
+              </optgroup>
+            ))}
+          </select>
+          <Icono nombre="mas" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand" />
+        </label>
       </div>
 
       {abiertos.length === 0 ? (
-        <p className="mt-3 text-sm text-slate-500">
-          Se abren solas cuando escribe un síntoma en el motivo o en la enfermedad actual (por ejemplo «dolor en el pecho»). También puede agregarlas a mano.
-        </p>
+        <div className="px-5 py-8 text-center">
+          <Icono nombre="pulso" className="mx-auto h-8 w-8 text-ink-faint" />
+          <p className="mt-2 font-medium text-ink">Todavía no hay síntomas abiertos</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-ink-soft">Escriba por ejemplo «dolor en el pecho» o «fiebre» en el motivo de consulta, o agréguelo con el botón de arriba.</p>
+        </div>
       ) : (
         <>
-          <div role="tablist" className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <div role="tablist" aria-label="Síntomas abiertos" className="flex gap-2 overflow-x-auto px-4 pt-4 sm:px-5">
             {abiertos.map((id) => {
               const x = SINTOMAS.find((y) => y.id === id)!
               const alarmas = x.alarmas.filter((_, i) => sx[`${id}.a${i}`] === '1').length
+              const sel = id === activo
               return (
-                <button
-                  key={id}
-                  role="tab"
-                  aria-selected={id === activo}
-                  onClick={() => setElegido(id)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-sm ${
-                    id === activo ? 'border-marca bg-marca text-white' : 'border-slate-300 bg-white'
-                  }`}
-                >
+                <button key={id} role="tab" aria-selected={sel} onClick={() => setElegido(id)}
+                  className={`flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors ${
+                    sel ? 'border-brand bg-brand text-on-brand' : 'border-line bg-surface text-ink hover:border-brand/60'}`}>
                   {x.nombre}
-                  {alarmas > 0 && <span className="ml-1.5 rounded-full bg-alarma px-1.5 text-xs text-white">{alarmas}</span>}
+                  {alarmas > 0 && <span className="cifra rounded-full bg-alarm px-1.5 text-xs text-white">{alarmas}</span>}
                 </button>
               )
             })}
           </div>
 
           {s && (
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div role="tabpanel" className="grid gap-5 p-4 sm:p-5 lg:grid-cols-2">
               <div>
-                <h4 className="text-sm font-semibold text-marca-oscuro">Preguntas de {s.nombre.toLowerCase()}</h4>
-                <ul className="mt-2 space-y-1.5">
+                <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">Preguntas · {s.nombre}</h4>
+                <ul className="mt-2 grid gap-0.5">
                   {s.preguntas.map((p, i) => (
-                    <li key={p}>
-                      <label className="flex gap-2 text-sm leading-snug">
-                        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-teal-700"
-                          checked={sx[`${s.id}.p${i}`] === '1'}
-                          onChange={(e) => poner(`${s.id}.p${i}`, e.target.checked ? '1' : '')} />
-                        <span className={sx[`${s.id}.p${i}`] === '1' ? 'text-slate-400 line-through' : ''}>{p}</span>
-                      </label>
-                    </li>
+                    <li key={p}><Casilla tono="brand" texto={p} marcada={sx[`${s.id}.p${i}`] === '1'} onCambio={(v) => poner(`${s.id}.p${i}`, v ? '1' : '')} /></li>
                   ))}
                 </ul>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-alarma">Signos de alarma (marcar si están presentes)</h4>
-                <ul className="mt-2 space-y-1.5">
+                <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-alarm">
+                  <Icono nombre="alerta" className="h-4 w-4" /> Signos de alarma · marque si están presentes
+                </h4>
+                <ul className="mt-2 grid gap-0.5">
                   {s.alarmas.map((a, i) => (
-                    <li key={a}>
-                      <label className="flex gap-2 text-sm leading-snug">
-                        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-red-700"
-                          checked={sx[`${s.id}.a${i}`] === '1'}
-                          onChange={(e) => poner(`${s.id}.a${i}`, e.target.checked ? '1' : '')} />
-                        <span className={sx[`${s.id}.a${i}`] === '1' ? 'font-medium text-alarma' : ''}>{a}</span>
-                      </label>
-                    </li>
+                    <li key={a}><Casilla tono="alarm" texto={a} marcada={sx[`${s.id}.a${i}`] === '1'} onCambio={(v) => poner(`${s.id}.a${i}`, v ? '1' : '')} /></li>
                   ))}
                 </ul>
               </div>
+
               {hallazgosDeSintoma(s.id).length > 0 && (
-                <div className="md:col-span-2">
-                  <h4 className="text-sm font-semibold text-marca-oscuro">Hallazgos clave (alimentan los diagnósticos en vivo)</h4>
-                  <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200">
+                <div className="lg:col-span-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">Hallazgos clave · alimentan los diagnósticos en vivo</h4>
+                  <ul className="mt-2 divide-y divide-line overflow-hidden rounded-xl border border-line">
                     {hallazgosDeSintoma(s.id).map((hz) => {
                       const manual = historia.hallazgos?.[hz.id] ?? ''
-                      const auto = hallazgosAutomaticos(historia)[hz.id]
-                      const valor = manual || auto || ''
+                      const valor = manual || auto[hz.id] || ''
                       return (
-                        <li key={hz.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
-                          <span className="text-sm">
+                        <li key={hz.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2.5 sm:px-4">
+                          <span className="min-w-0 flex-1 text-[15px] text-ink">
                             {hz.texto}
                             {hz.automatico && !manual && (
-                              <span className="ml-1 text-xs text-slate-500">({auto ? 'automático' : hz.automatico.toLowerCase()})</span>
+                              <span className="ml-1.5 inline-flex items-center rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-soft">
+                                {auto[hz.id] ? 'automático' : hz.automatico.toLowerCase()}
+                              </span>
                             )}
                           </span>
-                          <span className="flex overflow-hidden rounded-lg border border-slate-300 text-sm" role="group" aria-label={hz.texto}>
+                          <span className="flex shrink-0 overflow-hidden rounded-lg border border-line text-sm" role="group" aria-label={hz.texto}>
                             {([['si', 'Sí'], ['no', 'No'], ['', '?']] as const).map(([v, t]) => (
-                              <button key={t}
-                                aria-pressed={valor === v}
-                                className={`min-w-11 px-3 py-1.5 ${valor === v ? (v === 'si' ? 'bg-marca text-white' : v === 'no' ? 'bg-slate-600 text-white' : 'bg-slate-200') : 'bg-white'}`}
+                              <button key={t} aria-pressed={valor === v}
+                                className={`min-h-10 min-w-12 px-3 font-medium transition-colors ${valor === v
+                                  ? v === 'si' ? 'bg-brand text-on-brand' : v === 'no' ? 'bg-ink-soft text-surface' : 'bg-surface-2 text-ink'
+                                  : 'bg-surface text-ink-soft hover:bg-surface-2'}`}
                                 onClick={() => setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, [hz.id]: v } }))}>
                                 {t}
                               </button>
@@ -136,16 +133,14 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                   </ul>
                 </div>
               )}
-              <div className="md:col-span-2">
-                <label htmlFor={`notas-${s.id}`} className="mb-1 block text-sm font-medium">Hallazgos de esta pestaña</label>
+
+              <div className="lg:col-span-2">
+                <label htmlFor={`notas-${s.id}`} className="mb-1.5 block text-sm font-medium text-ink">Hallazgos de esta pestaña (texto libre)</label>
                 <textarea id={`notas-${s.id}`} rows={3}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-marca focus:outline-none focus:ring-2 focus:ring-marca/20"
-                  value={sx[`${s.id}.notas`] ?? ''}
-                  onChange={(e) => poner(`${s.id}.notas`, e.target.value)} />
-              </div>
-              <div className="md:col-span-2">
-                <button className="text-sm text-slate-500 underline" onClick={() => setHistoria((h) => cerrarSintoma(h, s.id))}>
-                  Cerrar esta pestaña
+                  className="w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 leading-relaxed text-ink focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
+                  value={sx[`${s.id}.notas`] ?? ''} onChange={(e) => poner(`${s.id}.notas`, e.target.value)} />
+                <button className="mt-3 inline-flex min-h-10 items-center gap-1.5 text-sm text-ink-soft hover:text-alarm" onClick={() => setHistoria((h) => cerrarSintoma(h, s.id))}>
+                  <Icono nombre="cerrar" className="h-4 w-4" /> Cerrar la pestaña «{s.nombre}»
                 </button>
               </div>
             </div>

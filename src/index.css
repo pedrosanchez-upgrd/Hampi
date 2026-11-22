@@ -1,16 +1,86 @@
 @import "tailwindcss";
 
-@theme {
-  --color-marca: #0f766e;
-  --color-marca-oscuro: #115e59;
-  --color-alarma: #b91c1c;
+/* Hampi · sistema visual (ver DESIGN.md).
+   Concepto: ficha clínica moderna. Papel frío y limpio, tinta verde-negra,
+   acento eucalipto; los colores semánticos (alarma, faltante, completo) van aparte. */
+:root {
+  --bg: #f2f6f4;
+  --surface: #ffffff;
+  --surface-2: #eaf1ee;
+  --ink: #10231f;
+  --ink-soft: #465a55;
+  --ink-faint: #5d716b;
+  --line: #d6e0dc;
+  --brand: #0f6b58;
+  --brand-strong: #0a5244;
+  --brand-soft: #dff0ea;
+  --on-brand: #ffffff;
+  --alarm: #b42318;
+  --alarm-soft: #fdeceb;
+  --warn: #9a5800;
+  --warn-soft: #fff2d9;
+  --ok: #1d7748;
+  --ok-soft: #e2f4e9;
+  --shadow: 0 1px 2px rgb(16 35 31 / 0.06), 0 8px 24px -12px rgb(16 35 31 / 0.18);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1614; --surface: #12201d; --surface-2: #192a26; --ink: #e4eeeb; --ink-soft: #a7b9b3;
+    --ink-faint: #7f938d; --line: #263935; --brand: #4cc3a3; --brand-strong: #74d8bc; --brand-soft: #143a31;
+    --on-brand: #04201a; --alarm: #ff8b7c; --alarm-soft: #3b1714; --warn: #f1b75c; --warn-soft: #33250c;
+    --ok: #71d59d; --ok-soft: #11301f; --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -14px rgb(0 0 0 / 0.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1614; --surface: #12201d; --surface-2: #192a26; --ink: #e4eeeb; --ink-soft: #a7b9b3;
+  --ink-faint: #7f938d; --line: #263935; --brand: #4cc3a3; --brand-strong: #74d8bc; --brand-soft: #143a31;
+  --on-brand: #04201a; --alarm: #ff8b7c; --alarm-soft: #3b1714; --warn: #f1b75c; --warn-soft: #33250c;
+  --ok: #71d59d; --ok-soft: #11301f; --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -14px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-alarm: var(--alarm);
+  --color-alarm-soft: var(--alarm-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --shadow-card: var(--shadow);
+}
+
+* { touch-action: manipulation; }
 html { -webkit-text-size-adjust: 100%; }
-body { @apply bg-slate-50 text-slate-900 antialiased; }
-input, textarea, select { font-size: 16px; } /* evita el zoom automático en iPad/iPhone */
+body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { text-wrap: balance; }
+input, textarea, select { font-size: 16px; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.cifra { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Entrada suave de la lista de diagnósticos al reordenarse */
+@keyframes aparecer { from { opacity: 0.4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.aparecer { animation: aparecer 220ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 
 @media print {
   .no-imprimir { display: none !important; }
-  body { background: white; }
+  body { background: #fff; color: #000; }
 }
