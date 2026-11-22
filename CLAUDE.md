@@ -17,7 +17,8 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 - Lección aprendida (23-nov): una regla validada para descartar no debe subir el diagnóstico cuando el hallazgo está presente. Probar cada regla nueva con un caso donde no corresponde (ver `src/lib/fase2.test.ts`).
 - Solo se usan números que aparecen en el resumen de PubMed; si el resumen no está disponible (Holleman 1995, Deyo 1992, Williams 1992), no se usa el artículo.
 - Revisión de accesibilidad: `npm run build`, `npx vite preview --port 4173` y `npm run revisar:accesibilidad` (axe, claro y oscuro).
-- `supabase/migrations/`: esquema con RLS. **No aplicado** en ningún proyecto todavía. Pruebas: `supabase/test/rls.test.ts` (PGlite).
+- Supabase: proyecto **Hampi** (`absuudeafyxnjvnbejrv`, us-east-1) en la organización de Pedro, creado el 22-nov-2026. Migración `20261122_01_inicial.sql` **aplicada**; asesor de seguridad sin avisos; el rol anónimo no tiene acceso a ninguna tabla. URL y clave publicable en `src/lib/config.ts`. Pruebas locales: `supabase/test/rls.test.ts` (PGlite). La app todavía no está conectada (guarda en el dispositivo).
+- Carrington Medidas se transfirió el 22-nov a la organización «Carrington» de los papás de Pedro (Pedro es miembro, no dueño). No tocar.
 - `supabase/functions/redactar/`: redacción con Claude. **No desplegada.**
 - Vista de prueba (Artifact privado): https://claude.ai/artifact/Q7nDf8RaNk2H7kbCA8akc4 — se rearma con `npm run build && node scripts/artifact.mjs <salida.html>` y se publica en la misma dirección.
 

@@ -1,4 +1,4 @@
--- Hampi — esquema inicial (Fase 1). NO aplicado todavía en ningún proyecto de Supabase.
+-- Hampi — esquema inicial (Fase 1). Aplicado en el proyecto Supabase «Hampi» (absuudeafyxnjvnbejrv) el 22-nov-2026.
 -- Cada usuario solo ve y cambia lo suyo (RLS). Fase 1: solo casos ficticios.
 
 create table public.perfiles (
@@ -43,16 +43,24 @@ alter table public.historias enable row level security;
 alter table public.auditoria enable row level security;
 
 create policy "perfil propio" on public.perfiles
-  for all using (id = (select auth.uid())) with check (id = (select auth.uid()));
+  for all to authenticated using (id = (select auth.uid())) with check (id = (select auth.uid()));
 
 create policy "ver mis aceptaciones" on public.aceptaciones_terminos
-  for select using (usuario_id = (select auth.uid()));
+  for select to authenticated using (usuario_id = (select auth.uid()));
 create policy "registrar mi aceptación" on public.aceptaciones_terminos
-  for insert with check (usuario_id = (select auth.uid()));
+  for insert to authenticated with check (usuario_id = (select auth.uid()));
 
 create policy "mis historias" on public.historias
-  for all using (autor_id = (select auth.uid())) with check (autor_id = (select auth.uid()));
+  for all to authenticated using (autor_id = (select auth.uid())) with check (autor_id = (select auth.uid()));
 
 create policy "registrar mi auditoría" on public.auditoria
-  for insert with check (usuario_id = (select auth.uid()));
+  for insert to authenticated with check (usuario_id = (select auth.uid()));
 -- La auditoría no se puede leer ni borrar desde la app (solo administración).
+
+-- Índices para las llaves foráneas (recomendación del asesor de rendimiento).
+create index aceptaciones_usuario_idx on public.aceptaciones_terminos (usuario_id);
+create index auditoria_usuario_idx on public.auditoria (usuario_id);
+create index auditoria_historia_idx on public.auditoria (historia_id);
+
+-- Nada para usuarios sin sesión: los datos de salud solo se ven con cuenta.
+revoke all on public.perfiles, public.aceptaciones_terminos, public.historias, public.auditoria from anon;
