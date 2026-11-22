@@ -1,6 +1,7 @@
 // Íconos propios en línea (trazo de 1,75 px, 24×24). Sin dependencias externas.
 const RUTAS: Record<string, string> = {
   check: 'M5 12.5l4.2 4.2L19 7',
+  microfono: 'M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3zM5 11a7 7 0 0014 0M12 18v3',
   alerta: 'M12 4l9 16H3L12 4zM12 10v4.5M12 17.5v.01',
   mas: 'M12 5v14M5 12h14',
   cerrar: 'M6 6l12 12M18 6L6 18',

@@ -14,6 +14,9 @@ import { AntecedentesFamiliares, AntecedentesPersonales } from './components/Ant
 import { casoEjemplo } from './data/casoEjemplo'
 import { Cuenta } from './components/Cuenta'
 import { MisHistorias } from './components/MisHistorias'
+import { Revision } from './components/Revision'
+import { cargarReglasAprobadas, esRevisor } from './lib/evidenciaNube'
+import { establecerReglasAprobadas } from './lib/motor'
 import { asegurarPerfil, auditar, guardarHistoria, registrarAceptacion, salir, supabase } from './lib/nube'
 
 const CLAVE_TERMINOS = 'hampi.terminos'
@@ -103,6 +106,9 @@ export default function App() {
   const [verHistorias, setVerHistorias] = useState(false)
   const [menu, setMenu] = useState(false)
   const [asistenteAbierto, setAsistenteAbierto] = useState(false)
+  const [revisor, setRevisor] = useState(false)
+  const [verRevision, setVerRevision] = useState(false)
+  const [, setReglasNube] = useState(0)
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null)
   const enCurso = useRef<Promise<void> | null>(null)
   const idActual = useRef<string | null>(historiaId)
@@ -128,6 +134,14 @@ export default function App() {
     if (!sesion) return
     asegurarPerfil(sesion).catch(() => {})
     registrarAceptacion(sesion, VERSION_TERMINOS).catch(() => {})
+  }, [sesion?.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fase 3: reglas confirmadas por dos revisores y acceso a la revisión médica.
+  const recargarReglas = () => cargarReglasAprobadas().then(setReglasNube)
+  useEffect(() => {
+    if (!sesion) { establecerReglasAprobadas([]); setRevisor(false); setReglasNube(0); return }
+    recargarReglas()
+    esRevisor().then(setRevisor).catch(() => setRevisor(false))
   }, [sesion?.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Guardado automático en la cuenta, 1,5 s después del último cambio.
@@ -188,6 +202,11 @@ export default function App() {
                 <button onClick={() => setVerHistorias(true)} className="flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-soft hover:bg-surface-2" title={sesion.user.email ?? ''}>
                   <Icono nombre="carpeta" className="h-4 w-4" /><span className="hidden sm:inline">Mis historias</span>
                 </button>
+                {revisor && (
+                  <button onClick={() => setVerRevision(true)} className="hidden min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-soft hover:bg-surface-2 sm:flex">
+                    <Icono nombre="libro" className="h-4 w-4" />Revisión médica
+                  </button>
+                )}
                 <button onClick={async () => { await salir(); setHistoria(historiaVacia()); setHistoriaId(null) }} className="hidden min-h-10 rounded-full px-3 text-sm text-ink-soft hover:bg-surface-2 sm:block">Salir</button>
               </>
             ) : (
@@ -223,6 +242,8 @@ export default function App() {
                   <button role="menuitem" className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] text-ink hover:bg-surface-2"
                     onClick={cambiarTema}><Icono nombre={tema === 'oscuro' ? 'luna' : tema === 'claro' ? 'sol' : 'sistema'} className="h-4 w-4" />
                     Tema: {tema === 'sistema' ? 'automático' : tema}</button>
+                  {revisor && <button role="menuitem" className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] text-ink hover:bg-surface-2"
+                    onClick={() => { setMenu(false); setVerRevision(true) }}><Icono nombre="libro" className="h-4 w-4" /> Revisión médica</button>}
                   {sesion && <button role="menuitem" className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] text-ink hover:bg-surface-2"
                     onClick={async () => { setMenu(false); await salir(); setHistoria(historiaVacia()); setHistoriaId(null) }}><Icono nombre="atras" className="h-4 w-4" /> Salir</button>}
                 </div>
@@ -337,6 +358,7 @@ export default function App() {
           </button>
         </div>
       </nav>
+      {sesion && revisor && <Revision abierto={verRevision} usuarioId={sesion.user.id} onCerrar={() => setVerRevision(false)} onCambio={recargarReglas} />}
       {sesion && (
         <MisHistorias abierto={verHistorias} actualId={historiaId} onCerrar={() => setVerHistorias(false)} onNueva={nuevaHistoria}
           onAbrir={(h) => { setHistoria({ ...historiaVacia(), ...h.contenido }); setHistoriaId(h.id); setVerHistorias(false); irA(SECCIONES[0].id); auditar('abrir', h.id) }} />

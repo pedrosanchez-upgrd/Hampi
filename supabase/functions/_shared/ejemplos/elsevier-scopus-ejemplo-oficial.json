@@ -1,0 +1,54 @@
+{
+ "search-results": {
+  "opensearch:totalResults": "2624604",
+  "entry": [
+   {
+    "@_fa": "true",
+    "link": [
+     {
+      "@_fa": "true",
+      "@ref": "self",
+      "@href": "http://api.elsevier.com/content/abstract/scopus_id/84884919538"
+     },
+     {
+      "@_fa": "true",
+      "@ref": "scopus",
+      "@href": "http://www.scopus.com/inward/record.url?partnerID=HzOxMe3b&scp=84884919538"
+     }
+    ],
+    "prism:url": "http://api.elsevier.com/content/abstract/scopus_id/84884919538",
+    "dc:identifier": "SCOPUS_ID:84884919538",
+    "dc:title": "Brain is the predilection site of Toxoplasma gondii in experimentally inoculated pigs as revealed by magnetic capture and real-time PCR",
+    "dc:creator": "Jurankova, J.",
+    "prism:publicationName": "Food Microbiology",
+    "prism:issn": "07400020",
+    "prism:eIssn": "10959998",
+    "prism:volume": "38",
+    "prism:coverDate": "2014-04-01",
+    "prism:doi": "10.1016/j.fm.2013.08.011",
+    "dc:description": "Pigs represent an important source of food in many countries, and undercooked pork containing tissue cysts is one of the most common sources of Toxoplasma gondii infection for humans.",
+    "prism:aggregationType": "Journal",
+    "subtype": "ar"
+   },
+   {
+    "@_fa": "true",
+    "link": [
+     {
+      "@_fa": "true",
+      "@ref": "scopus",
+      "@href": "http://www.scopus.com/inward/record.url?partnerID=HzOxMe3b&scp=84884527646"
+     }
+    ],
+    "dc:identifier": "SCOPUS_ID:84884527646",
+    "dc:title": "Investigating the effects of job demands and job resources on cabin crew safety behaviors",
+    "dc:creator": "Chen, C.-F.",
+    "prism:publicationName": "Tourism Management",
+    "prism:issn": "02615177",
+    "prism:coverDate": "2014-04-01",
+    "prism:doi": "10.1016/j.tourman.2013.08.009",
+    "prism:aggregationType": "Journal",
+    "subtype": "ar"
+   }
+  ]
+ }
+}

@@ -16,8 +16,13 @@ export interface Fuente {
   id: string
   cita: string
   titulo: string
-  pmid: string
+  /** PubMed; las fuentes de SciELO o Elsevier aprobadas en la Fase 3 traen `url` en su lugar. */
+  pmid?: string
   doi?: string
+  url?: string
+  /** Base de donde viene y calidad de la revista (Fase 3). */
+  base?: 'pubmed' | 'scielo' | 'elsevier'
+  calidad?: string
 }
 
 export const FUENTES: Record<string, Fuente> = {

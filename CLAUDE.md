@@ -26,6 +26,13 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 - Supabase: proyecto **Hampi** (`absuudeafyxnjvnbejrv`, us-east-1) en la organización de Pedro, creado el 22-nov-2026. Migración `20261122_01_inicial.sql` **aplicada**; asesor de seguridad sin avisos; el rol anónimo no tiene acceso a ninguna tabla. URL y clave publicable en `src/lib/config.ts`. Pruebas locales: `supabase/test/rls.test.ts` (PGlite). La app tiene cuentas con correo y contraseña (`src/lib/nube.ts`, `Cuenta.tsx`, `MisHistorias.tsx`) y guardado automático; sin cuenta guarda en el dispositivo. El Artifact y este contenedor NO llegan a supabase.co: el inicio de sesión se prueba en la versión publicada en Cloudflare (`wrangler.jsonc`, cabeceras en `public/_headers`).
 - Carrington Medidas se transfirió el 22-nov a la organización «Carrington» de los papás de Pedro (Pedro es miembro, no dueño). No tocar.
 - `supabase/functions/redactar/`: redacción con Claude. **No desplegada.**
+- **Fase 3 (empezada el 22-nov-2026, a pedido del dueño):**
+  - Migración `20261123_01_evidencia.sql` (**NO aplicada**): `revisores` (solo administración los agrega), `revistas` (calidad por ISSN), `evidencia` (artículos encontrados; la app no puede insertar), `reglas_aprobadas` (cuentan solo con `confirmada_por` ≠ `aprobada_por`). Funciones `security definer` para evitar recursión entre políticas. Pruebas: `supabase/test/evidencia.test.ts`.
+  - `supabase/functions/_shared/evidencia.ts`: lee PubMed (efetch XML), SciELO (buscador, `output=rss`; el PID trae ISSN y año) y Elsevier (Scopus Search JSON); filtro de calidad Q1/Q2 (Scimago), A1/A2 (Publindex) o catálogo Latindex. Ejemplos reales en `_shared/ejemplos/`. Pruebas: `supabase/test/fuentes.test.ts`.
+  - `supabase/functions/buscar-evidencia/`: busca y guarda como pendiente (**NO desplegada**). Secretos opcionales `ELSEVIER_API_KEY`, `NCBI_API_KEY`.
+  - `scripts/revistas.mjs`: arma el SQL de `revistas` desde los CSV de Scimago, Latindex y Publindex (revisar encabezados con los archivos reales).
+  - App: `src/lib/evidenciaNube.ts` (`validarRegla`: la cita debe estar en el resumen y contener el número), `src/components/Revision.tsx` (solo revisores), el motor suma reglas confirmadas (`establecerReglasAprobadas`).
+  - Dictado por voz: `src/lib/dictado.ts` (reconocimiento del navegador, es-EC; «coma», «punto y seguido», «punto y aparte»). El navegador puede enviar la voz a Apple o Google.
 - Vista de prueba (Artifact privado): https://claude.ai/artifact/Q7nDf8RaNk2H7kbCA8akc4 — se rearma con `npm run build && node scripts/artifact.mjs <salida.html>` y se publica en la misma dirección.
 
 ## Reglas (obligatorias)

@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import type { Campo, Seccion } from '../data/secciones'
 import { avisoSigno, cedulaValida, imc, RANGOS, type Historia } from '../lib/historia'
 import { sugerenciasPara, type Sugerencia } from '../data/redaccionAyuda'
 import { abreviaturasEn, escribirCompleto } from '../data/abreviaturas'
+import { agregarDictado, useDictado } from '../lib/dictado'
 import { Icono } from './Icono'
 
 interface Props {
@@ -30,8 +31,7 @@ function aviso(seccionId: string, c: Campo, v: string): string | null {
 function Entrada({ c, v, onCambio, invalido }: { c: Campo; v: string; onCambio: (v: string) => void; invalido: boolean }) {
   const id = `campo-${c.id}`
   const comun = { id, 'aria-invalid': invalido || undefined, 'aria-describedby': c.ayuda ? `${id}-ayuda` : undefined }
-  if (c.tipo === 'parrafo')
-    return <textarea {...comun} rows={3} className={`${claseInput} min-h-24 resize-y leading-relaxed`} value={v} onChange={(e) => onCambio(e.target.value)} />
+  if (c.tipo === 'parrafo') return <Parrafo comun={comun} v={v} onCambio={onCambio} etiqueta={c.corto ?? c.etiqueta} />
   if (c.tipo === 'opcion') {
     // Pocas opciones: botones (un toque). Muchas: lista desplegable.
     if (c.opciones!.length <= 4)
@@ -59,6 +59,28 @@ function Entrada({ c, v, onCambio, invalido }: { c: Campo; v: string; onCambio: 
         type={c.tipo === 'fecha' ? 'date' : 'text'} inputMode={c.tipo === 'numero' ? 'decimal' : undefined}
         value={v} onChange={(e) => onCambio(e.target.value)} />
       {c.unidad && <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-ink-faint">{c.unidad}</span>}
+    </div>
+  )
+}
+
+/** Campo de párrafo con dictado por voz (si el navegador lo permite). */
+function Parrafo({ comun, v, onCambio, etiqueta }: { comun: Record<string, unknown>; v: string; onCambio: (v: string) => void; etiqueta: string }) {
+  const actual = useRef(v)
+  actual.current = v
+  const d = useDictado((t) => onCambio(agregarDictado(actual.current, t)))
+  return (
+    <div>
+      <div className="relative">
+        <textarea {...comun} rows={3} className={`${claseInput} min-h-24 resize-y leading-relaxed ${d.disponible ? 'pr-14' : ''}`} value={v} onChange={(e) => onCambio(e.target.value)} />
+        {d.disponible && (
+          <button type="button" onClick={d.alternar} aria-pressed={d.escuchando} aria-label={d.escuchando ? `Detener dictado en ${etiqueta}` : `Dictar ${etiqueta}`}
+            className={`absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full transition-colors ${d.escuchando ? 'bg-alarm text-on-alarm' : 'bg-surface-2 text-ink-soft hover:bg-brand-soft hover:text-brand-strong'}`}>
+            <Icono nombre="microfono" className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+      {d.escuchando && <p className="mt-1.5 text-sm font-medium text-alarm" role="status">Escuchando… diga «coma», «punto y seguido» o «punto y aparte». Toque el micrófono para terminar.</p>}
+      {d.error && <p className="mt-1.5 text-sm text-warn" role="status">{d.error}</p>}
     </div>
   )
 }

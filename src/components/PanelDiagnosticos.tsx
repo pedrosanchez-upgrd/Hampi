@@ -110,7 +110,8 @@ function Tarjeta({ r, historia, setHistoria }: { r: Resultado } & Props) {
           {r.fuentes.map((f) => (
             <p key={f.id} className="rounded-lg bg-surface-2 p-2">
               <span className="text-ink">{f.titulo}.</span> {f.cita}.{' '}
-              <a className="font-medium text-brand underline underline-offset-2" href={`https://pubmed.ncbi.nlm.nih.gov/${f.pmid}/`} target="_blank" rel="noreferrer">PubMed {f.pmid}</a>
+              <a className="font-medium text-brand underline underline-offset-2" href={f.pmid ? `https://pubmed.ncbi.nlm.nih.gov/${f.pmid}/` : f.url} target="_blank" rel="noreferrer">{f.pmid ? `PubMed ${f.pmid}` : f.base === 'scielo' ? 'SciELO' : 'Elsevier'}</a>
+              {f.calidad && <span className="ml-1 text-ink-faint">· {f.calidad === 'Latindex' ? 'catálogo Latindex' : f.calidad} · aprobada por 2 revisores</span>}
               {f.doi && <> · <a className="font-medium text-brand underline underline-offset-2" href={`https://doi.org/${f.doi}`} target="_blank" rel="noreferrer">DOI</a></>}
             </p>
           ))}

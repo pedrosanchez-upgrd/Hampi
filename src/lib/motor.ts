@@ -11,6 +11,22 @@ export type Estado = 'si' | 'no'
 const PESO_CUALITATIVO = 2 // ×2 si sube, ×0,5 si baja
 const LR_MINIMO = 0.01 // evita log(0) cuando el artículo reporta LR 0
 
+// Reglas que aprobaron dos revisores médicos en la base de conocimiento (Fase 3).
+// Se cargan al iniciar sesión (src/lib/conocimientoNube.ts); sin conexión, el motor usa solo las del código.
+const extra = new Map<string, Regla[]>()
+const fuentesExtra: Record<string, Fuente> = {}
+export function establecerReglasAprobadas(lista: { diagnostico: string; regla: Regla; fuente: Fuente }[]) {
+  extra.clear()
+  for (const k of Object.keys(fuentesExtra)) delete fuentesExtra[k]
+  for (const x of lista) {
+    if (!DIAGNOSTICOS.some((d) => d.id === x.diagnostico) || !HALLAZGOS.some((h) => h.id === x.regla.hallazgo)) continue
+    extra.set(x.diagnostico, [...(extra.get(x.diagnostico) ?? []), x.regla])
+    fuentesExtra[x.fuente.id] = x.fuente
+  }
+}
+const reglasDe = (d: { id: string; reglas: Regla[] }) => [...d.reglas, ...(extra.get(d.id) ?? [])]
+const fuente = (id: string) => FUENTES[id] ?? fuentesExtra[id]
+
 const num = (v: string | undefined) => {
   const n = Number((v ?? '').replace(',', '.'))
   return v && v.trim() !== '' && !Number.isNaN(n) ? n : null
@@ -99,13 +115,13 @@ export function diagnosticosEnVivo(h: Historia): Resultado[] {
     .filter((d) => !d.requiere || estados[d.requiere] === 'si')
     .map((d) => {
       const razones: Razon[] = []
-      for (const r of d.reglas) {
+      for (const r of reglasDe(d)) {
         const e = estados[r.hallazgo]
         if (!e) continue
         const f = factorDe(r, e)
         if (!f || f.factor === 1) continue
         const hz = HALLAZGOS.find((x) => x.id === r.hallazgo)!
-        razones.push({ texto: hz.texto, presente: e === 'si', nota: r.nota, fuente: FUENTES[r.fuente], ...f })
+        razones.push({ texto: hz.texto, presente: e === 'si', nota: r.nota, fuente: fuente(r.fuente), ...f })
       }
       if (d.conteo) {
         const c = d.conteo
@@ -115,7 +131,7 @@ export function diagnosticosEnVivo(h: Historia): Resultado[] {
         // Se aplica solo si lo que falta responder ya no puede cambiar el tramo.
         if (sinResponder < c.hallazgos.length && tramo(presentes) === tramo(presentes + sinResponder)) {
           const t = tramo(presentes)
-          razones.push({ texto: `${c.texto}: ${presentes} de ${c.hallazgos.length}`, presente: true, nota: c.nota, fuente: FUENTES[c.fuente], factor: t.lr, tipo: 'lr' })
+          razones.push({ texto: `${c.texto}: ${presentes} de ${c.hallazgos.length}`, presente: true, nota: c.nota, fuente: fuente(c.fuente), factor: t.lr, tipo: 'lr' })
         }
       }
       const factor = razones.reduce((acc, r) => acc * r.factor, 1)
@@ -124,7 +140,7 @@ export function diagnosticosEnVivo(h: Historia): Resultado[] {
         suben: razones.filter((r) => r.tipo === 'cualitativo' && r.factor > 1).length,
         bajan: razones.filter((r) => r.tipo === 'cualitativo' && r.factor < 1).length,
       }
-      const fuentes = [...new Set([...d.reglas.map((r) => r.fuente), ...(d.conteo ? [d.conteo.fuente] : [])])].map((id) => FUENTES[id])
+      const fuentes = [...new Set([...reglasDe(d).map((r) => r.fuente), ...(d.conteo ? [d.conteo.fuente] : [])])].map(fuente)
       return { id: d.id, nombre: d.nombre, grave: d.grave, factor, factorLR, cualitativos, razones, fuentes, nota: d.nota, estudios: d.estudios, descartado: descartados.has(d.id) }
     })
 
@@ -159,7 +175,7 @@ export function preguntasParaAfinar(h: Historia, diagnosticoId: string): Pregunt
   if (!d) return []
   const estados = estadoHallazgos(h)
   const out: PreguntaAfinar[] = []
-  for (const r of d.reglas) {
+  for (const r of reglasDe(d)) {
     if (estados[r.hallazgo] || HALLAZGOS.find((x) => x.id === r.hallazgo)?.automatico) continue
     const hz = HALLAZGOS.find((x) => x.id === r.hallazgo)!
     const efecto = r.cualitativo
@@ -203,7 +219,7 @@ export function preguntasClave(h: Historia, max = 3, entre = 5): PreguntaClave[]
   }
   top.forEach((r, puesto) => {
     const d = DIAGNOSTICOS.find((x) => x.id === r.id)!
-    for (const rg of d.reglas) {
+    for (const rg of reglasDe(d)) {
       if (estados[rg.hallazgo] || HALLAZGOS.find((x) => x.id === rg.hallazgo)?.automatico) continue
       const peso = rg.cualitativo
         ? Math.log(PESO_CUALITATIVO)
