@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-marca: #0f766e;
+  --color-marca-oscuro: #115e59;
+  --color-alarma: #b91c1c;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body { @apply bg-slate-50 text-slate-900 antialiased; }
+input, textarea, select { font-size: 16px; } /* evita el zoom automático en iPad/iPhone */
+
+@media print {
+  .no-imprimir { display: none !important; }
+  body { background: white; }
+}

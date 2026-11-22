@@ -1,0 +1,247 @@
+// Estructura de la historia clínica de medicina interna (Fase 1).
+// Fuente: documento «Fase 1: Estructura de la historia clínica de medicina interna».
+// El contenido médico está pendiente de revisión por médicos antes de usarse con pacientes reales.
+
+export type TipoCampo = 'texto' | 'parrafo' | 'numero' | 'opcion' | 'fecha'
+
+export interface Campo {
+  id: string
+  etiqueta: string
+  tipo: TipoCampo
+  opciones?: string[]
+  unidad?: string
+  obligatorio?: boolean
+  ayuda?: string
+  /** Etiqueta corta para la redacción final. */
+  corto?: string
+  /** Subtítulo dentro del apartado (por ejemplo «Alérgicos»). */
+  grupo?: string
+}
+
+export interface Seccion {
+  id: string
+  numero: number
+  titulo: string
+  descripcion: string
+  campos: Campo[]
+  /** Preguntas guía para no olvidar nada durante la entrevista. */
+  guia: string[]
+}
+
+const SI_NO = ['No', 'Sí']
+
+export const SECCIONES: Seccion[] = [
+  {
+    id: 'filiacion',
+    numero: 1,
+    titulo: 'Datos de filiación',
+    descripcion: 'Identificación del paciente, fuente de la información y confiabilidad.',
+    campos: [
+      { id: 'nombre', corto: 'Nombre', etiqueta: 'Nombre (ficticio en Fase 1)', tipo: 'texto' },
+      { id: 'cedula', etiqueta: 'Cédula de identidad', tipo: 'texto', ayuda: '10 dígitos. Se valida el dígito verificador.' },
+      { id: 'hcu', corto: 'HCU', etiqueta: 'N.º de historia clínica única (HCU)', tipo: 'texto' },
+      { id: 'edad', etiqueta: 'Edad', tipo: 'numero', unidad: 'años', obligatorio: true },
+      { id: 'sexo', etiqueta: 'Sexo', tipo: 'opcion', opciones: ['Mujer', 'Hombre', 'Intersexual'], obligatorio: true },
+      { id: 'nacimiento', etiqueta: 'Fecha de nacimiento', tipo: 'fecha' },
+      { id: 'lugarNacimiento', etiqueta: 'Lugar de nacimiento', tipo: 'texto' },
+      { id: 'residencia', etiqueta: 'Lugar de residencia', tipo: 'texto' },
+      { id: 'zona', etiqueta: 'Zona', tipo: 'opcion', opciones: ['Urbana', 'Rural'] },
+      { id: 'etnia', etiqueta: 'Autoidentificación étnica', tipo: 'opcion', opciones: ['Mestizo/a', 'Indígena', 'Afroecuatoriano/a', 'Montubio/a', 'Blanco/a', 'Otro'] },
+      { id: 'ocupacion', corto: 'Ocupación', etiqueta: 'Ocupación (actual y anteriores)', tipo: 'texto' },
+      { id: 'escolaridad', etiqueta: 'Escolaridad', tipo: 'opcion', opciones: ['Ninguna', 'Primaria', 'Secundaria', 'Superior', 'Posgrado'] },
+      { id: 'estadoCivil', etiqueta: 'Estado civil', tipo: 'opcion', opciones: ['Soltero/a', 'Casado/a', 'Unión libre', 'Divorciado/a', 'Viudo/a'] },
+      { id: 'religion', etiqueta: 'Religión', tipo: 'texto' },
+      { id: 'seguro', etiqueta: 'Seguro', tipo: 'opcion', opciones: ['IESS', 'MSP', 'ISSFA', 'ISSPOL', 'Privado', 'Ninguno'] },
+      { id: 'acompanante', corto: 'Acompañante', etiqueta: 'Acompañante y teléfono de contacto', tipo: 'texto' },
+      { id: 'fuente', etiqueta: 'Fuente de la historia', tipo: 'opcion', opciones: ['Paciente', 'Familiar', 'Remisión', 'Otro'], obligatorio: true },
+      { id: 'confiabilidad', etiqueta: 'Confiabilidad', tipo: 'opcion', opciones: ['Buena', 'Regular', 'Mala'] },
+    ],
+    guia: [
+      'Nombre, cédula, edad, sexo y fecha de nacimiento.',
+      'Lugar de nacimiento y de residencia (urbana o rural).',
+      'Ocupación actual y anteriores (exposiciones).',
+      'Escolaridad, estado civil y religión (si influye en decisiones, p. ej. transfusiones).',
+      'Seguro: IESS, MSP, ISSFA, ISSPOL o privado.',
+      'Acompañante y teléfono de contacto.',
+      '¿Quién da la información y qué tan confiable es?',
+    ],
+  },
+  {
+    id: 'motivo',
+    numero: 2,
+    titulo: 'Motivo de consulta',
+    descripcion: 'Una frase, en palabras del paciente, con el tiempo de evolución.',
+    campos: [
+      { id: 'motivo', corto: 'Motivo', etiqueta: 'Motivo (entre comillas, como lo dice el paciente)', tipo: 'texto', obligatorio: true },
+      { id: 'tiempo', etiqueta: 'Tiempo de evolución', tipo: 'texto', obligatorio: true, ayuda: 'Ej.: 3 días' },
+    ],
+    guia: ['«¿Qué lo trae hoy?»', '«¿Desde cuándo?»'],
+  },
+  {
+    id: 'enfermedad',
+    numero: 3,
+    titulo: 'Enfermedad actual',
+    descripcion: 'Relato cronológico y análisis del síntoma principal (ALICIA).',
+    campos: [
+      { id: 'relato', etiqueta: 'Relato cronológico', tipo: 'parrafo', obligatorio: true },
+      { id: 'sintoma', etiqueta: 'Síntoma principal', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'aparicion', corto: 'Aparición', etiqueta: 'Aparición (cuándo y cómo)', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'localizacion', etiqueta: 'Localización', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'intensidad', etiqueta: 'Intensidad', tipo: 'numero', unidad: '/10', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'caracter', corto: 'Carácter', etiqueta: 'Carácter (cómo es)', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'irradiacion', etiqueta: 'Irradiación', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'atenuantes', corto: 'Atenuantes y agravantes', etiqueta: 'Atenuantes y agravantes', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'evolucion', corto: 'Evolución', etiqueta: 'Duración, frecuencia y evolución', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+      { id: 'acompanantes', etiqueta: 'Síntomas acompañantes', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
+    ],
+    guia: [
+      '«Cuénteme cómo empezó todo» (relato libre, sin interrumpir).',
+      'ALICIA: Aparición, Localización, Intensidad (0–10), Carácter, Irradiación, Atenuantes y agravantes.',
+      'Duración de cada episodio, frecuencia y evolución (mejor, igual, peor).',
+      'Síntomas acompañantes.',
+      '¿Le había pasado antes?',
+      '¿Qué ha tomado o hecho para mejorar? ¿Consultó antes? ¿Qué le dijeron?',
+      '¿Cómo afecta su vida diaria (trabajo, sueño, comer)?',
+      '¿Qué cree que tiene o qué le preocupa?',
+    ],
+  },
+  {
+    id: 'personales',
+    numero: 4,
+    titulo: 'Antecedentes personales',
+    descripcion: 'Patológicos, quirúrgicos, alérgicos, farmacológicos, gineco-obstétricos y hábitos.',
+    campos: [
+      { id: 'patologicos', corto: 'Enfermedades', etiqueta: 'Enfermedades diagnosticadas (año y control)', tipo: 'parrafo', grupo: 'Patológicos' },
+      { id: 'hospitalizaciones', etiqueta: 'Hospitalizaciones previas', tipo: 'texto', grupo: 'Patológicos' },
+      { id: 'quirurgicos', corto: 'Cirugías', etiqueta: 'Cirugías (año y complicaciones)', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
+      { id: 'traumaticos', etiqueta: 'Traumatismos', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
+      { id: 'transfusiones', etiqueta: 'Transfusiones', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
+      { id: 'alergicos', corto: 'Alergias', etiqueta: 'Alergias (sustancia y reacción)', tipo: 'texto', obligatorio: true, ayuda: 'Si no tiene, escribir «Niega».', grupo: 'Alérgicos' },
+      { id: 'farmacologicos', corto: 'Medicamentos', etiqueta: 'Medicamentos (nombre, dosis, frecuencia, desde cuándo)', tipo: 'parrafo', obligatorio: true, ayuda: 'Incluir sin receta, naturales y anticonceptivos. Si no toma, «Niega».', grupo: 'Farmacológicos' },
+      { id: 'inmunizaciones', etiqueta: 'Vacunas', tipo: 'texto', grupo: 'Inmunizaciones' },
+      { id: 'go', corto: 'Gineco-obstétricos', etiqueta: 'Menarquia, ciclos, FUM, G-P-C-A, planificación, citología, menopausia', tipo: 'parrafo', grupo: 'Gineco-obstétricos (si aplica)' },
+      { id: 'tabaco', etiqueta: 'Tabaco', tipo: 'texto', ayuda: 'Paquetes/año', grupo: 'Hábitos' },
+      { id: 'alcohol', etiqueta: 'Alcohol', tipo: 'texto', ayuda: 'Cantidad y frecuencia', grupo: 'Hábitos' },
+      { id: 'sustancias', etiqueta: 'Otras sustancias', tipo: 'texto', grupo: 'Hábitos' },
+      { id: 'humoLena', etiqueta: 'Exposición a humo de leña', tipo: 'opcion', opciones: SI_NO, grupo: 'Hábitos' },
+      { id: 'actividad', corto: 'Actividad, alimentación y sueño', etiqueta: 'Actividad física, alimentación y sueño', tipo: 'texto', grupo: 'Hábitos' },
+    ],
+    guia: [
+      '¿Le han diagnosticado alguna enfermedad? Preguntar una por una: hipertensión, diabetes, corazón, pulmón, riñón, hígado, tiroides, cáncer, VIH, tuberculosis, enfermedad mental.',
+      'Hospitalizaciones previas: cuándo y por qué.',
+      'Cirugías: cuál, año, complicaciones.',
+      'Alergias: medicamentos, alimentos, látex; qué reacción tuvo.',
+      'Medicamentos: nombre, dosis, frecuencia, desde cuándo (incluir sin receta y naturales).',
+      'Transfusiones y traumatismos.',
+      'Vacunas: esquema, influenza, neumococo, COVID-19, tétanos, hepatitis B.',
+      'Gineco-obstétricos: menarquia, ciclos, FUM, gestas, partos, cesáreas, abortos, planificación, citología, mamografía, menopausia.',
+      'Hábitos: tabaco (paquetes/año), alcohol, otras sustancias, humo de leña, actividad física, alimentación, sueño.',
+    ],
+  },
+  {
+    id: 'familiares',
+    numero: 5,
+    titulo: 'Antecedentes familiares',
+    descripcion: 'Enfermedades de padres, hermanos e hijos.',
+    campos: [
+      { id: 'familiares', corto: 'Familiares', etiqueta: 'Enfermedades en la familia (parentesco, enfermedad, edad)', tipo: 'parrafo' },
+    ],
+    guia: [
+      '¿Sus padres, hermanos o hijos tienen o tuvieron alguna enfermedad? ¿De qué murieron y a qué edad?',
+      'Preguntar directo: hipertensión, diabetes, infarto o muerte súbita antes de los 55 (hombres) o 65 (mujeres), ACV, cáncer (cuál), enfermedad renal, tiroides, enfermedad mental.',
+    ],
+  },
+  {
+    id: 'sistemas',
+    numero: 6,
+    titulo: 'Revisión por sistemas',
+    descripcion: 'Una pregunta corta por sistema. Lo positivo relacionado pasa a la enfermedad actual.',
+    campos: [
+      { id: 'general', etiqueta: 'General', tipo: 'texto', ayuda: 'Fiebre, pérdida de peso, sudoración nocturna, cansancio' },
+      { id: 'piel', etiqueta: 'Piel', tipo: 'texto', ayuda: 'Lesiones, picazón, cambios de color' },
+      { id: 'cabeza', etiqueta: 'Cabeza y órganos de los sentidos', tipo: 'texto', ayuda: 'Cefalea, visión, oído, nariz, garganta' },
+      { id: 'cardio', etiqueta: 'Cardiovascular', tipo: 'texto', ayuda: 'Dolor en el pecho, palpitaciones, edema, ortopnea' },
+      { id: 'respiratorio', etiqueta: 'Respiratorio', tipo: 'texto', ayuda: 'Tos, expectoración, hemoptisis, disnea' },
+      { id: 'digestivo', etiqueta: 'Digestivo', tipo: 'texto', ayuda: 'Apetito, náusea, vómito, dolor, deposiciones, sangrado' },
+      { id: 'genitourinario', etiqueta: 'Genitourinario', tipo: 'texto', ayuda: 'Disuria, frecuencia, hematuria, secreciones' },
+      { id: 'musculo', etiqueta: 'Musculoesquelético', tipo: 'texto', ayuda: 'Dolor o inflamación articular, debilidad' },
+      { id: 'neuro', etiqueta: 'Neurológico', tipo: 'texto', ayuda: 'Mareo, síncope, convulsiones, pérdida de fuerza o sensibilidad' },
+      { id: 'endocrino', etiqueta: 'Endocrino', tipo: 'texto', ayuda: 'Sed, poliuria, intolerancia al frío o al calor' },
+      { id: 'hemato', etiqueta: 'Hematológico', tipo: 'texto', ayuda: 'Moretones, sangrados, ganglios' },
+      { id: 'mental', etiqueta: 'Mental', tipo: 'texto', ayuda: 'Ánimo, ansiedad, sueño, ideas de hacerse daño' },
+    ],
+    guia: [
+      'Hacer una pregunta corta por sistema y anotar «niega» cuando sea negativo.',
+      'Si algo es positivo y se relaciona con el motivo, pasarlo a la enfermedad actual.',
+      'Salud mental: preguntar directo por ideas de hacerse daño.',
+    ],
+  },
+  {
+    id: 'examen',
+    numero: 7,
+    titulo: 'Examen físico',
+    descripcion: 'Signos vitales, examen general y regional.',
+    campos: [
+      { id: 'pas', etiqueta: 'Presión sistólica', tipo: 'numero', unidad: 'mmHg', obligatorio: true, grupo: 'Signos vitales' },
+      { id: 'pad', etiqueta: 'Presión diastólica', tipo: 'numero', unidad: 'mmHg', obligatorio: true, grupo: 'Signos vitales' },
+      { id: 'fc', etiqueta: 'Frecuencia cardiaca', tipo: 'numero', unidad: 'lpm', obligatorio: true, grupo: 'Signos vitales' },
+      { id: 'fr', etiqueta: 'Frecuencia respiratoria', tipo: 'numero', unidad: 'rpm', obligatorio: true, grupo: 'Signos vitales' },
+      { id: 'temp', etiqueta: 'Temperatura', tipo: 'numero', unidad: '°C', obligatorio: true, grupo: 'Signos vitales' },
+      { id: 'sat', etiqueta: 'Saturación de O₂', tipo: 'numero', unidad: '%', obligatorio: true, grupo: 'Signos vitales' },
+      { id: 'oxigeno', etiqueta: 'Con oxígeno', tipo: 'opcion', opciones: ['Aire ambiente', 'Con oxígeno'], grupo: 'Signos vitales' },
+      { id: 'glucemia', etiqueta: 'Glucometría', tipo: 'numero', unidad: 'mg/dL', grupo: 'Signos vitales' },
+      { id: 'peso', etiqueta: 'Peso', tipo: 'numero', unidad: 'kg', grupo: 'Signos vitales' },
+      { id: 'talla', etiqueta: 'Talla', tipo: 'numero', unidad: 'cm', grupo: 'Signos vitales' },
+      { id: 'aspecto', etiqueta: 'Aspecto general', tipo: 'parrafo', ayuda: 'Conciencia, hidratación, coloración, facies, actitud, dolor aparente', grupo: 'Examen general y regional' },
+      { id: 'cabezaCuello', etiqueta: 'Cabeza y cuello', tipo: 'parrafo', ayuda: 'Pupilas, mucosas, ingurgitación yugular, tiroides, ganglios', grupo: 'Examen general y regional' },
+      { id: 'torax', etiqueta: 'Tórax y pulmones', tipo: 'parrafo', ayuda: 'Inspección, expansión, percusión, murmullo vesicular, ruidos agregados', grupo: 'Examen general y regional' },
+      { id: 'corazon', etiqueta: 'Corazón', tipo: 'parrafo', ayuda: 'Ritmo, ruidos, soplos (foco y grado), roce', grupo: 'Examen general y regional' },
+      { id: 'abdomen', etiqueta: 'Abdomen', tipo: 'parrafo', ayuda: 'Ruidos, palpación, masas, visceromegalias, irritación peritoneal, puño percusión', grupo: 'Examen general y regional' },
+      { id: 'extremidades', etiqueta: 'Extremidades', tipo: 'parrafo', ayuda: 'Edema (grado), pulsos, llenado capilar, signos de trombosis', grupo: 'Examen general y regional' },
+      { id: 'pielExamen', etiqueta: 'Piel', tipo: 'parrafo', ayuda: 'Lesiones, ictericia, petequias', grupo: 'Examen general y regional' },
+      { id: 'neurologico', etiqueta: 'Neurológico', tipo: 'parrafo', ayuda: 'Glasgow, orientación, pares craneales, fuerza, sensibilidad, reflejos, signos meníngeos', grupo: 'Examen general y regional' },
+    ],
+    guia: [
+      'Tomar los signos vitales completos antes del examen.',
+      'Examen general: conciencia, hidratación, coloración, facies, actitud.',
+      'Examen regional en orden: inspección, palpación, percusión, auscultación.',
+      'Registrar hallazgos negativos relevantes, no solo los positivos.',
+    ],
+  },
+  {
+    id: 'impresion',
+    numero: 8,
+    titulo: 'Impresión diagnóstica',
+    descripcion: 'Síndromes y diagnósticos diferenciales elegidos por el médico.',
+    campos: [
+      { id: 'sindromes', corto: 'Síndromes', etiqueta: 'Síndromes identificados', tipo: 'parrafo' },
+      { id: 'diagnosticos', corto: 'Diagnósticos', etiqueta: 'Diagnósticos (en orden de probabilidad; presuntivo, confirmado o descartado)', tipo: 'parrafo', obligatorio: true },
+      { id: 'cronicos', corto: 'Crónicos', etiqueta: 'Diagnósticos crónicos conocidos', tipo: 'parrafo' },
+    ],
+    guia: [
+      'Agrupar los hallazgos en síndromes (p. ej. síndrome febril, síndrome de dificultad respiratoria).',
+      'Ordenar los diagnósticos de más a menos probable.',
+      'No olvidar los diagnósticos graves que todavía no se pueden descartar.',
+      'La decisión diagnóstica es del médico; la app solo sugiere.',
+    ],
+  },
+  {
+    id: 'plan',
+    numero: 9,
+    titulo: 'Plan',
+    descripcion: 'Exámenes, manejo inicial, interconsultas y educación.',
+    campos: [
+      { id: 'examenes', corto: 'Exámenes', etiqueta: 'Exámenes de laboratorio e imágenes (con su motivo)', tipo: 'parrafo' },
+      { id: 'manejo', corto: 'Manejo inicial', etiqueta: 'Manejo inicial (medidas generales y medicamentos: nombre, dosis, vía, frecuencia)', tipo: 'parrafo', obligatorio: true },
+      { id: 'interconsultas', etiqueta: 'Interconsultas', tipo: 'texto' },
+      { id: 'criterios', corto: 'Criterios de hospitalización o alta', etiqueta: 'Criterios de hospitalización o de alta', tipo: 'texto' },
+      { id: 'educacion', corto: 'Educación', etiqueta: 'Educación y signos de alarma explicados al paciente', tipo: 'parrafo' },
+    ],
+    guia: [
+      'Cada examen con su motivo.',
+      'Medicamentos con nombre, dosis, vía y frecuencia.',
+      '¿Necesita interconsulta u hospitalización?',
+      'Explicar al paciente los signos de alarma por los que debe volver.',
+    ],
+  },
+]
