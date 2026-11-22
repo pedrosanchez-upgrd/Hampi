@@ -102,7 +102,7 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                           {([['1', 'Sí'], ['0', 'No']] as const).map(([val, t]) => (
                             <button key={val} aria-pressed={v === val} onClick={() => poner(`${s.id}.a${i}`, v === val ? '' : val)}
                               className={`min-h-10 min-w-11 px-2.5 font-medium transition-colors ${v === val
-                                ? val === '1' ? 'bg-alarm text-on-alarm' : 'bg-ink-soft text-surface' : 'bg-surface text-ink-soft hover:bg-surface-2'}`}>
+                                ? val === '1' ? 'bg-alarm text-on-alarm' : 'bg-surface-2 font-semibold text-ink' : 'bg-surface text-ink-faint hover:bg-surface-2/60'}`}>
                               {t}
                             </button>
                           ))}
@@ -135,8 +135,8 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                             {([['si', 'Sí'], ['no', 'No'], ['', '?']] as const).map(([v, t]) => (
                               <button key={t} aria-pressed={valor === v}
                                 className={`min-h-10 min-w-12 px-3 font-medium transition-colors ${valor === v
-                                  ? v === 'si' ? 'bg-brand text-on-brand' : v === 'no' ? 'bg-ink-soft text-surface' : 'bg-surface-2 text-ink'
-                                  : 'bg-surface text-ink-soft hover:bg-surface-2'}`}
+                                  ? v === 'si' ? 'bg-brand text-on-brand' : v === 'no' ? 'bg-surface-2 font-semibold text-ink' : 'bg-surface text-ink-soft'
+                                  : 'bg-surface text-ink-faint hover:bg-surface-2/60'}`}
                                 onClick={() => setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, [hz.id]: v } }))}>
                                 {t}
                               </button>

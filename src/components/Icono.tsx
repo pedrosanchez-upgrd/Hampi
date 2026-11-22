@@ -18,11 +18,18 @@ const RUTAS: Record<string, string> = {
   info: 'M12 8v.01M11 12h1v5h1M12 3a9 9 0 100 18 9 9 0 000-18z',
   enlace: 'M14 4h6v6M20 4l-9 9M18 14v6H4V6h6',
   persona: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0',
+  mensaje: 'M4 5h16v11H9l-5 4V5z',
+  familia: 'M8 11a3 3 0 100-6 3 3 0 000 6zM16 11a3 3 0 100-6 3 3 0 000 6zM2.5 20a5.5 5.5 0 0111 0M12.5 20a5.5 5.5 0 019 0',
+  estetoscopio: 'M6 3v6a5 5 0 0010 0V3M11 14v2a4 4 0 008 0v-2M19 14a2 2 0 100-4 2 2 0 000 4z',
+  lupa: 'M11 18a7 7 0 100-14 7 7 0 000 14zM16 16l4.5 4.5',
+  portapapeles: 'M9 4h6v3H9zM7 5H5v16h14V5h-2M9 12h6M9 16h4',
+  carpeta: 'M3 6h6l2 2h10v11H3z',
+  puntos: 'M5 12h.01M12 12h.01M19 12h.01',
 }
 
 export function Icono({ nombre, className = 'h-5 w-5', titulo }: { nombre: keyof typeof RUTAS | string; className?: string; titulo?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={nombre === 'puntos' ? 3 : 1.75} strokeLinecap="round" strokeLinejoin="round"
       className={className} aria-hidden={titulo ? undefined : true} role={titulo ? 'img' : undefined}>
       {titulo && <title>{titulo}</title>}
       <path d={RUTAS[nombre] ?? ''} />

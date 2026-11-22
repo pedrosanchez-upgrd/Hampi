@@ -43,20 +43,26 @@ function guardar(clave: string, valor: unknown) {
 }
 
 const PASOS = [...SECCIONES.map((s) => ({ id: s.id, n: s.numero, t: s.titulo })), { id: 'redaccion', n: 10, t: 'Redacción final' }]
+const ICONO_PASO: Record<string, string> = {
+  filiacion: 'persona', motivo: 'mensaje', enfermedad: 'pulso', personales: 'carpeta', familiares: 'familia',
+  sistemas: 'lista', examen: 'estetoscopio', impresion: 'lupa', plan: 'portapapeles', redaccion: 'documento',
+}
 
-/** Anillo de progreso de un apartado (como el avance de una ficha). */
+/** Ícono del apartado dentro de un anillo que muestra cuánto se llenó. */
 function Anillo({ id, historia, activo }: { id: string; historia: Historia; activo: boolean }) {
-  if (id === 'redaccion') return <Icono nombre="documento" className="h-5 w-5" />
-  const p = progresoSeccion(historia, id)
-  const f = p.total ? p.llenos / p.total : 0
-  const completo = p.obligatoriosFaltan === 0 && p.llenos > 0
-  const c = 2 * Math.PI * 9
+  const p = id === 'redaccion' ? null : progresoSeccion(historia, id)
+  const f = p && p.total ? p.llenos / p.total : 0
+  const completo = !!p && p.obligatoriosFaltan === 0 && p.llenos > 0
+  const c = 2 * Math.PI * 13
   return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0 -rotate-90" aria-hidden>
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity={0.2} strokeWidth="3" />
-      <circle cx="12" cy="12" r="9" fill="none" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${f * c} ${c}`}
-        stroke={activo ? 'var(--on-brand)' : completo ? 'var(--ok)' : 'var(--brand)'} />
-    </svg>
+    <span className="relative flex h-8 w-8 shrink-0 items-center justify-center">
+      <svg viewBox="0 0 32 32" className="absolute inset-0 -rotate-90" aria-hidden>
+        <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeOpacity={0.18} strokeWidth="2.5" />
+        {p && <circle cx="16" cy="16" r="13" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={`${f * c} ${c}`}
+          stroke={activo ? 'var(--on-brand)' : completo ? 'var(--ok)' : 'var(--brand)'} />}
+      </svg>
+      <Icono nombre={ICONO_PASO[id]} className="h-4 w-4" />
+    </span>
   )
 }
 
@@ -95,6 +101,8 @@ export default function App() {
   const [historiaId, setHistoriaId] = useState<string | null>(() => leer<string | null>(CLAVE_HISTORIA_ID, null))
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardado>('local')
   const [verHistorias, setVerHistorias] = useState(false)
+  const [menu, setMenu] = useState(false)
+  const [asistenteAbierto, setAsistenteAbierto] = useState(false)
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null)
   const enCurso = useRef<Promise<void> | null>(null)
   const idActual = useRef<string | null>(historiaId)
@@ -178,16 +186,16 @@ export default function App() {
             {sesion ? (
               <>
                 <button onClick={() => setVerHistorias(true)} className="flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-soft hover:bg-surface-2" title={sesion.user.email ?? ''}>
-                  <Icono nombre="lista" className="h-4 w-4" /><span className="hidden sm:inline">Mis historias</span>
+                  <Icono nombre="carpeta" className="h-4 w-4" /><span className="hidden sm:inline">Mis historias</span>
                 </button>
                 <button onClick={async () => { await salir(); setHistoria(historiaVacia()); setHistoriaId(null) }} className="hidden min-h-10 rounded-full px-3 text-sm text-ink-soft hover:bg-surface-2 sm:block">Salir</button>
               </>
             ) : (
               <button onClick={() => { setSinCuenta(false); guardar(CLAVE_SIN_CUENTA, false) }} className="flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-brand hover:bg-brand-soft">
-                <Icono nombre="persona" className="h-4 w-4" /><span className="hidden sm:inline">Entrar</span>
+                <Icono nombre="persona" className="h-4 w-4" />Entrar
               </button>
             )}
-            <button onClick={cambiarTema} className="flex h-10 w-10 items-center justify-center rounded-full text-ink-soft hover:bg-surface-2"
+            <button onClick={cambiarTema} className="hidden h-10 w-10 items-center justify-center rounded-full text-ink-soft hover:bg-surface-2 sm:flex"
               aria-label={`Tema: ${tema}. Cambiar`} title={`Tema: ${tema}`}>
               <Icono nombre={tema === 'oscuro' ? 'luna' : tema === 'claro' ? 'sol' : 'sistema'} className="h-5 w-5" />
             </button>
@@ -198,14 +206,33 @@ export default function App() {
                 <button className="min-h-10 rounded-full px-3 text-sm text-ink-soft hover:bg-surface-2" onClick={() => setConfirmar(false)}>Cancelar</button>
               </span>
             ) : (
-              <button className="flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-soft hover:bg-surface-2" onClick={() => setConfirmar(true)}>
-                <Icono nombre="mas" className="h-4 w-4" /><span className="hidden sm:inline">Nueva historia</span>
+              <button className="hidden min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-soft hover:bg-surface-2 sm:flex" onClick={() => setConfirmar(true)}>
+                <Icono nombre="mas" className="h-4 w-4" />Nueva historia
               </button>
             )}
+            <div className="relative sm:hidden">
+              <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Más opciones"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-ink-soft hover:bg-surface-2">
+                <Icono nombre="puntos" className="h-5 w-5" />
+              </button>
+              {menu && <div className="fixed inset-0 z-10" aria-hidden onClick={() => setMenu(false)} />}
+              {menu && (
+                <div role="menu" className="absolute right-0 top-12 z-20 w-56 rounded-2xl border border-line bg-surface p-1.5 shadow-card">
+                  <button role="menuitem" className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] text-ink hover:bg-surface-2"
+                    onClick={() => { setMenu(false); setConfirmar(true) }}><Icono nombre="mas" className="h-4 w-4" /> Nueva historia</button>
+                  <button role="menuitem" className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] text-ink hover:bg-surface-2"
+                    onClick={cambiarTema}><Icono nombre={tema === 'oscuro' ? 'luna' : tema === 'claro' ? 'sol' : 'sistema'} className="h-4 w-4" />
+                    Tema: {tema === 'sistema' ? 'automático' : tema}</button>
+                  {sesion && <button role="menuitem" className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] text-ink hover:bg-surface-2"
+                    onClick={async () => { setMenu(false); await salir(); setHistoria(historiaVacia()); setHistoriaId(null) }}><Icono nombre="atras" className="h-4 w-4" /> Salir</button>}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <p className="border-t border-warn/20 bg-warn-soft px-4 py-1 text-center text-xs text-warn">
-          Modo de prueba: use solo casos ficticios. Hampi es una herramienta de apoyo; la decisión clínica es suya.
+          <span className="sm:hidden">Modo de prueba · solo casos ficticios</span>
+          <span className="hidden sm:inline">Modo de prueba: use solo casos ficticios. Hampi es una herramienta de apoyo; la decisión clínica es suya.</span>
         </p>
       </header>
 
@@ -221,8 +248,8 @@ export default function App() {
                   <button onClick={() => irA(s.id)} aria-current={activo ? 'step' : undefined}
                     className={`flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[15px] transition-colors ${
                       activo ? 'bg-brand text-on-brand shadow-card' : 'text-ink hover:bg-surface'}`}>
-                    <span className={activo ? 'text-on-brand' : 'text-ink-faint'}><Anillo id={s.id} historia={historia} activo={activo} /></span>
-                    <span className="whitespace-nowrap md:whitespace-normal"><span className={`cifra mr-1 ${activo ? "" : "text-ink-soft"}`}>{s.n}</span>{s.t}</span>
+                    <span className={activo ? 'text-on-brand' : 'text-ink-soft'}><Anillo id={s.id} historia={historia} activo={activo} /></span>
+                    <span className="whitespace-nowrap font-medium md:whitespace-normal">{s.t}</span>
                     {pendiente && <span className={`ml-auto h-2 w-2 shrink-0 rounded-full ${activo ? 'bg-on-brand' : 'bg-warn'}`} aria-label="faltan datos obligatorios" />}
                   </button>
                 </li>
@@ -273,7 +300,7 @@ export default function App() {
             </section>
           )}
 
-          <div className="no-imprimir mt-8 flex items-center justify-between gap-3">
+          <div className="no-imprimir mt-8 hidden items-center justify-between gap-3 md:flex">
             {anterior ? (
               <button className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-ink-soft hover:bg-surface" onClick={() => irA(anterior.id)}>
                 <Icono nombre="atras" className="h-5 w-5" /><span className="hidden sm:inline">{anterior.t}</span>
@@ -295,7 +322,23 @@ export default function App() {
         </aside>
       </div>
 
-      <AsistenteFlotante historia={historia} setHistoria={setHistoria} irA={irA} />
+      <AsistenteFlotante historia={historia} setHistoria={setHistoria} irA={irA} abierto={asistenteAbierto} setAbierto={setAsistenteAbierto} />
+
+      {/* Teléfono: barra inferior con Anterior · Asistente · Siguiente (no tapa el formulario) */}
+      <nav aria-label="Pasos" className="no-imprimir fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-2 backdrop-blur-md md:hidden">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <button className="flex min-h-11 items-center gap-1 rounded-xl px-2 text-sm text-ink-soft disabled:opacity-30" disabled={!anterior} onClick={() => anterior && irA(anterior.id)}>
+            <Icono nombre="atras" className="h-5 w-5" /> Anterior
+          </button>
+          <button onClick={() => setAsistenteAbierto(true)} className="flex min-h-11 items-center gap-2 rounded-full bg-brand-soft px-4 font-semibold text-brand-strong">
+            <Icono nombre="pulso" className="h-5 w-5" /> Asistente
+            {alarmasMarcadas(historia).length > 0 && <span className="cifra rounded-full bg-alarm px-1.5 text-xs text-on-alarm">{alarmasMarcadas(historia).length}</span>}
+          </button>
+          <button className="flex min-h-11 items-center justify-end gap-1 rounded-xl px-2 text-sm font-semibold text-brand disabled:opacity-30" disabled={!siguiente} onClick={() => siguiente && irA(siguiente.id)}>
+            Siguiente <Icono nombre="flecha" className="h-5 w-5" />
+          </button>
+        </div>
+      </nav>
       {sesion && (
         <MisHistorias abierto={verHistorias} actualId={historiaId} onCerrar={() => setVerHistorias(false)} onNueva={nuevaHistoria}
           onAbrir={(h) => { setHistoria({ ...historiaVacia(), ...h.contenido }); setHistoriaId(h.id); setVerHistorias(false); irA(SECCIONES[0].id); auditar('abrir', h.id) }} />

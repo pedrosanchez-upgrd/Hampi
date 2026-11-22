@@ -16,7 +16,7 @@ function SiNo({ valor, onCambio, etiqueta }: { valor: string; onCambio: (v: stri
       {([['si', 'Sí'], ['no', 'No']] as const).map(([v, t]) => (
         <button key={v} aria-pressed={valor === v} onClick={() => onCambio(valor === v ? '' : v)}
           className={`min-h-10 min-w-12 px-3 font-medium transition-colors ${valor === v
-            ? v === 'si' ? 'bg-brand text-on-brand' : 'bg-ink-soft text-surface' : 'bg-surface text-ink-soft hover:bg-surface-2'}`}>
+            ? v === 'si' ? 'bg-brand text-on-brand' : 'bg-surface-2 font-semibold text-ink' : 'bg-surface text-ink-faint hover:bg-surface-2/60'}`}>
           {t}
         </button>
       ))}

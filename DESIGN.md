@@ -41,6 +41,7 @@ Tipos: Plus Jakarta Sans para títulos, Inter para texto y formularios, JetBrain
 
 - 2026-11-23 — Flechas ▲▼ para factores cualitativos y número solo para LR publicados — evitar falsa precisión.
 - 2026-11-23 — Contraste revisado con axe-core (WCAG AA) en claro y oscuro; token on-alarm para texto sobre rojo.
+- 2026-11-22 — Refinamiento (craft-critique): barra inferior en el teléfono (Anterior · Asistente · Siguiente) en vez de botón flotante que tapaba campos; menú «Más» con nombres; «No» en tono suave y «?» sin relleno (un solo color fuerte: Sí y alarmas); íconos por apartado dentro del anillo de progreso; «Paso X de 10»; guía «Qué preguntar» en tarjeta blanca; aviso de prueba corto en el teléfono.
 
 ## Preguntas abiertas
 - ¿Coma o punto decimal? Se usa coma (36,8 °C) (supuesto); confirmar el uso en los hospitales de Cuenca.

@@ -209,8 +209,10 @@ export function Asistente(props: Props) {
 }
 
 /** En pantallas medianas y pequeñas: botón flotante que abre el asistente en una hoja lateral. */
-export function AsistenteFlotante(props: Props) {
-  const [abierto, setAbierto] = useState(false)
+export function AsistenteFlotante(props: Props & { abierto?: boolean; setAbierto?: (v: boolean) => void }) {
+  const [abiertoLocal, setAbiertoLocal] = useState(false)
+  const abierto = props.abierto ?? abiertoLocal
+  const setAbierto = props.setAbierto ?? setAbiertoLocal
   const n = diagnosticosEnVivo(props.historia).filter((x) => !x.descartado).length
   const alarmas = alarmasMarcadas(props.historia).length
   useEffect(() => {
@@ -222,7 +224,7 @@ export function AsistenteFlotante(props: Props) {
   return (
     <>
       <button onClick={() => setAbierto(true)}
-        className="no-imprimir fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-20 flex min-h-12 items-center gap-2 rounded-full bg-brand pl-4 pr-3 font-semibold text-on-brand shadow-card hover:bg-brand-strong xl:hidden">
+        className="no-imprimir fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-20 hidden min-h-12 items-center gap-2 rounded-full bg-brand pl-4 pr-3 font-semibold text-on-brand shadow-card hover:bg-brand-strong md:flex xl:hidden">
         <Icono nombre="pulso" className="h-5 w-5" /> Asistente
         {n > 0 && <span className="cifra rounded-full bg-on-brand/20 px-2 text-sm">{n}</span>}
         {alarmas > 0 && <span className="cifra rounded-full bg-alarm px-2 text-sm text-on-alarm">{alarmas}</span>}

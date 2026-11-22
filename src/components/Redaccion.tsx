@@ -30,7 +30,7 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
   return (
     <section className="grid gap-5">
       <header className="no-imprimir">
-        <p className="cifra text-sm font-semibold text-brand">Apartado 10 de 10</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Paso 10 de 10</p>
         <h2 className="mt-0.5 font-display text-[28px] font-bold leading-tight tracking-tight text-ink">Redacción final</h2>
         <p className="mt-1 text-ink-soft">Revise el texto antes de firmarlo. Más adelante la IA pulirá la redacción; hoy se ordena sin IA.</p>
       </header>

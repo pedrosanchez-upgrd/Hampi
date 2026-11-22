@@ -87,13 +87,14 @@ function Guia({ seccion, guia, onGuia }: Pick<Props, 'seccion' | 'guia' | 'onGui
   const [abierta, setAbierta] = useState(true)
   const hechas = seccion.guia.filter((_, i) => guia[`${seccion.id}.${i}`] === '1').length
   return (
-    <section className="rounded-2xl border border-brand/25 bg-brand-soft/60">
+    <section className="rounded-2xl border border-line bg-surface shadow-card">
       <button className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
-        <span className="flex items-center gap-2 font-semibold text-brand-strong">
-          <Icono nombre="lista" className="h-5 w-5" /> Qué preguntar
+        <span className="flex items-center gap-2.5 font-semibold text-ink">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand"><Icono nombre="mensaje" className="h-4 w-4" /></span>
+          Qué preguntar
         </span>
         <span className="flex items-center gap-2 text-sm text-ink-soft">
-          <span className="cifra">{hechas}/{seccion.guia.length}</span>
+          <span className={`cifra rounded-full px-2 py-0.5 text-xs font-semibold ${hechas === seccion.guia.length ? 'bg-ok-soft text-ok' : 'bg-surface-2 text-ink-soft'}`}>{hechas}/{seccion.guia.length}</span>
           <Icono nombre="flecha" className={`h-4 w-4 transition-transform ${abierta ? 'rotate-90' : ''}`} />
         </span>
       </button>
@@ -130,7 +131,7 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
   return (
     <div className="grid gap-5">
       <header>
-        <p className="cifra text-sm font-semibold text-brand">Apartado {seccion.numero} de 10</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Paso {seccion.numero} de 10</p>
         <h2 className="mt-0.5 font-display text-[28px] font-bold leading-tight tracking-tight text-ink">{seccion.titulo}</h2>
         <p className="mt-1 text-ink-soft">{seccion.descripcion}</p>
       </header>
