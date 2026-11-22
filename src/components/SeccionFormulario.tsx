@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Campo, Seccion } from '../data/secciones'
 import { avisoSigno, cedulaValida, imc, RANGOS } from '../lib/historia'
 import { Icono } from './Icono'
@@ -9,6 +9,9 @@ interface Props {
   onCambio: (campoId: string, valor: string) => void
   guia: Record<string, string>
   onGuia: (clave: string, valor: string) => void
+  sexo?: string
+  /** Bloque que va justo después de la guía (por ejemplo los antecedentes estructurados). */
+  children?: ReactNode
 }
 
 const claseInput =
@@ -115,9 +118,9 @@ function Guia({ seccion, guia, onGuia }: Pick<Props, 'seccion' | 'guia' | 'onGui
   )
 }
 
-export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia }: Props) {
+export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, sexo, children }: Props) {
   const grupos: { titulo?: string; campos: Campo[] }[] = []
-  for (const c of seccion.campos) {
+  for (const c of seccion.campos.filter((x) => !x.soloSexo || x.soloSexo === sexo)) {
     const ultimo = grupos[grupos.length - 1]
     if (ultimo && ultimo.titulo === c.grupo) ultimo.campos.push(c)
     else grupos.push({ titulo: c.grupo, campos: [c] })
@@ -133,6 +136,7 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia }: 
       </header>
 
       <Guia seccion={seccion} guia={guia} onGuia={onGuia} />
+      {children}
 
       {grupos.map((g, gi) => (
         <section key={gi} className="rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
@@ -176,11 +180,26 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia }: 
                       </label>
                     )}
                     <Entrada c={c} v={v} onCambio={(nv) => onCambio(c.id, nv)} invalido={!!a} />
+                    {c.rapido && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {c.rapido.map((r) => (
+                          <button key={r} type="button" aria-pressed={v === r} onClick={() => onCambio(c.id, v === r ? '' : r)}
+                            className={`min-h-8 rounded-full border px-3 text-sm transition-colors ${v === r ? 'border-brand bg-brand-soft font-medium text-brand-strong' : 'border-line text-ink-soft hover:border-brand/60'}`}>
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     {c.ayuda && <p id={`campo-${c.id}-ayuda`} className="mt-1.5 text-xs text-ink-faint">{c.ayuda}</p>}
                     {a && <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-alarm"><Icono nombre="alerta" className="h-4 w-4" />{a}</p>}
                   </div>
                 )
               })}
+              {g.titulo === 'Hábitos' && Number(valores.tabacoCig) > 0 && Number(valores.tabacoAnios) > 0 && (
+                <p className="rounded-xl bg-surface-2 px-3.5 py-2.5 text-sm text-ink sm:col-span-2">
+                  Índice tabáquico: <span className="cifra font-semibold">{String(Math.round((Number(valores.tabacoCig) * Number(valores.tabacoAnios)) / 2) / 10).replace('.', ',')}</span> paquetes/año
+                </p>
+              )}
             </div>
           )}
         </section>

@@ -9,6 +9,7 @@ import { Redaccion } from './components/Redaccion'
 import { PestanasSintomas } from './components/PestanasSintomas'
 import { Asistente, AsistenteFlotante, ListaDiagnosticos } from './components/PanelDiagnosticos'
 import { Icono, Logo } from './components/Icono'
+import { AntecedentesFamiliares, AntecedentesPersonales } from './components/Antecedentes'
 
 const CLAVE_TERMINOS = 'hampi.terminos'
 const CLAVE_BORRADOR = 'hampi.borrador'
@@ -150,7 +151,11 @@ export default function App() {
             <SeccionFormulario key={seccion.id} seccion={seccion} valores={historia[seccion.id] ?? {}}
               onCambio={(campo, valor) => setHistoria((h) => ({ ...h, [seccion.id]: { ...h[seccion.id], [campo]: valor } }))}
               guia={historia.guia ?? {}}
-              onGuia={(clave, valor) => setHistoria((h) => ({ ...h, guia: { ...h.guia, [clave]: valor } }))} />
+              onGuia={(clave, valor) => setHistoria((h) => ({ ...h, guia: { ...h.guia, [clave]: valor } }))}
+              sexo={historia.filiacion?.sexo}>
+              {seccion.id === 'personales' && <AntecedentesPersonales historia={historia} setHistoria={setHistoria} />}
+              {seccion.id === 'familiares' && <AntecedentesFamiliares historia={historia} setHistoria={setHistoria} />}
+            </SeccionFormulario>
           ) : (
             <Redaccion historia={historia} irA={irA} />
           )}

@@ -4,6 +4,7 @@
 
 import { DIAGNOSTICOS, FUENTES, HALLAZGOS, type Fuente, type Regla } from '../data/conocimiento'
 import { sintomasAbiertos, type Historia } from './historia'
+import { EPIDEMIOLOGICOS, PATOLOGICOS } from '../data/antecedentes'
 
 export type Estado = 'si' | 'no'
 
@@ -23,6 +24,18 @@ export function hallazgosAutomaticos(h: Historia): Record<string, Estado> {
   if (t !== null) out.fiebreMedida = t >= 38 ? 'si' : 'no'
   if (fr !== null) out.taquipnea = fr > 24 ? 'si' : 'no'
   if (edad !== null) out.edad40 = edad >= 40 ? 'si' : 'no'
+  // Antecedentes conectados: «Sí» en cualquiera de los que alimentan un hallazgo lo marca presente;
+  // «No» en todos los que lo alimentan lo marca ausente.
+  const a = h.antecedentes ?? {}
+  const fuentes: [string, string][] = [
+    ...PATOLOGICOS.filter((x) => x.hallazgo).map((x) => [`p.${x.id}`, x.hallazgo!] as [string, string]),
+    ...EPIDEMIOLOGICOS.filter((x) => x.hallazgo).map((x) => [`e.${x.id}`, x.hallazgo!] as [string, string]),
+  ]
+  for (const hz of new Set(fuentes.map(([, z]) => z))) {
+    const valores = fuentes.filter(([, z]) => z === hz).map(([k]) => a[k])
+    if (valores.includes('si')) out[hz] = 'si'
+    else if (valores.length && valores.every((v) => v === 'no')) out[hz] = 'no'
+  }
   return out
 }
 

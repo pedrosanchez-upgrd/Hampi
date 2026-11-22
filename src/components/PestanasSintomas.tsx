@@ -90,13 +90,28 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
               </div>
               <div>
                 <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-alarm">
-                  <Icono nombre="alerta" className="h-4 w-4" /> Signos de alarma · marque si están presentes
+                  <Icono nombre="alerta" className="h-4 w-4" /> Signos de alarma · ¿presentes?
                 </h4>
-                <ul className="mt-2 grid gap-0.5">
-                  {s.alarmas.map((a, i) => (
-                    <li key={a}><Casilla tono="alarm" texto={a} marcada={sx[`${s.id}.a${i}`] === '1'} onCambio={(v) => poner(`${s.id}.a${i}`, v ? '1' : '')} /></li>
-                  ))}
+                <ul className="mt-2 grid gap-1">
+                  {s.alarmas.map((a, i) => {
+                    const v = sx[`${s.id}.a${i}`] ?? ''
+                    return (
+                      <li key={a} className={`flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 ${v === '1' ? 'bg-alarm-soft' : ''}`}>
+                        <span className={`text-[15px] leading-snug ${v === '1' ? 'font-semibold text-alarm' : v === '0' ? 'text-ink-soft' : 'text-ink'}`}>{a}</span>
+                        <span className="flex shrink-0 overflow-hidden rounded-lg border border-line text-sm" role="group" aria-label={`Alarma: ${a}`}>
+                          {([['1', 'Sí'], ['0', 'No']] as const).map(([val, t]) => (
+                            <button key={val} aria-pressed={v === val} onClick={() => poner(`${s.id}.a${i}`, v === val ? '' : val)}
+                              className={`min-h-10 min-w-11 px-2.5 font-medium transition-colors ${v === val
+                                ? val === '1' ? 'bg-alarm text-white' : 'bg-ink-soft text-surface' : 'bg-surface text-ink-soft hover:bg-surface-2'}`}>
+                              {t}
+                            </button>
+                          ))}
+                        </span>
+                      </li>
+                    )
+                  })}
                 </ul>
+                <p className="mt-1.5 px-2 text-xs text-ink-faint">Los que marque «No» salen en la redacción como negativos pertinentes.</p>
               </div>
 
               {hallazgosDeSintoma(s.id).length > 0 && (

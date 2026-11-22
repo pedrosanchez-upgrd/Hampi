@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { diagnosticosEnVivo, formatoFactor, type Resultado } from '../lib/motor'
-import { alarmasMarcadas, faltantes, type Historia } from '../lib/historia'
+import { alarmasMarcadas, avisos, faltantes, type Historia } from '../lib/historia'
 import { Icono } from './Icono'
 
 interface Props {
@@ -127,8 +127,24 @@ export function ListaDiagnosticos({ historia, setHistoria }: Props) {
 function Pendientes({ historia, irA }: Props) {
   const alarmas = alarmasMarcadas(historia)
   const falta = faltantes(historia)
+  const av = avisos(historia)
   return (
     <div className="grid gap-4">
+      {av.length > 0 && (
+        <section>
+          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-warn">No se le olvide</h4>
+          <ul className="mt-2 grid gap-1">
+            {av.map((a, i) => (
+              <li key={i}>
+                <button className="flex w-full min-h-10 items-start gap-2 rounded-xl px-3 py-2 text-left text-sm hover:bg-warn-soft" onClick={() => irA?.(a.seccionId)}>
+                  <Icono nombre={a.tipo === 'alarma' ? 'alerta' : 'info'} className="mt-0.5 h-4 w-4 shrink-0 text-warn" />
+                  <span className="text-ink">{a.texto}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section>
         <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-alarm">Signos de alarma marcados</h4>
         {alarmas.length === 0 ? <p className="mt-1.5 text-sm text-ink-soft">Ninguno por ahora.</p> : (
@@ -165,7 +181,7 @@ function Pendientes({ historia, irA }: Props) {
 export function Asistente(props: Props) {
   const [pestana, setPestana] = useState<'dx' | 'pend'>('dx')
   const n = diagnosticosEnVivo(props.historia).filter((x) => !x.descartado).length
-  const p = alarmasMarcadas(props.historia).length + faltantes(props.historia).length
+  const p = alarmasMarcadas(props.historia).length + faltantes(props.historia).length + avisos(props.historia).length
   return (
     <div className="grid gap-3">
       <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">

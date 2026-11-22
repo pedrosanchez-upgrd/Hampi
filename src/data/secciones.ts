@@ -16,6 +16,10 @@ export interface Campo {
   corto?: string
   /** Subtítulo dentro del apartado (por ejemplo «Alérgicos»). */
   grupo?: string
+  /** Respuestas rápidas de un toque (por ejemplo «Niega»). */
+  rapido?: string[]
+  /** Solo se muestra para este sexo (gineco-obstétricos). */
+  soloSexo?: 'Mujer'
 }
 
 export interface Seccion {
@@ -28,7 +32,6 @@ export interface Seccion {
   guia: string[]
 }
 
-const SI_NO = ['No', 'Sí']
 
 export const SECCIONES: Seccion[] = [
   {
@@ -111,19 +114,27 @@ export const SECCIONES: Seccion[] = [
     titulo: 'Antecedentes personales',
     descripcion: 'Patológicos, quirúrgicos, alérgicos, farmacológicos, gineco-obstétricos y hábitos.',
     campos: [
-      { id: 'patologicos', corto: 'Enfermedades', etiqueta: 'Enfermedades diagnosticadas (año y control)', tipo: 'parrafo', grupo: 'Patológicos' },
+      { id: 'patologicos', corto: 'Otras enfermedades', etiqueta: 'Otras enfermedades o detalles', tipo: 'parrafo', grupo: 'Patológicos' },
       { id: 'hospitalizaciones', etiqueta: 'Hospitalizaciones previas', tipo: 'texto', grupo: 'Patológicos' },
       { id: 'quirurgicos', corto: 'Cirugías', etiqueta: 'Cirugías (año y complicaciones)', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
       { id: 'traumaticos', etiqueta: 'Traumatismos', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
       { id: 'transfusiones', etiqueta: 'Transfusiones', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
-      { id: 'alergicos', corto: 'Alergias', etiqueta: 'Alergias (sustancia y reacción)', tipo: 'texto', obligatorio: true, ayuda: 'Si no tiene, escribir «Niega».', grupo: 'Alérgicos' },
-      { id: 'farmacologicos', corto: 'Medicamentos', etiqueta: 'Medicamentos (nombre, dosis, frecuencia, desde cuándo)', tipo: 'parrafo', obligatorio: true, ayuda: 'Incluir sin receta, naturales y anticonceptivos. Si no toma, «Niega».', grupo: 'Farmacológicos' },
+      { id: 'alergicos', corto: 'Alergias', etiqueta: 'Alergias (sustancia y reacción)', tipo: 'texto', obligatorio: true, ayuda: 'Sustancia y reacción.', rapido: ['Niega alergias'], grupo: 'Alérgicos' },
+      { id: 'farmacologicos', corto: 'Medicamentos', etiqueta: 'Medicamentos (nombre, dosis, frecuencia, desde cuándo)', tipo: 'parrafo', obligatorio: true, ayuda: 'Incluir sin receta, naturales y anticonceptivos.', rapido: ['No toma medicamentos'], grupo: 'Farmacológicos' },
       { id: 'inmunizaciones', etiqueta: 'Vacunas', tipo: 'texto', grupo: 'Inmunizaciones' },
-      { id: 'go', corto: 'Gineco-obstétricos', etiqueta: 'Menarquia, ciclos, FUM, G-P-C-A, planificación, citología, menopausia', tipo: 'parrafo', grupo: 'Gineco-obstétricos (si aplica)' },
-      { id: 'tabaco', etiqueta: 'Tabaco', tipo: 'texto', ayuda: 'Paquetes/año', grupo: 'Hábitos' },
-      { id: 'alcohol', etiqueta: 'Alcohol', tipo: 'texto', ayuda: 'Cantidad y frecuencia', grupo: 'Hábitos' },
-      { id: 'sustancias', etiqueta: 'Otras sustancias', tipo: 'texto', grupo: 'Hábitos' },
-      { id: 'humoLena', etiqueta: 'Exposición a humo de leña', tipo: 'opcion', opciones: SI_NO, grupo: 'Hábitos' },
+      { id: 'fum', corto: 'FUM', etiqueta: 'Fecha de última menstruación (FUM)', tipo: 'fecha', grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'embarazo', corto: 'Posibilidad de embarazo', etiqueta: '¿Posibilidad de embarazo?', tipo: 'opcion', opciones: ['No', 'Sí', 'No sabe'], grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'menarquia', corto: 'Menarquia', etiqueta: 'Menarquia', tipo: 'numero', unidad: 'años', grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'ciclos', corto: 'Ciclos', etiqueta: 'Ciclos (regularidad, duración)', tipo: 'texto', grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'gpca', corto: 'G-P-C-A', etiqueta: 'Gestas, partos, cesáreas, abortos', tipo: 'texto', ayuda: 'Ej.: G3 P2 C1 A0', grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'planificacion', corto: 'Planificación', etiqueta: 'Método de planificación familiar', tipo: 'texto', rapido: ['Ninguno'], grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'tamizaje', corto: 'Tamizaje', etiqueta: 'Última citología y mamografía', tipo: 'texto', grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'menopausia', corto: 'Menopausia', etiqueta: 'Menopausia (edad)', tipo: 'texto', grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },
+      { id: 'tabaco', etiqueta: 'Tabaco', tipo: 'texto', rapido: ['Niega', 'Exfumador'], grupo: 'Hábitos' },
+      { id: 'tabacoCig', corto: 'Cigarrillos al día', etiqueta: 'Cigarrillos al día', tipo: 'numero', unidad: 'cig/día', grupo: 'Hábitos' },
+      { id: 'tabacoAnios', corto: 'Años fumando', etiqueta: 'Años fumando', tipo: 'numero', unidad: 'años', grupo: 'Hábitos' },
+      { id: 'alcohol', etiqueta: 'Alcohol', tipo: 'texto', ayuda: 'Cantidad y frecuencia', rapido: ['Niega', 'Ocasional'], grupo: 'Hábitos' },
+      { id: 'sustancias', etiqueta: 'Otras sustancias', tipo: 'texto', rapido: ['Niega'], grupo: 'Hábitos' },
       { id: 'actividad', corto: 'Actividad, alimentación y sueño', etiqueta: 'Actividad física, alimentación y sueño', tipo: 'texto', grupo: 'Hábitos' },
     ],
     guia: [
@@ -144,7 +155,7 @@ export const SECCIONES: Seccion[] = [
     titulo: 'Antecedentes familiares',
     descripcion: 'Enfermedades de padres, hermanos e hijos.',
     campos: [
-      { id: 'familiares', corto: 'Familiares', etiqueta: 'Enfermedades en la familia (parentesco, enfermedad, edad)', tipo: 'parrafo' },
+      { id: 'familiares', corto: 'Otros', etiqueta: 'Otros antecedentes familiares o detalles (edad, causa de muerte)', tipo: 'parrafo' },
     ],
     guia: [
       '¿Sus padres, hermanos o hijos tienen o tuvieron alguna enfermedad? ¿De qué murieron y a qué edad?',
@@ -157,18 +168,18 @@ export const SECCIONES: Seccion[] = [
     titulo: 'Revisión por sistemas',
     descripcion: 'Una pregunta corta por sistema. Lo positivo relacionado pasa a la enfermedad actual.',
     campos: [
-      { id: 'general', etiqueta: 'General', tipo: 'texto', ayuda: 'Fiebre, pérdida de peso, sudoración nocturna, cansancio' },
-      { id: 'piel', etiqueta: 'Piel', tipo: 'texto', ayuda: 'Lesiones, picazón, cambios de color' },
-      { id: 'cabeza', etiqueta: 'Cabeza y órganos de los sentidos', tipo: 'texto', ayuda: 'Cefalea, visión, oído, nariz, garganta' },
-      { id: 'cardio', etiqueta: 'Cardiovascular', tipo: 'texto', ayuda: 'Dolor en el pecho, palpitaciones, edema, ortopnea' },
-      { id: 'respiratorio', etiqueta: 'Respiratorio', tipo: 'texto', ayuda: 'Tos, expectoración, hemoptisis, disnea' },
-      { id: 'digestivo', etiqueta: 'Digestivo', tipo: 'texto', ayuda: 'Apetito, náusea, vómito, dolor, deposiciones, sangrado' },
-      { id: 'genitourinario', etiqueta: 'Genitourinario', tipo: 'texto', ayuda: 'Disuria, frecuencia, hematuria, secreciones' },
-      { id: 'musculo', etiqueta: 'Musculoesquelético', tipo: 'texto', ayuda: 'Dolor o inflamación articular, debilidad' },
-      { id: 'neuro', etiqueta: 'Neurológico', tipo: 'texto', ayuda: 'Mareo, síncope, convulsiones, pérdida de fuerza o sensibilidad' },
-      { id: 'endocrino', etiqueta: 'Endocrino', tipo: 'texto', ayuda: 'Sed, poliuria, intolerancia al frío o al calor' },
-      { id: 'hemato', etiqueta: 'Hematológico', tipo: 'texto', ayuda: 'Moretones, sangrados, ganglios' },
-      { id: 'mental', etiqueta: 'Mental', tipo: 'texto', ayuda: 'Ánimo, ansiedad, sueño, ideas de hacerse daño' },
+      { id: 'general', etiqueta: 'General', tipo: 'texto', rapido: ['Niega'], ayuda: 'Fiebre, pérdida de peso, sudoración nocturna, cansancio' },
+      { id: 'piel', etiqueta: 'Piel', tipo: 'texto', rapido: ['Niega'], ayuda: 'Lesiones, picazón, cambios de color' },
+      { id: 'cabeza', etiqueta: 'Cabeza y órganos de los sentidos', tipo: 'texto', rapido: ['Niega'], ayuda: 'Cefalea, visión, oído, nariz, garganta' },
+      { id: 'cardio', etiqueta: 'Cardiovascular', tipo: 'texto', rapido: ['Niega'], ayuda: 'Dolor en el pecho, palpitaciones, edema, ortopnea' },
+      { id: 'respiratorio', etiqueta: 'Respiratorio', tipo: 'texto', rapido: ['Niega'], ayuda: 'Tos, expectoración, hemoptisis, disnea' },
+      { id: 'digestivo', etiqueta: 'Digestivo', tipo: 'texto', rapido: ['Niega'], ayuda: 'Apetito, náusea, vómito, dolor, deposiciones, sangrado' },
+      { id: 'genitourinario', etiqueta: 'Genitourinario', tipo: 'texto', rapido: ['Niega'], ayuda: 'Disuria, frecuencia, hematuria, secreciones' },
+      { id: 'musculo', etiqueta: 'Musculoesquelético', tipo: 'texto', rapido: ['Niega'], ayuda: 'Dolor o inflamación articular, debilidad' },
+      { id: 'neuro', etiqueta: 'Neurológico', tipo: 'texto', rapido: ['Niega'], ayuda: 'Mareo, síncope, convulsiones, pérdida de fuerza o sensibilidad' },
+      { id: 'endocrino', etiqueta: 'Endocrino', tipo: 'texto', rapido: ['Niega'], ayuda: 'Sed, poliuria, intolerancia al frío o al calor' },
+      { id: 'hemato', etiqueta: 'Hematológico', tipo: 'texto', rapido: ['Niega'], ayuda: 'Moretones, sangrados, ganglios' },
+      { id: 'mental', etiqueta: 'Mental', tipo: 'texto', rapido: ['Niega'], ayuda: 'Ánimo, ansiedad, sueño, ideas de hacerse daño' },
     ],
     guia: [
       'Hacer una pregunta corta por sistema y anotar «niega» cuando sea negativo.',
@@ -223,6 +234,11 @@ export const SECCIONES: Seccion[] = [
       'Ordenar los diagnósticos de más a menos probable.',
       'No olvidar los diagnósticos graves que todavía no se pueden descartar.',
       'La decisión diagnóstica es del médico; la app solo sugiere.',
+      'Control de sesgos: ¿este diagnóstico explica TODOS los hallazgos?',
+      'Control de sesgos: ¿qué más podría ser? ¿Puede haber dos enfermedades a la vez?',
+      'Control de sesgos: si viera al paciente por primera vez, sin la impresión del triaje o de la remisión, ¿pensaría lo mismo?',
+      'Control de sesgos: ¿busqué datos que contradigan mi diagnóstico principal?',
+      'Control de sesgos: ¿estoy juzgando por un caso reciente o por un estereotipo del paciente?',
     ],
   },
   {
@@ -242,6 +258,7 @@ export const SECCIONES: Seccion[] = [
       'Medicamentos con nombre, dosis, vía y frecuencia.',
       '¿Necesita interconsulta u hospitalización?',
       'Explicar al paciente los signos de alarma por los que debe volver.',
+      '¿El plan está justificado por la evidencia o por la necesidad de «hacer algo»? A veces observar es lo indicado.',
     ],
   },
 ]
