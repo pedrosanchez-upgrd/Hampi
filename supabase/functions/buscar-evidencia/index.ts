@@ -3,8 +3,8 @@
 // como «pendiente» para revisión médica. NADA de lo que guarda se usa en los diagnósticos hasta que
 // dos revisores aprueben una regla (ver migración 20261123_01_evidencia.sql).
 //
-// ESTADO: escrita y probada en sus partes (supabase/test/fuentes.test.ts); NO desplegada.
-// Para activarla hace falta autorización del dueño. Secretos (en Supabase, nunca en el repositorio):
+// ESTADO: desplegada en el proyecto «Hampi» el 25-nov-2026 con autorización del dueño.
+// Partes probadas en supabase/test/fuentes.test.ts. Secretos (en Supabase, nunca en el repositorio):
 //   ELSEVIER_API_KEY  (opcional; clave de dev.elsevier.com — sin ella se busca solo en PubMed y SciELO)
 //   NCBI_API_KEY      (opcional; sube el límite de PubMed de 3 a 10 consultas por segundo)
 // Quién puede llamarla: un revisor con sesión, o la tarea programada con la clave de servicio.

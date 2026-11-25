@@ -1,5 +1,5 @@
 -- Hampi — Fase 3: base de conocimiento que se actualiza sola, con revisión médica.
--- NO APLICADA. Aplicar solo con autorización explícita del dueño.
+-- Aplicada en el proyecto «Hampi» (absuudeafyxnjvnbejrv) el 25-nov-2026 con autorización del dueño.
 --
 -- Flujo:
 --   1. La función «buscar-evidencia» (servidor) busca en PubMed, SciELO y Elsevier, deja solo
@@ -132,6 +132,8 @@ grant update (estado, nota_revision, revisado_por, revisado_en) on public.eviden
 grant update (confirmada_por, confirmada_en) on public.reglas_aprobadas to authenticated;
 revoke delete on public.evidencia, public.reglas_aprobadas, public.revistas, public.revisores from authenticated;
 revoke insert on public.evidencia, public.revistas, public.revisores from authenticated;
+
+revoke truncate, references, trigger on public.revisores, public.revistas, public.evidencia, public.reglas_aprobadas from authenticated;
 
 revoke all on public.revisores, public.revistas, public.evidencia, public.reglas_aprobadas from anon;
 revoke execute on function public.es_revisor(), privado.evidencia_aprobada(uuid), privado.tiene_regla_confirmada(uuid) from anon, public;

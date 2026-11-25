@@ -32,6 +32,7 @@ beforeAll(async () => {
   await db.exec(PREPARAR)
   await db.exec(readFileSync('supabase/migrations/20261122_01_inicial.sql', 'utf8'))
   await db.exec(readFileSync('supabase/migrations/20261123_01_evidencia.sql', 'utf8'))
+  await db.exec(readFileSync('supabase/migrations/20261125_01_evidencia_ajustes.sql', 'utf8'))
   // Lo que hace el servidor (sin RLS): nombrar revisores y guardar un artículo encontrado.
   await db.exec(`insert into auth.users values ('${R1}'), ('${R2}'), ('${U}');
     insert into public.revisores (usuario_id, nombre) values ('${R1}', 'Revisor 1'), ('${R2}', 'Revisor 2');`)
