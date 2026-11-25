@@ -9,7 +9,7 @@ Dispositivos: iPad (principal, 820–1366 px), teléfono (390 px) y computador d
 Trabajo principal de la pantalla más usada: registrar un dato y seguir conversando con el paciente sin perder el hilo; mirar de reojo qué falta y qué diagnóstico sube.
 
 ## Audiencia y voz
-Internos, estudiantes y médicos; saben medicina pero tienen poco tiempo y muchas interrupciones. Español de Ecuador, tuteo profesional evitado: «usted» en la app (supuesto). Términos clínicos correctos (ALICIA, Murphy, LR), frases cortas, nada de exclamaciones. Fechas 22/11/2026, horas 14:30, unidades SI (mmHg, °C, mg/dL).
+Internos, estudiantes y médicos; saben medicina pero tienen poco tiempo y muchas interrupciones. Español de Ecuador. La app trata al usuario de **tú** (decidido por Pedro, 25-nov-2026); las preguntas al paciente van en «usted». Términos clínicos correctos (ALICIA, Murphy, LR), frases cortas, nada de exclamaciones. Fechas 22/11/2026, horas 14:30, unidades SI (mmHg, °C, mg/dL).
 
 ## Mood
 Palabras: sereno, preciso, confiable (supuesto, a partir de «amigable, llamativo y lindo» de Pedro).
@@ -17,9 +17,9 @@ Nunca como: un panel genérico de SaaS, una app de bienestar con degradados, un 
 
 ## Marca
 Nombre: Hampi («medicina» en kichwa). Sin logo previo: se usa un monograma simple (hoja + trazo de pulso) (supuesto).
-Color principal: verde eucalipto profundo, de las plantas medicinales andinas (supuesto). Superficies tipo papel de ficha clínica, frías y limpias.
+Color principal: verde eucalipto profundo, de las plantas medicinales andinas. Superficies de **cuaderno clínico**: papel cálido, renglones suaves y línea roja de margen.
 Color semántico separado del acento: rojo de alarma, ámbar de faltante, verde de completo.
-Tipos: Plus Jakarta Sans para títulos, Inter para texto y formularios, JetBrains Mono para cifras y signos vitales (supuesto).
+Tipos: **Source Serif 4** para títulos, números de apartado, guion de entrevista y citas del paciente; Inter para texto y formularios; JetBrains Mono para cifras y signos vitales.
 
 ## Referencias
 - Formularios del MSP (anamnesis y examen físico) — tomar: el orden de apartados que el médico ya conoce; evitar: la densidad y las casillas diminutas.
@@ -43,9 +43,17 @@ Tipos: Plus Jakarta Sans para títulos, Inter para texto y formularios, JetBrain
 - 2026-11-23 — Contraste revisado con axe-core (WCAG AA) en claro y oscuro; token on-alarm para texto sobre rojo.
 - 2026-11-22 — Refinamiento (craft-critique): barra inferior en el teléfono (Anterior · Asistente · Siguiente) en vez de botón flotante que tapaba campos; menú «Más» con nombres; «No» en tono suave y «?» sin relleno (un solo color fuerte: Sí y alarmas); íconos por apartado dentro del anillo de progreso; «Paso X de 10»; guía «Qué preguntar» en tarjeta blanca; aviso de prueba corto en el teléfono.
 
+- 2026-11-25 — Rediseño «cuaderno clínico con tutor al margen» (Pedro: «lo veo muy genérico», eligió que Claude decida la dirección) — se dejó el esquema típico de SaaS (menú lateral + tarjetas blancas iguales). La historia se ve como un cuaderno: papel cálido, renglones, línea de margen, números de apartado grandes con serifa.
+- 2026-11-25 — El tutor siempre a la vista en iPad 1024+ y computador (columna «Tutor · notas al margen»): alarmas, «Encontré esto en lo que escribiste», «Pregunta o examina esto ahora», lo más probable y lo que falta, en ese orden de urgencia — lo más útil de Hampi estaba escondido detrás de un botón. En teléfono e iPad vertical, cajón inferior que asoma con la nota más importante.
+- 2026-11-25 — Índice como pestañas de cuaderno numeradas (01–10) arriba; vertical a la izquierda desde 1280 px.
+- 2026-11-25 — Cada campo principal lleva arriba la pregunta al paciente en cursiva con serifa («¿Desde cuándo le pasa?») — la sección se lee como una conversación.
+- 2026-11-25 — Portada nueva (seguir donde quedé, empezar, practicar) y **Modo práctica** con 3 casos ficticios: el paciente responde solo lo que se le pregunta; el tutor se calla hasta el final; resultado con diagnóstico, preguntas clave que faltaron y la enseñanza del caso.
+- 2026-11-25 — Trato de «tú» en toda la app.
+- 2026-11-25 — Sombras solo en lo que flota (menú, hojas, diálogos); las hojas del cuaderno van con borde y línea de margen.
+- 2026-11-25 — Autocrítica: botones «Preguntar o examinar» como texto (doce botones con borde formaban una pared), números decorativos subidos a 75 % para contraste AA, títulos balanceados.
+
 ## Preguntas abiertas
+- ¿Le gusta a Pedro el papel cálido del cuaderno, o prefiere un fondo más blanco?
 - ¿Coma o punto decimal? Se usa coma (36,8 °C) (supuesto); confirmar el uso en los hospitales de Cuenca.
-- ¿Le gusta a Pedro el verde eucalipto como color principal, o prefiere otro?
-- ¿«Usted» o «tú» en los textos de la app?
 - ¿Qué referencias le gustan y qué tomar/evitar de cada una?
 - ¿Logo propio más adelante?

@@ -29,14 +29,16 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
 
   return (
     <section className="grid gap-5">
-      <header className="no-imprimir">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Paso 10 de 10</p>
-        <h2 className="mt-0.5 font-display text-[28px] font-bold leading-tight tracking-tight text-ink">Redacción final</h2>
-        <p className="mt-1 text-ink-soft">Revise el texto antes de firmarlo. Más adelante la IA pulirá la redacción; hoy se ordena sin IA.</p>
+      <header className="no-imprimir flex items-start gap-4">
+        <span aria-hidden className="font-display text-[56px] font-semibold leading-[0.9] text-brand/75 sm:text-[72px]">10</span>
+        <div className="min-w-0 pt-1">
+          <h2 className="font-display text-[30px] font-semibold leading-tight text-ink sm:text-[34px]">Redacción final</h2>
+          <p className="mt-1 text-ink-soft">Revisa el texto antes de firmarlo. Hampi solo ordena y redacta lo que escribiste; no agrega datos.</p>
+        </div>
       </header>
 
       {falta.length > 0 ? (
-        <div className="no-imprimir rounded-2xl border border-warn/30 bg-warn-soft p-4">
+        <div className="no-imprimir rounded-xl border border-warn/30 bg-warn-soft p-4">
           <p className="flex items-center gap-2 font-semibold text-warn"><Icono nombre="alerta" className="h-5 w-5" /> Faltan {falta.length} datos obligatorios</p>
           <ul className="mt-2 flex flex-wrap gap-2">
             {falta.map((f) => (
@@ -49,7 +51,7 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
           </ul>
         </div>
       ) : (
-        <p className="no-imprimir flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok-soft p-4 font-semibold text-ok">
+        <p className="no-imprimir flex items-center gap-2 rounded-xl border border-ok/30 bg-ok-soft p-4 font-semibold text-ok">
           <Icono nombre="check" className="h-5 w-5" /> Todos los datos obligatorios están completos.
         </p>
       )}
@@ -57,14 +59,14 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
       <div role="tablist" aria-label="Tipo de texto" className="no-imprimir grid w-full max-w-md grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">
         {([['historia', 'Historia completa'], ['oral', 'Presentación oral']] as const).map(([id, t]) => (
           <button key={id} role="tab" aria-selected={vista === id} onClick={() => { setVista(id); setCopiado('no') }}
-            className={`min-h-10 rounded-lg text-sm font-semibold transition-colors ${vista === id ? 'bg-surface text-ink shadow-card' : 'text-ink-soft'}`}>{t}</button>
+            className={`min-h-10 rounded-lg text-sm font-semibold transition-colors ${vista === id ? 'bg-surface text-ink ring-1 ring-line' : 'text-ink-soft'}`}>{t}</button>
         ))}
       </div>
 
       <div className="no-imprimir flex flex-wrap gap-2">
         <button onClick={copiar} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-4 font-semibold text-on-brand hover:bg-brand-strong">
           <Icono nombre={copiado === 'si' ? 'check' : 'copiar'} className="h-5 w-5" />
-          {copiado === 'si' ? 'Copiado' : copiado === 'manual' ? 'Texto seleccionado: use Copiar' : 'Copiar texto'}
+          {copiado === 'si' ? 'Copiado' : copiado === 'manual' ? 'Texto seleccionado: usa Copiar' : 'Copiar texto'}
         </button>
         {!enMarco && (
           <button onClick={() => window.print()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-surface px-4 font-semibold text-ink hover:bg-surface-2">
@@ -74,21 +76,21 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
       </div>
 
       {vista === 'oral' ? (
-        <article className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">Para presentar en la visita · 1 a 2 minutos</p>
-          <p id="texto-redactado" className="mt-3 max-w-[68ch] text-[17px] leading-relaxed text-ink">{oral}</p>
-          <p className="mt-5 text-xs text-ink-faint">Orden: identificación, motivo, enfermedad actual, antecedentes pertinentes, positivos y negativos, examen, impresión y plan. Léala en voz alta y ajústela a su estilo.</p>
+        <article className="linea-margen rounded-xl border border-line bg-surface py-6 pl-8 pr-6 sm:py-8 sm:pl-12 sm:pr-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">Para presentar en la visita · 1 a 2 minutos</p>
+          <p id="texto-redactado" className="mt-3 max-w-[68ch] font-display text-[19px] leading-relaxed text-ink">{oral}</p>
+          <p className="mt-5 text-xs text-ink-faint">Orden: identificación, motivo, enfermedad actual, antecedentes pertinentes, positivos y negativos, examen, impresión y plan. Léela en voz alta y ajústala a tu estilo.</p>
         </article>
       ) : (
-      <article className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
-        <div className="mb-5 flex items-center justify-between border-b border-line pb-4">
-          <p className="font-display text-lg font-bold text-ink">Historia clínica · Medicina interna</p>
+      <article className="linea-margen rounded-xl border border-line bg-surface py-6 pl-8 pr-6 sm:py-8 sm:pl-12 sm:pr-10">
+        <div className="mb-5 flex items-baseline justify-between gap-3 border-b border-line pb-4">
+          <p className="font-display text-2xl font-semibold text-ink">Historia clínica · Medicina interna</p>
           <p className="cifra text-sm text-ink-faint">{new Date().toLocaleDateString('es-EC')}</p>
         </div>
         <div id="texto-redactado" className="grid gap-5 text-[15px] leading-relaxed">
           {bloques.map((b, i) => (
-            <div key={i} className={b.t === 'SIGNOS DE ALARMA' ? 'rounded-xl bg-alarm-soft p-4' : b.t === 'RESUMEN' ? 'rounded-xl bg-brand-soft p-4' : ''}>
-              <p className={`text-xs font-semibold uppercase tracking-[0.12em] ${b.t === 'SIGNOS DE ALARMA' ? 'text-alarm' : 'text-brand'}`}>{b.t}</p>
+            <div key={i} className={b.t === 'SIGNOS DE ALARMA' ? 'rounded-lg bg-alarm-soft p-4' : b.t === 'RESUMEN' ? 'rounded-lg bg-margen p-4' : ''}>
+              <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${b.t === 'SIGNOS DE ALARMA' ? 'text-alarm' : 'text-ink-soft'}`}>{b.t}</p>
               <div className="mt-1 whitespace-pre-wrap text-ink">{b.resto.join('\n')}</div>
             </div>
           ))}

@@ -338,7 +338,7 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'vomitoCefalea', lrPos: 1.8, fuente: 'detsky2006' },
   ] },
   { id: 'acv', nombre: 'Accidente cerebrovascular', grave: true, sintomas: ['deficit', 'mareo', 'confusion'],
-    nota: 'Paresia facial, caída del brazo o habla alterada. La neuroimagen distingue isquémico de hemorrágico; registre la hora de inicio.', reglas: [],
+    nota: 'Paresia facial, caída del brazo o habla alterada. La neuroimagen distingue isquémico de hemorrágico; registra la hora de inicio.', reglas: [],
     conteo: { hallazgos: ['paresiaFacial', 'caidaBrazo', 'hablaAnormal'], texto: 'Paresia facial, caída del brazo o habla alterada',
       tramos: [{ min: 1, lr: 5.5 }, { min: 0, lr: 0.39 }], fuente: 'goldstein2005', nota: '1 o más hallazgos: LR 5,5; ninguno: LR 0,39' } },
   { id: 'ectopico', nombre: 'Embarazo ectópico', estudios: 'Ecografía transvaginal y hCG cuantitativa.', grave: true, sintomas: ['abdominal'], soloSexo: 'Mujer', requiere: 'embarazoPosible',

@@ -31,23 +31,23 @@ export interface HistoriaGuardada {
 export function mensajeError(e: unknown): string {
   const m = (e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ? String((e as { message: unknown }).message) : String(e)).toLowerCase()
   if (m.includes('failed to fetch') || m.includes('networkerror') || m.includes('load failed') || m.includes('fetch'))
-    return 'No se pudo conectar con el servidor. Revise su internet. En la vista de prueba de Claude el inicio de sesión no funciona: use «Seguir sin cuenta».'
+    return 'No se pudo conectar con el servidor. Revisa tu internet. En la vista de prueba de Claude el inicio de sesión no funciona: usa «Seguir sin cuenta».'
   if (m.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.'
-  if (m.includes('email not confirmed')) return 'Falta confirmar su correo: abra el enlace que le enviamos y vuelva a entrar.'
-  if (m.includes('already registered') || m.includes('already been registered')) return 'Ese correo ya tiene una cuenta. Use «Entrar» o «¿Olvidó su contraseña?».'
+  if (m.includes('email not confirmed')) return 'Falta confirmar tu correo: abre el enlace que te enviamos y vuelve a entrar.'
+  if (m.includes('already registered') || m.includes('already been registered')) return 'Ese correo ya tiene una cuenta. Usa «Entrar» o «¿Olvidaste tu contraseña?».'
   if (m.includes('password should be') || m.includes('weak password')) return 'La contraseña es muy débil: use al menos 8 caracteres, con letras y números.'
-  if (m.includes('rate limit')) return 'Se enviaron demasiados correos seguidos. Intente de nuevo en una hora.'
+  if (m.includes('rate limit')) return 'Se enviaron demasiados correos seguidos. Intenta de nuevo en una hora.'
   if (m.includes('invalid email') || m.includes('unable to validate email')) return 'Ese correo no es válido.'
-  return 'Ocurrió un error. Intente de nuevo; si sigue, avise al equipo de Hampi.'
+  return 'Ocurrió un error. Intenta de nuevo; si sigue, avisa al equipo de Hampi.'
 }
 
 /** Validación previa en el formulario, antes de llamar al servidor. */
 export function validarCuenta(correo: string, clave: string, registro?: DatosRegistro): string | null {
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) return 'Escriba un correo válido.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) return 'Escribe un correo válido.'
   if (clave.length < 8) return 'La contraseña debe tener al menos 8 caracteres.'
   if (registro) {
     if (!/[a-zA-Z]/.test(clave) || !/\d/.test(clave)) return 'La contraseña debe tener letras y números.'
-    if (registro.nombre.trim().length < 3) return 'Escriba su nombre completo.'
+    if (registro.nombre.trim().length < 3) return 'Escribe tu nombre completo.'
   }
   return null
 }

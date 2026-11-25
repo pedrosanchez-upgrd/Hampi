@@ -5,10 +5,10 @@ export const VERSION_TERMINOS = '0.1-borrador'
 
 const PUNTOS: [string, string][] = [
   ['Herramienta de apoyo', 'Hampi no diagnostica ni reemplaza el criterio médico. Toda decisión diagnóstica y terapéutica es responsabilidad del profesional que la usa.'],
-  ['Sugerencias verificables', 'Las preguntas, los signos de alarma y los diagnósticos posibles pueden estar incompletos o equivocados. Cada sugerencia muestra su fuente para que pueda verificarla.'],
-  ['Usted revisa y firma', 'El texto redactado por la app debe revisarse, corregirse y firmarse antes de pasar a la historia clínica oficial.'],
-  ['Solo casos ficticios por ahora', 'Durante la etapa de prueba no ingrese nombres, cédulas ni datos reales de pacientes.'],
-  ['Datos protegidos', 'Los datos se protegen con cifrado y acceso controlado, conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador. No comparta su cuenta.'],
+  ['Sugerencias verificables', 'Las preguntas, los signos de alarma y los diagnósticos posibles pueden estar incompletos o equivocados. Cada sugerencia muestra su fuente para que puedas verificarla.'],
+  ['Tú revisas y firmas', 'El texto redactado por la app debe revisarse, corregirse y firmarse antes de pasar a la historia clínica oficial.'],
+  ['Solo casos ficticios por ahora', 'Durante la etapa de prueba no ingreses nombres, cédulas ni datos reales de pacientes.'],
+  ['Datos protegidos', 'Los datos se protegen con cifrado y acceso controlado, conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador. No compartas tu cuenta.'],
   ['Supervisión docente', 'Estudiantes e internos usan la app bajo la supervisión de su docente o médico tratante.'],
 ]
 
@@ -20,14 +20,14 @@ export function Terminos({ onAceptar }: { onAceptar: () => void }) {
         <div className="flex items-center gap-3">
           <Logo className="h-11 w-11" />
           <div>
-            <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">Hampi</h1>
+            <h1 className="font-display text-3xl font-semibold text-ink">Hampi</h1>
             <p className="text-sm text-ink-soft">Historia clínica inteligente · Medicina interna</p>
           </div>
         </div>
 
-        <section className="mt-8 rounded-2xl border border-line bg-surface p-6 shadow-card sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Antes de empezar</p>
-          <h2 className="mt-1 font-display text-2xl font-bold text-ink">Términos y condiciones de uso</h2>
+        <section className="linea-margen mt-8 rounded-xl border border-line bg-surface py-6 pl-8 pr-6 sm:py-8 sm:pl-12 sm:pr-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">Antes de empezar</p>
+          <h2 className="mt-1 font-display text-[28px] font-semibold text-ink">Términos y condiciones de uso</h2>
           <p className="mt-1 text-sm text-ink-faint">
             Versión {VERSION_TERMINOS}. Borrador pendiente de revisión por un abogado antes del uso con pacientes reales.
           </p>
@@ -35,9 +35,7 @@ export function Terminos({ onAceptar }: { onAceptar: () => void }) {
           <ol className="mt-6 grid gap-4">
             {PUNTOS.map(([titulo, texto], i) => (
               <li key={titulo} className="flex gap-4">
-                <span className="cifra mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand">
-                  {i + 1}
-                </span>
+                <span className="w-6 shrink-0 font-display text-2xl font-semibold leading-none text-brand/75">{i + 1}</span>
                 <div>
                   <p className="font-semibold text-ink">{titulo}</p>
                   <p className="mt-0.5 text-[15px] leading-relaxed text-ink-soft">{texto}</p>

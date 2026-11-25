@@ -23,11 +23,11 @@ describe('validar regla propuesta', () => {
     expect(validarRegla({ ...base, lr_pos: 6 }, RESUMEN)).toMatch(/no aparece/)
   })
   it('exige diagnóstico y hallazgo', () => {
-    expect(validarRegla({ ...base, hallazgo: '' }, RESUMEN)).toMatch(/Elija/)
+    expect(validarRegla({ ...base, hallazgo: '' }, RESUMEN)).toMatch(/Elige/)
   })
   it('rechaza artículos sin resumen y propuestas vacías', () => {
     expect(validarRegla(base, null)).toMatch(/no trae resumen/)
-    expect(validarRegla({ ...base, lr_pos: null }, RESUMEN)).toMatch(/Indique/)
+    expect(validarRegla({ ...base, lr_pos: null }, RESUMEN)).toMatch(/Indica/)
   })
 })
 

@@ -43,7 +43,7 @@ export function Cuenta({ recuperando, onListo, onSinCuenta }: Props) {
     e.preventDefault()
     setError(null); setAviso(null)
     const datos = { nombre, rol, institucion }
-    const v = modo === 'recuperar' ? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim()) ? null : 'Escriba un correo válido.')
+    const v = modo === 'recuperar' ? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim()) ? null : 'Escribe un correo válido.')
       : modo === 'nuevaClave' ? (clave.length < 8 || !/[a-zA-Z]/.test(clave) || !/\d/.test(clave) ? 'La contraseña debe tener al menos 8 caracteres, con letras y números.' : null)
       : validarCuenta(correo, clave, modo === 'crear' ? datos : undefined)
     if (v) { setError(v); return }
@@ -52,11 +52,11 @@ export function Cuenta({ recuperando, onListo, onSinCuenta }: Props) {
       if (modo === 'entrar') { await entrar(correo, clave); onListo() }
       else if (modo === 'crear') {
         const r = await crearCuenta(correo, clave, datos)
-        if (r.necesitaConfirmar) { setAviso(`Le enviamos un correo a ${correo.trim()}. Ábralo, toque el enlace para confirmar y luego entre con su contraseña.`); setModo('entrar') }
+        if (r.necesitaConfirmar) { setAviso(`Te enviamos un correo a ${correo.trim()}. Ábrelo, toca el enlace para confirmar y luego entra con tu contraseña.`); setModo('entrar') }
         else onListo()
       } else if (modo === 'recuperar') {
         await recuperarClave(correo)
-        setAviso('Si ese correo tiene cuenta, le llegará un enlace para crear una contraseña nueva.')
+        setAviso('Si ese correo tiene cuenta, te llegará un enlace para crear una contraseña nueva.')
       } else {
         await cambiarClave(clave)
         onListo()
@@ -77,23 +77,23 @@ export function Cuenta({ recuperando, onListo, onSinCuenta }: Props) {
         <div className="flex items-center gap-3">
           <Logo className="h-11 w-11" />
           <div>
-            <p className="font-display text-2xl font-extrabold tracking-tight text-ink">Hampi</p>
-            <p className="text-sm text-ink-soft">Historia clínica inteligente</p>
+            <p className="font-display text-3xl font-semibold text-ink">Hampi</p>
+            <p className="text-sm text-ink-soft">Tu cuaderno de historias clínicas</p>
           </div>
         </div>
 
-        <section className="mt-8 rounded-2xl border border-line bg-surface p-6 shadow-card sm:p-8">
+        <section className="linea-margen mt-8 rounded-xl border border-line bg-surface py-6 pl-8 pr-6 sm:py-8 sm:pl-10 sm:pr-8">
           {(modo === 'entrar' || modo === 'crear') && (
             <div role="tablist" aria-label="Cuenta" className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">
               {([['entrar', 'Entrar'], ['crear', 'Crear cuenta']] as const).map(([id, t]) => (
                 <button key={id} role="tab" aria-selected={modo === id} onClick={() => cambiar(id)}
-                  className={`min-h-10 rounded-lg text-sm font-semibold transition-colors ${modo === id ? 'bg-surface text-ink shadow-card' : 'text-ink-soft'}`}>{t}</button>
+                  className={`min-h-10 rounded-lg text-sm font-semibold transition-colors ${modo === id ? 'bg-surface text-ink ring-1 ring-line' : 'text-ink-soft'}`}>{t}</button>
               ))}
             </div>
           )}
-          <h1 className="font-display text-xl font-bold text-ink">{titulo}</h1>
-          {modo === 'crear' && <p className="mt-1 text-sm text-ink-soft">Sus historias se guardan en su cuenta y solo usted puede verlas.</p>}
-          {modo === 'recuperar' && <p className="mt-1 text-sm text-ink-soft">Le enviaremos un enlace a su correo.</p>}
+          <h1 className="font-display text-[26px] font-semibold text-ink">{titulo}</h1>
+          {modo === 'crear' && <p className="mt-1 text-sm text-ink-soft">Tus historias se guardan en tu cuenta y solo tú puedes verlas.</p>}
+          {modo === 'recuperar' && <p className="mt-1 text-sm text-ink-soft">Te enviaremos un enlace a tu correo.</p>}
 
           <form onSubmit={enviar} className="mt-5 grid gap-4" noValidate>
             {modo === 'crear' && (
@@ -102,7 +102,7 @@ export function Cuenta({ recuperando, onListo, onSinCuenta }: Props) {
                   <input id="cuenta-nombre" className={claseInput} autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} />
                 </Campo>
                 <div>
-                  <p id="cuenta-rol-etiqueta" className="mb-1.5 text-sm font-medium text-ink">Usted es</p>
+                  <p id="cuenta-rol-etiqueta" className="mb-1.5 text-sm font-medium text-ink">Eres</p>
                   <div role="radiogroup" aria-labelledby="cuenta-rol-etiqueta" className="grid grid-cols-2 gap-2">
                     {ROLES.map((r) => (
                       <button key={r.id} type="button" role="radio" aria-checked={rol === r.id} onClick={() => setRol(r.id)}
@@ -143,7 +143,7 @@ export function Cuenta({ recuperando, onListo, onSinCuenta }: Props) {
           </form>
 
           <div className="mt-4 flex flex-wrap justify-between gap-2 text-sm">
-            {modo === 'entrar' && <button className="min-h-10 text-brand underline-offset-2 hover:underline" onClick={() => cambiar('recuperar')}>¿Olvidó su contraseña?</button>}
+            {modo === 'entrar' && <button className="min-h-10 text-brand underline-offset-2 hover:underline" onClick={() => cambiar('recuperar')}>¿Olvidaste tu contraseña?</button>}
             {modo === 'recuperar' && <button className="min-h-10 text-brand underline-offset-2 hover:underline" onClick={() => cambiar('entrar')}>Volver a entrar</button>}
           </div>
         </section>

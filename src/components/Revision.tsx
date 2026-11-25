@@ -27,7 +27,7 @@ function Articulo({ e, children }: { e: Evidencia; children?: React.ReactNode })
       <p className="text-xs text-ink-soft">{[e.autores, e.revista, e.anio].filter(Boolean).join(' · ')}</p>
       {e.resumen ? (
         <p className={`mt-2 whitespace-pre-line text-sm leading-relaxed text-ink-soft ${verTodo ? '' : 'line-clamp-4'}`}>{e.resumen}</p>
-      ) : <p className="mt-2 text-sm text-warn">Sin resumen disponible: revise el artículo en su enlace.</p>}
+      ) : <p className="mt-2 text-sm text-warn">Sin resumen disponible: revisa el artículo en su enlace.</p>}
       <div className="mt-1.5 flex flex-wrap gap-3 text-sm">
         {e.resumen && <button className="min-h-9 font-medium text-brand" onClick={() => setVerTodo(!verTodo)}>{verTodo ? 'Ver menos' : 'Leer el resumen completo'}</button>}
         <a className="inline-flex min-h-9 items-center font-medium text-brand underline underline-offset-2" href={e.url} target="_blank" rel="noreferrer">Abrir el artículo</a>
@@ -145,10 +145,10 @@ export function Revision({ abierto, usuarioId, onCerrar, onCambio }: Props) {
       <aside role="dialog" aria-label="Revisión médica" onClick={(e) => e.stopPropagation()}
         className="h-full w-full max-w-xl overflow-y-auto bg-bg p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-[calc(1rem+env(safe-area-inset-top,0px))] shadow-card">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold text-ink">Revisión médica</h2>
+          <h2 className="font-display text-xl font-semibold text-ink">Revisión médica</h2>
           <button className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface-2" onClick={onCerrar} aria-label="Cerrar revisión médica"><Icono nombre="cerrar" className="h-5 w-5" /></button>
         </div>
-        <p className="text-sm text-ink-soft">Solo entra a Hampi lo que usted aprueba. Una regla cuenta en los diagnósticos cuando la confirma un segundo revisor.</p>
+        <p className="text-sm text-ink-soft">Solo entra a Hampi lo que tú apruebas. Una regla cuenta en los diagnósticos cuando la confirma un segundo revisor.</p>
 
         <div className="mt-3 rounded-xl border border-line bg-surface p-3">
           <p className="text-sm font-semibold text-ink">Buscar evidencia nueva</p>
@@ -167,14 +167,14 @@ export function Revision({ abierto, usuarioId, onCerrar, onCambio }: Props) {
         <div role="tablist" className="mt-3 grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1">
           {([['pendiente', 'Por revisar'], ['aprobada', 'Aprobados'], ['reglas', 'Reglas']] as const).map(([id, t]) => (
             <button key={id} role="tab" aria-selected={pestana === id} onClick={() => setPestana(id)}
-              className={`min-h-10 rounded-lg text-sm font-semibold ${pestana === id ? 'bg-surface text-ink shadow-card' : 'text-ink-soft'}`}>{t}</button>
+              className={`min-h-10 rounded-lg text-sm font-semibold ${pestana === id ? 'bg-surface text-ink ring-1 ring-line' : 'text-ink-soft'}`}>{t}</button>
           ))}
         </div>
 
         {error && <p className="mt-3 text-sm text-alarm">{error}</p>}
         {pestana !== 'reglas' ? (
           articulos === null ? <p className="mt-4 text-sm text-ink-soft">Cargando…</p> : articulos.length === 0 ? (
-            <p className="mt-4 rounded-xl border border-dashed border-line p-4 text-center text-sm text-ink-soft">{pestana === 'pendiente' ? 'No hay artículos por revisar. Use «Buscar evidencia nueva».' : 'Aún no hay artículos aprobados.'}</p>
+            <p className="mt-4 rounded-xl border border-dashed border-line p-4 text-center text-sm text-ink-soft">{pestana === 'pendiente' ? 'No hay artículos por revisar. Usa «Buscar evidencia nueva».' : 'Aún no hay artículos aprobados.'}</p>
           ) : (
             <ul className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-2.5">
               {articulos.map((e) => (
@@ -204,7 +204,7 @@ export function Revision({ abierto, usuarioId, onCerrar, onCambio }: Props) {
                     {r.confirmada_por ? (
                       <span className="inline-flex items-center gap-1 font-medium text-ok"><Icono nombre="check" className="h-4 w-4" /> Confirmada por dos revisores: ya cuenta en los diagnósticos</span>
                     ) : propia ? (
-                      <span className="text-ink-faint">Propuesta por usted: falta que otro revisor la confirme.</span>
+                      <span className="text-ink-faint">Propuesta por ti: falta que otro revisor la confirme.</span>
                     ) : (
                       <button onClick={() => confirmarRegla(r.id, usuarioId).then(() => { cargar(); onCambio() }).catch((x) => setError(mensajeError(x)))}
                         className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-brand px-3 font-semibold text-on-brand hover:bg-brand-strong">

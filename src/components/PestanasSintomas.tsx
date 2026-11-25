@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SINTOMAS } from '../data/sintomas'
 import { abrirSintoma, cerrarSintoma, sintomasAbiertos, type Historia } from '../lib/historia'
 import { hallazgosAutomaticos, hallazgosDeSintoma } from '../lib/motor'
+import { preguntarEnPractica, respuestaDe } from '../data/casosPractica'
 import { Icono } from './Icono'
 
 interface Props {
@@ -33,10 +34,10 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
     setHistoria((h) => ({ ...h, sintomas: { ...h.sintomas, [clave]: valor } }))
 
   return (
-    <section className="rounded-2xl border border-line bg-surface shadow-card">
+    <section className="linea-margen rounded-xl border border-line bg-surface">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
         <div>
-          <h3 className="font-display text-lg font-bold text-ink">Pestañas de síntoma</h3>
+          <h3 className="font-display text-lg font-semibold text-ink">Pestañas de síntoma</h3>
           <p className="text-sm text-ink-soft">Se abren solas al escribir el síntoma en el motivo o en el relato.</p>
         </div>
         <label className="relative">
@@ -58,7 +59,7 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
         <div className="px-5 py-8 text-center">
           <Icono nombre="pulso" className="mx-auto h-8 w-8 text-ink-faint" />
           <p className="mt-2 font-medium text-ink">Todavía no hay síntomas abiertos</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-ink-soft">Escriba por ejemplo «dolor en el pecho» o «fiebre» en el motivo de consulta, o agréguelo con el botón de arriba.</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-ink-soft">Escribe por ejemplo «dolor en el pecho» o «fiebre» en el motivo de consulta, o agrégalo con el botón de arriba.</p>
         </div>
       ) : (
         <>
@@ -111,7 +112,7 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                     )
                   })}
                 </ul>
-                <p className="mt-1.5 px-2 text-xs text-ink-faint">Los que marque «No» salen en la redacción como negativos pertinentes.</p>
+                <p className="mt-1.5 px-2 text-xs text-ink-faint">Los que marques «No» salen en la redacción como negativos pertinentes.</p>
               </div>
 
               {hallazgosDeSintoma(s.id).length > 0 && (
@@ -121,6 +122,26 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                     {hallazgosDeSintoma(s.id).map((hz) => {
                       const manual = historia.hallazgos?.[hz.id] ?? ''
                       const valor = manual || auto[hz.id] || ''
+                      // Modo práctica: el paciente responde solo cuando se le pregunta (o se le examina).
+                      if (historia.practica?.caso && !hz.automatico) {
+                        const r = respuestaDe(historia, hz.id)
+                        return (
+                          <li key={hz.id} className="grid gap-1.5 px-3 py-2.5 sm:px-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="min-w-0 flex-[1_1_14rem] text-[15px] text-ink">{hz.texto}</span>
+                              {r ? (
+                                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${r.estado === 'si' ? 'bg-brand-soft text-brand-strong' : 'bg-surface-2 text-ink-soft'}`}>{r.estado === 'si' ? 'Sí' : 'No'}</span>
+                              ) : (
+                                <button className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-brand hover:bg-brand-soft"
+                                  onClick={() => setHistoria((h) => preguntarEnPractica(h, hz.id))}>
+                                  <Icono nombre="mensaje" className="h-4 w-4" /> Preguntar o examinar
+                                </button>
+                              )}
+                            </div>
+                            {r && <p className="font-display text-[16px] italic text-ink-soft">«{r.dice}»</p>}
+                          </li>
+                        )
+                      }
                       return (
                         <li key={hz.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2.5 sm:px-4">
                           <span className="min-w-0 flex-1 text-[15px] text-ink">

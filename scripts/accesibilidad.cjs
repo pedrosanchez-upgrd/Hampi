@@ -16,12 +16,19 @@ const axeSrc = require('fs').readFileSync(require.resolve('axe-core/axe.min.js')
     await p.check('#acepto-terminos'); await p.getByRole('button', { name: /Aceptar/ }).click();
     await run('cuenta');
     await p.getByRole('button', { name: 'Seguir sin cuenta' }).click();
-    await p.getByRole('button', { name: 'Cargar caso de ejemplo' }).click();
+    await run('inicio');
+    await p.getByRole('button', { name: /Ver un caso de ejemplo/ }).click();
     await run('filiacion');
-    await p.getByRole('button', { name: /Enfermedad actual/ }).first().click(); await run('enfermedad');
-    await p.getByRole('button', { name: /Antecedentes personales/ }).first().click(); await run('personales');
-    await p.getByRole('button', { name: /Examen físico/ }).first().click(); await run('examen');
-    await p.getByRole('button', { name: /Redacción final/ }).first().click(); await run('redaccion');
+    const ir = (n) => p.locator('nav[aria-label="Apartados"] button:visible', { hasText: n }).first().click();
+    await ir('Enfermedad actual'); await run('enfermedad');
+    await ir('Personales'); await run('personales');
+    await ir('Examen físico'); await run('examen');
+    await ir('Impresión'); await run('impresion');
+    await ir('Redacción'); await run('redaccion');
+    await p.getByRole('button', { name: 'Ir al inicio de Hampi' }).click();
+    await p.getByRole('button', { name: /Dolor de barriga que se movió/ }).click();
+    await ir('Enfermedad actual'); await run('practica');
+    await p.locator('button:visible', { hasText: 'Terminar y ver mi resultado' }).first().click(); await run('resultado');
   }
   await b.close();
 })();

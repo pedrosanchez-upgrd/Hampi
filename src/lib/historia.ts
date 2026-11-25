@@ -266,18 +266,18 @@ export function avisos(h: Historia): Aviso[] {
   const edad = Number(h.filiacion?.edad)
   const p = h.personales ?? {}
   if (h.filiacion?.sexo === 'Mujer' && edad >= 12 && edad <= 55 && !(p.fum ?? '').trim() && !(p.embarazo ?? '').trim())
-    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Mujer en edad fértil: registre la FUM y la posibilidad de embarazo' })
+    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Mujer en edad fértil: registra la FUM y la posibilidad de embarazo' })
   const a = h.antecedentes ?? {}
   if (!PATOLOGICOS.some((x) => a[`p.${x.id}`]) && !(p.patologicos ?? '').trim())
-    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Antecedentes patológicos sin registrar: pregunte por enfermedades previas' })
+    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Antecedentes patológicos sin registrar: pregunta por enfermedades previas' })
   if (!FAMILIARES.some((x) => a[`f.${x.id}`]) && a['f.ninguno'] !== 'si' && !(h.familiares?.familiares ?? '').trim())
     out.push({ seccionId: 'familiares', tipo: 'dato', texto: 'Antecedentes familiares sin registrar' })
   if (abiertos.includes('fiebre') && !a['e.viaje'])
-    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Fiebre: pregunte por viajes a la Costa o la Amazonía (dengue, malaria, leptospirosis)' })
+    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Fiebre: pregunta por viajes a la Costa o la Amazonía (dengue, malaria, leptospirosis)' })
   if ((abiertos.includes('tos') || abiertos.includes('hemoptisis') || abiertos.includes('peso')) && !a['e.contactoTb'])
-    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Pregunte por contacto con tuberculosis' })
+    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Pregunta por contacto con tuberculosis' })
   if (abiertos.includes('palpitaciones') && !a['e.chagas'])
-    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Palpitaciones: pregunte por origen en zona de Chagas' })
+    out.push({ seccionId: 'personales', tipo: 'dato', texto: 'Palpitaciones: pregunta por origen en zona de Chagas' })
   return out
 }
 

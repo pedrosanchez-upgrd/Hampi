@@ -70,13 +70,13 @@ function ListaSiNo({ items, prefijo, historia, setHistoria }: { items: Anteceden
 export function AntecedentesPersonales(props: Props) {
   return (
     <div className="grid gap-5">
-      <section className="rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
-        <h3 className="font-display text-base font-bold text-ink">Enfermedades previas</h3>
-        <p className="mb-4 mt-0.5 text-sm text-ink-soft">Pregunte una por una. Las marcadas con <span className="font-medium">diagnósticos</span> también ordenan la lista en vivo.</p>
+      <section className="linea-margen rounded-xl border border-line bg-surface py-4 pl-6 pr-4 sm:py-5 sm:pl-8 sm:pr-6">
+        <h3 className="font-display text-base font-semibold text-ink">Enfermedades previas</h3>
+        <p className="mb-4 mt-0.5 text-sm text-ink-soft">Pregunta una por una. Las marcadas con <span className="font-medium">diagnósticos</span> también ordenan la lista en vivo.</p>
         <ListaSiNo items={PATOLOGICOS} prefijo="p" {...props} />
       </section>
-      <section className="rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
-        <h3 className="font-display text-base font-bold text-ink">Antecedentes epidemiológicos</h3>
+      <section className="linea-margen rounded-xl border border-line bg-surface py-4 pl-6 pr-4 sm:py-5 sm:pl-8 sm:pr-6">
+        <h3 className="font-display text-base font-semibold text-ink">Antecedentes epidemiológicos</h3>
         <p className="mb-4 mt-0.5 text-sm text-ink-soft">Factores de Ecuador que cambian el diagnóstico (dengue, malaria, tuberculosis, Chagas).</p>
         <ListaSiNo items={EPIDEMIOLOGICOS} prefijo="e" {...props} />
       </section>
@@ -89,11 +89,11 @@ export function AntecedentesFamiliares({ historia, setHistoria }: Props) {
   const ninguno = a['f.ninguno'] === 'si'
   const grupos = [...new Set(FAMILIARES.map((x) => x.grupo))]
   return (
-    <section className="rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
+    <section className="linea-margen rounded-xl border border-line bg-surface py-4 pl-6 pr-4 sm:py-5 sm:pl-8 sm:pr-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-base font-bold text-ink">Enfermedades en la familia</h3>
-          <p className="mt-0.5 text-sm text-ink-soft">Toque el parentesco de quien la tuvo.</p>
+          <h3 className="font-display text-base font-semibold text-ink">Enfermedades en la familia</h3>
+          <p className="mt-0.5 text-sm text-ink-soft">Toca el parentesco de quien la tuvo.</p>
         </div>
         <button aria-pressed={ninguno} onClick={() => poner(setHistoria, { 'f.ninguno': ninguno ? '' : 'si' })}
           className={`min-h-10 rounded-full border px-3.5 text-sm font-medium ${ninguno ? 'border-brand bg-brand text-on-brand' : 'border-line text-ink-soft hover:border-brand/60'}`}>

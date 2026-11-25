@@ -74,7 +74,7 @@ export function useDictado(onTexto: (t: string) => void) {
       for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) t += e.results[i][0].transcript + ' '
       if (t.trim()) onTexto(t)
     }
-    r.onerror = (e) => setError(e.error === 'not-allowed' ? 'Permita el uso del micrófono para dictar.' : e.error === 'no-speech' ? 'No se escuchó nada. Intente de nuevo.' : 'El dictado se detuvo. Intente de nuevo.')
+    r.onerror = (e) => setError(e.error === 'not-allowed' ? 'Permite el uso del micrófono para dictar.' : e.error === 'no-speech' ? 'No se escuchó nada. Intenta de nuevo.' : 'El dictado se detuvo. Intenta de nuevo.')
     r.onend = () => setEscuchando(false)
     rec.current = r
     setError(null); setEscuchando(true)

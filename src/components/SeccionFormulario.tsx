@@ -23,7 +23,7 @@ const claseInput =
   'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-ink placeholder:text-ink-faint transition-colors focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15'
 
 function aviso(seccionId: string, c: Campo, v: string): string | null {
-  if (seccionId === 'filiacion' && c.id === 'cedula' && v.trim() && !cedulaValida(v.trim())) return 'La cédula no es válida: revise los 10 dígitos.'
+  if (seccionId === 'filiacion' && c.id === 'cedula' && v.trim() && !cedulaValida(v.trim())) return 'La cédula no es válida: revisa los 10 dígitos.'
   if (seccionId === 'examen') return avisoSigno(c.id, v)
   return null
 }
@@ -79,7 +79,7 @@ function Parrafo({ comun, v, onCambio, etiqueta }: { comun: Record<string, unkno
           </button>
         )}
       </div>
-      {d.escuchando && <p className="mt-1.5 text-sm font-medium text-alarm" role="status">Escuchando… diga «coma», «punto y seguido» o «punto y aparte». Toque el micrófono para terminar.</p>}
+      {d.escuchando && <p className="mt-1.5 text-sm font-medium text-alarm" role="status">Escuchando… di «coma», «punto y seguido» o «punto y aparte». Toca el micrófono para terminar.</p>}
       {d.error && <p className="mt-1.5 text-sm text-warn" role="status">{d.error}</p>}
     </div>
   )
@@ -110,36 +110,35 @@ function SignoVital({ c, v, onCambio }: { c: Campo; v: string; onCambio: (v: str
 }
 
 function Guia({ seccion, guia, onGuia }: Pick<Props, 'seccion' | 'guia' | 'onGuia'>) {
-  const [abierta, setAbierta] = useState(true)
   const hechas = seccion.guia.filter((_, i) => guia[`${seccion.id}.${i}`] === '1').length
+  const [abierta, setAbierta] = useState(hechas < seccion.guia.length)
   return (
-    <section className="rounded-2xl border border-line bg-surface shadow-card">
-      <button className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
-        <span className="flex items-center gap-2.5 font-semibold text-ink">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand"><Icono nombre="mensaje" className="h-4 w-4" /></span>
-          Qué preguntar
+    <section aria-label="Guion de la entrevista" className="rounded-xl border border-line bg-margen/70 px-4 py-3">
+      <button className="flex min-h-10 w-full items-center justify-between gap-3 text-left" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
+        <span className="flex items-center gap-2 text-sm font-semibold text-brand-strong">
+          <Icono nombre="mensaje" className="h-4 w-4" /> Guion de la entrevista
         </span>
         <span className="flex items-center gap-2 text-sm text-ink-soft">
-          <span className={`cifra rounded-full px-2 py-0.5 text-xs font-semibold ${hechas === seccion.guia.length ? 'bg-ok-soft text-ok' : 'bg-surface-2 text-ink-soft'}`}>{hechas}/{seccion.guia.length}</span>
+          <span className="cifra text-xs">{hechas} de {seccion.guia.length} preguntadas</span>
           <Icono nombre="flecha" className={`h-4 w-4 transition-transform ${abierta ? 'rotate-90' : ''}`} />
         </span>
       </button>
       {abierta && (
-        <ul className="grid gap-1 px-2 pb-3 sm:grid-cols-2">
+        <ol className="mt-1 grid gap-x-6 sm:grid-cols-2">
           {seccion.guia.map((g, i) => {
             const clave = `${seccion.id}.${i}`
             const hecha = guia[clave] === '1'
             return (
               <li key={i}>
-                <label className="flex min-h-11 cursor-pointer items-start gap-2.5 rounded-lg px-2 py-2 text-[15px] leading-snug hover:bg-surface/60">
-                  <input type="checkbox" className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[var(--brand)]" checked={hecha}
+                <label className="flex min-h-11 cursor-pointer items-start gap-3 py-1.5 leading-snug">
+                  <input type="checkbox" className="mt-1 h-[18px] w-[18px] shrink-0 accent-[var(--brand)]" checked={hecha}
                     onChange={(e) => onGuia(clave, e.target.checked ? '1' : '')} />
-                  <span className={hecha ? 'text-ink-faint line-through decoration-ink-faint/50' : 'text-ink'}>{g}</span>
+                  <span className={`font-display text-[17px] ${hecha ? 'text-ink-faint line-through decoration-ink-faint/50' : 'text-ink'}`}>{g}</span>
                 </label>
               </li>
             )
           })}
-        </ul>
+        </ol>
       )}
     </section>
   )
@@ -223,18 +222,20 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
 
   return (
     <div className="grid gap-5">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Paso {seccion.numero} de 10</p>
-        <h2 className="mt-0.5 font-display text-[28px] font-bold leading-tight tracking-tight text-ink">{seccion.titulo}</h2>
-        <p className="mt-1 text-ink-soft">{seccion.descripcion}</p>
+      <header className="flex items-start gap-4">
+        <span aria-hidden className="font-display text-[56px] font-semibold leading-[0.9] text-brand/75 sm:text-[72px]">{String(seccion.numero).padStart(2, '0')}</span>
+        <div className="min-w-0 pt-1">
+          <h2 className="font-display text-[30px] font-semibold leading-tight text-ink sm:text-[34px]">{seccion.titulo}</h2>
+          <p className="mt-1 text-ink-soft">{seccion.descripcion}</p>
+        </div>
       </header>
 
       <Guia seccion={seccion} guia={guia} onGuia={onGuia} />
       {children}
 
       {grupos.map((g, gi) => (
-        <section key={gi} className="rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
-          {g.titulo && <h3 className="mb-4 font-display text-base font-bold text-ink">{g.titulo}</h3>}
+        <section key={gi} className="linea-margen rounded-xl border border-line bg-surface py-4 pl-6 pr-4 sm:py-5 sm:pl-8 sm:pr-6">
+          {g.titulo && <h3 className="mb-4 border-b border-rule pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">{g.titulo}</h3>}
           {g.titulo === 'Signos vitales' ? (
             <>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
@@ -263,7 +264,8 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
                 const a = aviso(seccion.id, c, v)
                 const ancho = c.tipo === 'parrafo' || (c.tipo === 'opcion' && (c.opciones?.length ?? 0) > 3 && (c.opciones?.length ?? 0) <= 4)
                 return (
-                  <div key={c.id} className={ancho ? 'sm:col-span-2' : ''}>
+                  <div key={c.id} className={ancho || c.pregunta ? 'sm:col-span-2' : ''}>
+                    {c.pregunta && <p className="mb-1 font-display text-[18px] italic leading-snug text-ink">«{c.pregunta}»</p>}
                     {c.tipo === 'opcion' && (c.opciones?.length ?? 0) <= 4 ? (
                       <p id={`campo-${c.id}-etiqueta`} className="mb-1.5 text-sm font-medium text-ink">
                         {c.etiqueta}{c.obligatorio && <span className="text-alarm"> *</span>}
@@ -287,7 +289,7 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
                     {c.ayuda && <p id={`campo-${c.id}-ayuda`} className="mt-1.5 text-xs text-ink-faint">{c.ayuda}</p>}
                     {historia && (c.tipo === 'parrafo' || c.tipo === 'texto') && (
                       <Sugerencias lista={sugerenciasPara(seccion.id, c.id, historia)} valor={v} onUsar={(t) => onCambio(c.id, t)}
-                        aviso={seccion.id === 'examen' ? 'Úsela solo si examinó esta región y la encontró normal.' : seccion.id === 'sistemas' ? 'Úsela solo si preguntó cada una de estas cosas.' : undefined} />
+                        aviso={seccion.id === 'examen' ? 'Úsala solo si examinaste esta región y la encontraste normal.' : seccion.id === 'sistemas' ? 'Úsala solo si preguntaste cada una de estas cosas.' : undefined} />
                     )}
                     {(c.tipo === 'parrafo' || c.tipo === 'texto') && seccion.id !== 'motivo' && <Abreviaturas valor={v} onUsar={(t) => onCambio(c.id, t)} />}
                     {a && <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-alarm"><Icono nombre="alerta" className="h-4 w-4" />{a}</p>}

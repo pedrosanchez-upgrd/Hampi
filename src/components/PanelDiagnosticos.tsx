@@ -145,7 +145,7 @@ function Pendientes({ historia, irA }: Props) {
     <div className="grid gap-4">
       {av.length > 0 && (
         <section>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-warn">No se le olvide</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-warn">Que no se te olvide</h4>
           <ul className="mt-2 grid gap-1">
             {av.map((a, i) => (
               <li key={i}>
@@ -205,9 +205,9 @@ export function LoQueEscribio({ historia, setHistoria }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-sm font-semibold text-ink">
-            <Icono nombre="libro" className="h-4 w-4 text-ok" /> Encontré esto en lo que escribió
+            <Icono nombre="libro" className="h-4 w-4 text-ok" /> Encontré esto en lo que escribiste
           </p>
-          <p className="mt-0.5 text-xs text-ink-faint">Confírmelo para que cuente en los diagnósticos.</p>
+          <p className="mt-0.5 text-xs text-ink-faint">Confírmalo para que cuente en los diagnósticos.</p>
         </div>
         {lista.length > 1 && (
           <button onClick={() => confirmar(lista)} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
@@ -246,7 +246,7 @@ export function PregunteAhora({ historia, setHistoria }: Props) {
   return (
     <div className="min-w-0 rounded-xl border border-brand/30 bg-brand-soft/30 p-3">
       <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-strong">
-        <Icono nombre="mensaje" className="h-4 w-4" /> Pregunte o examine esto ahora
+        <Icono nombre="mensaje" className="h-4 w-4" /> Pregunta o examina esto ahora
       </p>
       <p className="mt-0.5 text-xs text-ink-faint">Son los datos que más cambiarían el orden de la lista.</p>
       <ul className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-1.5">
@@ -279,7 +279,7 @@ export function Asistente(props: Props) {
       <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">
         {([['dx', 'Diagnósticos', n], ['pend', 'Pendientes', p]] as const).map(([id, t, c]) => (
           <button key={id} role="tab" aria-selected={pestana === id} onClick={() => setPestana(id)}
-            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold transition-colors ${pestana === id ? 'bg-surface text-ink shadow-card' : 'text-ink-soft'}`}>
+            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold transition-colors ${pestana === id ? 'bg-surface text-ink ring-1 ring-line' : 'text-ink-soft'}`}>
             {t}{c > 0 && <span className={`cifra rounded-full px-1.5 text-xs ${id === 'pend' ? 'bg-warn-soft text-warn' : 'bg-brand-soft text-brand-strong'}`}>{c}</span>}
           </button>
         ))}
@@ -324,7 +324,7 @@ export function AsistenteFlotante(props: Props & { abierto?: boolean; setAbierto
           <aside role="dialog" aria-label="Asistente" onClick={(e) => e.stopPropagation()}
             className="h-full w-full max-w-md overflow-y-auto bg-bg p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-[calc(1rem+env(safe-area-inset-top,0px))] shadow-card">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold text-ink">Asistente</h2>
+              <h2 className="font-display text-xl font-semibold text-ink">Asistente</h2>
               <button className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface-2" onClick={() => setAbierto(false)} aria-label="Cerrar asistente">
                 <Icono nombre="cerrar" className="h-5 w-5" />
               </button>
@@ -417,14 +417,14 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
   if (compacto && lista.length === 0) return null
 
   return (
-    <section className="no-imprimir min-w-0 rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
+    <section className="no-imprimir linea-margen min-w-0 rounded-xl border border-line bg-surface py-4 pl-6 pr-4 sm:py-5 sm:pl-8 sm:pr-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="flex items-center gap-2 font-display text-base font-bold text-ink">
+          <h3 className="flex items-center gap-2 font-display text-base font-semibold text-ink">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand"><Icono nombre="lupa" className="h-4 w-4" /></span>
-            {compacto ? 'Lo más probable hasta ahora' : '¿Cuál es más probable? Elija sus diagnósticos'}
+            {compacto ? 'Lo más probable hasta ahora' : '¿Cuál es más probable? Elige tus diagnósticos'}
           </h3>
-          <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registró. Toque «Afinar» para saber qué preguntar. La decisión es suya.</p>
+          <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registraste. Toca «Afinar» para saber qué preguntar. La decisión es tuya.</p>
         </div>
       </div>
 
@@ -437,7 +437,7 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
 
       {lista.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-line p-4 text-center text-sm text-ink-soft">
-          Aún no hay sugerencias. Escriba el motivo de consulta y marque los hallazgos clave en Enfermedad actual.
+          Aún no hay sugerencias. Escribe el motivo de consulta y marca los hallazgos clave en Enfermedad actual.
         </p>
       ) : (
         <ul className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2">

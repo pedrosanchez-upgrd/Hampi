@@ -52,11 +52,11 @@ const numeroEn = (n: number, texto: string) =>
  */
 export function validarRegla(p: ReglaPropuesta, resumen: string | null): string | null {
   if (!resumen) return 'Este artículo no trae resumen: no se pueden sacar números de él.'
-  if (!p.diagnostico || !p.hallazgo) return 'Elija el diagnóstico y el hallazgo.'
-  if (p.cita_textual.trim().length < 20) return 'Copie la frase completa del resumen donde aparece el dato.'
+  if (!p.diagnostico || !p.hallazgo) return 'Elige el diagnóstico y el hallazgo.'
+  if (p.cita_textual.trim().length < 20) return 'Copia la frase completa del resumen donde aparece el dato.'
   if (!normal(resumen).includes(normal(p.cita_textual))) return 'La cita debe copiarse tal cual del resumen (no se encontró en el texto).'
   const nums = [p.lr_pos, p.lr_neg].filter((x): x is number => x !== null)
-  if (!nums.length && !p.cualitativo) return 'Indique LR positivo, LR negativo o si el hallazgo sube o baja el diagnóstico.'
+  if (!nums.length && !p.cualitativo) return 'Indica LR positivo, LR negativo o si el hallazgo sube o baja el diagnóstico.'
   for (const n of nums) {
     if (!(n > 0) || n > 1000) return 'El LR debe ser un número mayor que 0.'
     if (!numeroEn(n, p.cita_textual)) return `El número ${String(n).replace('.', ',')} no aparece en la cita copiada.`

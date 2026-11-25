@@ -128,7 +128,7 @@ export function sugerenciasPara(seccionId: string, campoId: string, h: Historia)
     const elegidos = new Set((h.impresion?.diagnosticos ?? '').split('\n').map((l) => l.replace(/\s*\(.*\)\s*$/, '').trim().toLowerCase()).filter(Boolean))
     const con = diagnosticosEnVivo(h).filter((r) => r.estudios && elegidos.has(r.nombre.toLowerCase()))
     if (con.length)
-      out.push({ etiqueta: 'Lo que mencionan las fuentes de sus diagnósticos', texto: con.map((r) => `${r.nombre}: ${r.estudios}`).join('\n') })
+      out.push({ etiqueta: 'Lo que mencionan las fuentes de tus diagnósticos', texto: con.map((r) => `${r.nombre}: ${r.estudios}`).join('\n') })
   }
   if (seccionId === 'plan' && campoId === 'examenes')
     out.push({ etiqueta: 'Formato', texto: 'Examen: … (motivo: …)' })

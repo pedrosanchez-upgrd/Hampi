@@ -24,10 +24,10 @@ describe('mensajes y validación', () => {
     expect(mensajeError(new Error('Invalid login credentials'))).toBe('Correo o contraseña incorrectos.')
     expect(mensajeError(new TypeError('Failed to fetch'))).toContain('No se pudo conectar')
     expect(mensajeError({ message: 'User already registered' })).toContain('ya tiene una cuenta')
-    expect(mensajeError(new Error('Email not confirmed'))).toContain('confirmar su correo')
+    expect(mensajeError(new Error('Email not confirmed'))).toContain('confirmar tu correo')
   })
   it('valida correo, contraseña y nombre', () => {
-    expect(validarCuenta('malo', '12345678')).toBe('Escriba un correo válido.')
+    expect(validarCuenta('malo', '12345678')).toBe('Escribe un correo válido.')
     expect(validarCuenta('a@b.ec', '1234')).toContain('8 caracteres')
     expect(validarCuenta('a@b.ec', '12345678', { nombre: 'Ana Pérez', rol: 'interno', institucion: '' })).toContain('letras y números')
     expect(validarCuenta('a@b.ec', 'clave1234', { nombre: 'An', rol: 'interno', institucion: '' })).toContain('nombre')

@@ -34,7 +34,7 @@ export function MisHistorias({ abierto, actualId, onCerrar, onAbrir, onNueva }: 
       <aside role="dialog" aria-label="Mis historias" onClick={(e) => e.stopPropagation()}
         className="h-full w-full max-w-md overflow-y-auto bg-bg p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-[calc(1rem+env(safe-area-inset-top,0px))] shadow-card">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold text-ink">Mis historias</h2>
+          <h2 className="font-display text-xl font-semibold text-ink">Mis historias</h2>
           <button className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface-2" onClick={onCerrar} aria-label="Cerrar mis historias">
             <Icono nombre="cerrar" className="h-5 w-5" />
           </button>
@@ -47,8 +47,8 @@ export function MisHistorias({ abierto, actualId, onCerrar, onAbrir, onNueva }: 
         {lista?.length === 0 && (
           <div className="rounded-2xl border border-dashed border-line p-6 text-center">
             <Icono nombre="documento" className="mx-auto h-7 w-7 text-ink-faint" />
-            <p className="mt-2 font-medium text-ink">Todavía no tiene historias guardadas</p>
-            <p className="mt-1 text-sm text-ink-soft">Lo que escriba se guarda solo en su cuenta mientras trabaja.</p>
+            <p className="mt-2 font-medium text-ink">Todavía no tienes historias guardadas</p>
+            <p className="mt-1 text-sm text-ink-soft">Lo que escribas se guarda solo en tu cuenta mientras trabajas.</p>
           </div>
         )}
         <ul className="grid gap-2">

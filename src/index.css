@@ -1,44 +1,50 @@
 @import "tailwindcss";
 
 /* Hampi · sistema visual (ver DESIGN.md).
-   Concepto: ficha clínica moderna. Papel frío y limpio, tinta verde-negra,
-   acento eucalipto; los colores semánticos (alarma, faltante, completo) van aparte. */
+   Concepto (25-nov-2026): cuaderno clínico con tutor al margen. Papel cálido con renglones,
+   tinta verde-negra, títulos con serifa, acento eucalipto; el «margen» es la columna del tutor.
+   Los colores semánticos (alarma, faltante, completo) van aparte. */
 :root {
-  --bg: #f2f6f4;
-  --surface: #ffffff;
-  --surface-2: #eaf1ee;
-  --ink: #10231f;
-  --ink-soft: #465a55;
-  --ink-faint: #5d716b;
-  --line: #d6e0dc;
-  --brand: #0f6b58;
-  --brand-strong: #0a5244;
-  --brand-soft: #dff0ea;
+  --bg: #f6f1e7;
+  --surface: #fffcf5;
+  --surface-2: #efe8da;
+  --ink: #1c2521;
+  --ink-soft: #48544e;
+  --ink-faint: #5f6862;
+  --line: #e0d7c5;
+  --rule: #ebe3d3;
+  --margin-line: #e3a59c;
+  --margen: #eef3ec;
+  --brand: #0e6653;
+  --brand-strong: #0a4f41;
+  --brand-soft: #e0eee6;
   --on-brand: #ffffff;
   --alarm: #b42318;
-  --alarm-soft: #fdeceb;
+  --alarm-soft: #fbe9e5;
   --on-alarm: #ffffff;
-  --warn: #9a5800;
-  --warn-soft: #fff2d9;
-  --ok: #1d7748;
-  --ok-soft: #e2f4e9;
-  --shadow: 0 1px 2px rgb(16 35 31 / 0.06), 0 8px 24px -12px rgb(16 35 31 / 0.18);
+  --warn: #8f5200;
+  --warn-soft: #fbefd6;
+  --ok: #1d7148;
+  --ok-soft: #e3f1e6;
+  --shadow: 0 1px 2px rgb(40 32 18 / 0.06), 0 10px 28px -14px rgb(40 32 18 / 0.22);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0c1614; --surface: #12201d; --surface-2: #192a26; --ink: #e4eeeb; --ink-soft: #a7b9b3;
-    --ink-faint: #8b9e98; --line: #263935; --brand: #4cc3a3; --brand-strong: #74d8bc; --brand-soft: #143a31;
+    --bg: #111816; --surface: #172120; --surface-2: #1f2b28; --ink: #ece6d8; --ink-soft: #b7b2a5;
+    --ink-faint: #a3a093; --line: #2b3834; --rule: #1d2926; --margin-line: #7a3b35; --margen: #1a2624;
+    --brand: #5cc7a8; --brand-strong: #82dac0; --brand-soft: #173a31;
     --on-brand: #04201a; --alarm: #ff8b7c; --alarm-soft: #3b1714; --on-alarm: #2a0905; --warn: #f1b75c; --warn-soft: #33250c;
-    --ok: #71d59d; --ok-soft: #11301f; --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -14px rgb(0 0 0 / 0.7);
+    --ok: #74d49e; --ok-soft: #11301f; --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 30px -14px rgb(0 0 0 / 0.75);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0c1614; --surface: #12201d; --surface-2: #192a26; --ink: #e4eeeb; --ink-soft: #a7b9b3;
-  --ink-faint: #8b9e98; --line: #263935; --brand: #4cc3a3; --brand-strong: #74d8bc; --brand-soft: #143a31;
+  --bg: #111816; --surface: #172120; --surface-2: #1f2b28; --ink: #ece6d8; --ink-soft: #b7b2a5;
+  --ink-faint: #a3a093; --line: #2b3834; --rule: #1d2926; --margin-line: #7a3b35; --margen: #1a2624;
+  --brand: #5cc7a8; --brand-strong: #82dac0; --brand-soft: #173a31;
   --on-brand: #04201a; --alarm: #ff8b7c; --alarm-soft: #3b1714; --on-alarm: #2a0905; --warn: #f1b75c; --warn-soft: #33250c;
-  --ok: #71d59d; --ok-soft: #11301f; --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 28px -14px rgb(0 0 0 / 0.7);
+  --ok: #74d49e; --ok-soft: #11301f; --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 30px -14px rgb(0 0 0 / 0.75);
   color-scheme: dark;
 }
 
@@ -50,6 +56,9 @@
   --color-ink-soft: var(--ink-soft);
   --color-ink-faint: var(--ink-faint);
   --color-line: var(--line);
+  --color-rule: var(--rule);
+  --color-margin-line: var(--margin-line);
+  --color-margen: var(--margen);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
   --color-brand-soft: var(--brand-soft);
@@ -61,7 +70,7 @@
   --color-warn-soft: var(--warn-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
-  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Source Serif 4", "Iowan Old Style", Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --shadow-card: var(--shadow);
@@ -87,3 +96,10 @@ input, textarea, select { font-size: 16px; }
   .no-imprimir { display: none !important; }
   body { background: #fff; color: #000; }
 }
+
+/* Renglones de cuaderno: líneas suaves cada 2 rem detrás de una hoja. */
+.renglones {
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(2rem - 1px), var(--rule) calc(2rem - 1px), var(--rule) 2rem);
+}
+/* Línea roja de margen del cuaderno (decorativa). */
+.linea-margen { box-shadow: inset 3px 0 0 var(--margin-line); }

@@ -7,7 +7,7 @@ Documentos de trabajo (Claude Docs): «Plan: Historia Clínica Inteligente», «
 ## Cómo está armado
 - React + TypeScript + Vite + Tailwind 4. `npm run dev`, `npm test` (Vitest), `npm run build`.
 - `src/data/secciones.ts`: los apartados, campos y preguntas guía.
-- `DESIGN.md`: brief de diseño (supuestos marcados). Tokens en `src/index.css` (claro y oscuro). Íconos propios en `src/components/Icono.tsx`.
+- `DESIGN.md`: brief de diseño. Dirección desde 25-nov-2026: «cuaderno clínico con tutor al margen» (papel cálido, renglones `.renglones`, línea de margen `.linea-margen`, títulos Source Serif 4, trato de «tú»). Pantallas: `Inicio.tsx` (portada), `Tutor.tsx` (columna del tutor y cajón del teléfono), `ResultadoPractica.tsx`; modo práctica en `src/data/casosPractica.ts` (3 casos ficticios, pendientes de revisión médica). Tokens en `src/index.css` (claro y oscuro). Íconos propios en `src/components/Icono.tsx`.
 - `src/data/sintomas.ts`: 41 pestañas de síntoma (palabras clave, preguntas, signos de alarma Sí/No; los «No» salen como negativos pertinentes).
 - `src/data/antecedentes.ts`: patológicos, familiares por parentesco y epidemiológicos de Ecuador; algunos alimentan hallazgos del motor.
 - `src/data/casoEjemplo.ts`: caso ficticio de dolor torácico para probar.
