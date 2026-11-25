@@ -66,7 +66,7 @@ function avance(historia: Historia, id: string) {
 /** Índice del cuaderno: pestañas numeradas con su avance. `vertical` en pantallas anchas. */
 function Indice({ historia, actual, irA, vertical }: { historia: Historia; actual: string; irA: (id: string) => void; vertical?: boolean }) {
   return (
-    <ol className={vertical ? 'grid gap-0.5' : '-mb-px flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:px-6'}>
+    <ol className={vertical ? 'grid grid-cols-[minmax(0,1fr)] gap-0.5' : '-mb-px flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:px-6'}>
       {PASOS.map((s) => {
         const activo = actual === s.id
         const a = avance(historia, s.id)
@@ -74,16 +74,13 @@ function Indice({ historia, actual, irA, vertical }: { historia: Historia; actua
           <li key={s.id} className="shrink-0">
             <button onClick={() => irA(s.id)} aria-current={activo ? 'step' : undefined}
               className={vertical
-                ? `flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-1.5 text-left transition-colors ${activo ? 'bg-surface text-ink shadow-card' : 'text-ink-soft hover:bg-surface/70'}`
+                ? `flex min-h-11 w-full min-w-0 items-center gap-3 rounded-lg px-2.5 py-1.5 text-left transition-colors ${activo ? 'bg-surface text-ink shadow-card' : 'text-ink-soft hover:bg-surface/70'}`
                 : `relative flex min-h-12 items-center gap-2 rounded-t-lg border-x border-t px-3 text-left transition-colors ${activo ? 'border-line bg-bg text-ink' : 'border-transparent text-ink-soft hover:text-ink'}`}>
               <span className={`font-display text-lg font-semibold leading-none ${activo ? 'text-brand' : a.completo ? 'text-ok' : 'text-ink-faint'}`}>
                 {a.completo && !activo ? <Icono nombre="check" className="h-4 w-4" /> : String(s.n).padStart(2, '0')}
               </span>
-              <span className={`whitespace-nowrap text-[15px] ${activo ? 'font-semibold' : ''}`}>{CORTO[s.id]}</span>
+              <span className={`text-[15px] ${vertical ? 'min-w-0 flex-1 leading-snug' : 'whitespace-nowrap'} ${activo ? 'font-semibold' : ''}`}>{CORTO[s.id]}</span>
               {a.falta && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-warn" aria-label="faltan datos obligatorios" />}
-              {vertical && s.id !== 'redaccion' && (
-                <span className="ml-auto h-1 w-8 shrink-0 overflow-hidden rounded-full bg-surface-2" aria-hidden><span className="block h-full bg-brand/70" style={{ width: `${a.f * 100}%` }} /></span>
-              )}
             </button>
           </li>
         )
@@ -318,7 +315,7 @@ export default function App() {
         <nav aria-label="Apartados" className="xl:hidden"><Indice historia={historia} actual={actual} irA={irA} /></nav>
       </header>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 px-4 pb-32 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:pb-16 xl:grid-cols-[210px_minmax(0,1fr)_370px] 2xl:mx-auto 2xl:max-w-[1600px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 px-4 pb-32 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:pb-16 xl:grid-cols-[220px_minmax(0,1fr)_370px] 2xl:mx-auto 2xl:max-w-[1600px]">
         <nav aria-label="Apartados" className="no-imprimir hidden xl:block">
           <div className="sticky top-24"><Indice historia={historia} actual={actual} irA={irA} vertical /></div>
         </nav>

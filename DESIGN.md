@@ -58,6 +58,8 @@ Tipos: **Source Serif 4** para títulos, números de apartado, guion de entrevis
 
 - 2026-11-25 — Evaluación heurística (Nielsen) y prueba de estrés (break-ui), todo corregido: «Deshacer» al usar una sugerencia; guardado visible en el teléfono; avisos de número/edad/intensidad; recuperar lo ocultado con «No corresponde»; cajón del tutor con Escape y foco; siguiente paso al final de la redacción; «Cómo funciona» siempre en la portada; columna que nunca supera el ancho de pantalla (320 px); «1 año»; «Falta 1 dato»; limpieza de espacios pegados; «Seguir donde quedé» vuelve al apartado. Informe: https://claude.ai/artifact/YKq3qLK7ozaBQMam8sUAC8
 
+- 2026-11-25 — iPad horizontal (foto de Pedro): el índice lateral pisaba el número del apartado y la fecha se salía en Safari. Índice sin barrita de avance (basta ✓ y el punto naranja), columna de 220 px que no crece; campo de fecha con ancho limitado; en el teléfono las columnas de la hoja ya no se ensanchan por una sugerencia larga. El interno simulado ahora prueba también iPad horizontal y detecta solapes.
+
 ## Preguntas abiertas
 - ¿Le gusta a Pedro el papel cálido del cuaderno, o prefiere un fondo más blanco?
 - Fichas de antecedentes de un toque (vacía → Sí → No): la evaluación heurística las marcó como algo que hay que recordar; se mantiene la leyenda. Confirmar con internos reales si se entiende o si conviene Sí/No separados.

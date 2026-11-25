@@ -42,9 +42,19 @@ async function simular(caso, nombreDisp, opciones, navegador) {
         .map((e) => (e.getAttribute('aria-label') || e.textContent || e.tagName).trim().slice(0, 40))
       const letraChica = visibles.filter((e) => ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.tagName) && e.type !== 'checkbox' && parseFloat(getComputedStyle(e).fontSize) < 16)
         .map((e) => e.id || e.getAttribute('aria-label') || e.tagName)
-      return { desborde: document.documentElement.scrollWidth > window.innerWidth + 1, chicos: [...new Set(chicos)], letraChica, alto: document.documentElement.scrollHeight }
+      // Solapes: el índice lateral, la hoja y el tutor no deben pisarse.
+      const caja = (sel) => { const e = [...document.querySelectorAll(sel)].find((x) => x.getBoundingClientRect().width > 0); return e ? e.getBoundingClientRect() : null }
+      const nav = [...document.querySelectorAll('nav[aria-label="Apartados"] button')].filter((x) => x.getBoundingClientRect().width > 0 && x.closest('ol')?.className.includes('grid'))
+      const main = caja('main'), tutor = caja('aside[aria-label="Tutor"]')
+      const solapes = []
+      if (main && nav.length && Math.max(...nav.map((x) => x.getBoundingClientRect().right)) > main.left + 1) solapes.push('el índice pisa la hoja')
+      if (main && tutor && main.right > tutor.left + 1) solapes.push('la hoja pisa el tutor')
+      const fueraDeHoja = [...document.querySelectorAll('main input, main textarea, main select')].filter((e) => { const b = e.getBoundingClientRect(), m = e.closest('section')?.getBoundingClientRect(); return b.width > 0 && m && b.right > m.right + 1 }).map((e) => e.id)
+      if (fueraDeHoja.length) solapes.push(`campos que se salen de la hoja: ${fueraDeHoja.join(', ')}`)
+      return { desborde: document.documentElement.scrollWidth > window.innerWidth + 1, chicos: [...new Set(chicos)], letraChica, solapes, alto: document.documentElement.scrollHeight }
     })
     if (r.desborde) nota('medio', donde, 'La pantalla se sale de lado (desborde horizontal).')
+    for (const x of r.solapes) nota('medio', donde, `Se superponen elementos: ${x}.`)
     if (r.chicos.length) nota('leve', donde, `Botones de menos de 36 px de alto: ${r.chicos.slice(0, 6).join(' · ')}${r.chicos.length > 6 ? ` y ${r.chicos.length - 6} más` : ''}.`)
     if (r.letraChica.length) nota('medio', donde, `Campos con letra menor de 16 px (el iPad hace zoom): ${r.letraChica.join(', ')}.`)
     return r
@@ -236,7 +246,7 @@ async function simular(caso, nombreDisp, opciones, navegador) {
   const navegador = await chromium.launch()
   const resultados = []
   for (const caso of CASOS.filter((c) => !process.env.CASO || c.id === process.env.CASO))
-    for (const [nombre, op] of [['iPad', { viewport: { width: 1024, height: 1366 } }], ['Teléfono', { ...devices['iPhone 13'], deviceScaleFactor: 1 }]].filter(([n]) => !process.env.DISP || n === process.env.DISP)) {
+    for (const [nombre, op] of [['iPad', { viewport: { width: 1024, height: 1366 } }], ['iPad horizontal', { viewport: { width: 1366, height: 1024 } }], ['Teléfono', { ...devices['iPhone 13'], deviceScaleFactor: 1 }]].filter(([n]) => !process.env.DISP || n === process.env.DISP)) {
       try { resultados.push(await simular(caso, nombre, op, navegador)) }
       catch (e) { const m = String(e.message); const esp = (m.match(/waiting for (.*)/) ?? [])[1] ?? ''; resultados.push({ caso: caso.id, titulo: caso.titulo, dispositivo: nombre, hallazgos: [{ gravedad: 'grave', donde: 'Robot', que: `El robot no pudo terminar: ${m.split('\n')[0].slice(0, 120)} ${esp.replace(/\x1b\[[0-9;]*m/g, '').slice(0, 160)}` }] }) }
       const r = resultados[resultados.length - 1]

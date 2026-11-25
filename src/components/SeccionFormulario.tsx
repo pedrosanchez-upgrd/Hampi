@@ -282,7 +282,7 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
       <Guia seccion={seccion} guia={guia} onGuia={onGuia} />
       {children}
 
-      <section className="linea-margen grid gap-7 rounded-xl border border-line bg-surface py-5 pl-6 pr-4 sm:py-6 sm:pl-8 sm:pr-6">
+      <section className="linea-margen grid grid-cols-[minmax(0,1fr)] gap-7 rounded-xl border border-line bg-surface py-5 pl-6 pr-4 sm:py-6 sm:pl-8 sm:pr-6">
       {grupos.map((g, gi) => (
         <div key={gi}>
           {g.titulo && <h3 className="mb-4 border-b border-rule pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">{g.titulo}</h3>}
@@ -308,7 +308,7 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
               <p className="mt-3 text-xs text-ink-faint">Rangos de aviso provisionales (adulto), pendientes de revisión médica; la saturación se ajustará a la altura de Cuenca.</p>
             </>
           ) : (
-            <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-x-4 gap-y-5 sm:grid-cols-2">
               {g.campos.map((c) => {
                 const v = valores[c.id] ?? ''
                 const a = aviso(seccion.id, c, v)
