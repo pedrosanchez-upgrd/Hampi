@@ -39,7 +39,7 @@ describe('historia', () => {
     expect(t.startsWith('RESUMEN\nHombre de 58 años, consulta por «dolor en el pecho», de 2 horas de evolución.')).toBe(true)
     expect(t.indexOf('SIGNOS DE ALARMA')).toBeLessThan(t.indexOf('1. DATOS'))
     expect(t).toContain('Presión sistólica baja (85 mmHg)')
-    expect(t).toContain('IMC: 24,2 kg/m²')
+    expect(t).toContain('IMC 24,2 kg/m²')
   })
 })
 
@@ -77,5 +77,37 @@ describe('privacidad', () => {
     const t = textoParaIA(h)
     for (const x of ['Juana', '0102030400', '12345', '0991234567']) expect(t).not.toContain(x)
     expect(t).toContain('Mujer de 60 años')
+  })
+})
+
+import { enLista } from './historia'
+import { casoEjemplo } from '../data/casoEjemplo'
+import { relatoSugerido } from '../data/redaccionAyuda'
+describe('formato de los textos (revisión 25-nov)', () => {
+  it('listas con «y» antes del último', () => {
+    expect(enLista(['a'])).toBe('a')
+    expect(enLista(['a', 'b', 'c'])).toBe('a, b y c')
+  })
+  it('redacción: 8/10 sin espacio, numeración seguida, negativos con «y»', () => {
+    const t = redactar(casoEjemplo())
+    expect(t).toContain('Intensidad: 8/10')
+    expect(t).toContain('Dolor torácico: niega dolor desgarrante hacia la espalda, síncope, hipotensión y disnea súbita.')
+    const numeros = [...t.matchAll(/^(\d+)\. [A-ZÁÉÍÓÚÑ]/gm)].map((m) => Number(m[1]))
+    expect(numeros).toEqual(numeros.map((_, i) => i + 1))
+    expect(t).not.toMatch(/ {2}| ,| \.(?!\d)|\.\.(?!\.)/)
+  })
+  it('relato sugerido: «de localización», sin dobles espacios', () => {
+    const r = relatoSugerido(casoEjemplo())!
+    expect(r).toContain('de localización retroesternal')
+    expect(r).toMatch(/síncope, hipotensión y disnea súbita\.$/)
+    expect(r).not.toMatch(/ {2}| ,/)
+  })
+})
+
+describe('examen físico en la redacción', () => {
+  it('signos vitales en una sola línea, con IMC', () => {
+    const t = redactar(casoEjemplo())
+    expect(t).toContain('Signos vitales: PA 150/95 mmHg, FC 98 lpm, FR 20 rpm, T 36,6 °C, SatO₂ 93 % al aire ambiente, peso 84 kg, talla 168 cm, IMC 29,8 kg/m².')
+    expect(t).not.toContain('Presión sistólica:')
   })
 })

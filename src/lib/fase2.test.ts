@@ -34,11 +34,11 @@ describe('redacción de antecedentes y negativos pertinentes', () => {
     h.sintomas = { 'toracico.a2': '0', 'toracico.a4': '0' }
     const t = redactar(h)
     expect(t).toContain('Patológicos: Hipertensión arterial (desde 2015, enalapril).')
-    expect(t).toContain('Niega: diabetes.')
+    expect(t).toContain('Niega diabetes.')
     expect(t).toContain('Diabetes: padre, madre.')
     expect(t).toContain('Epidemiológicos: Viaje o residencia reciente en la Costa o la Amazonía (Esmeraldas, hace 1 semana).')
     expect(t).toContain('Índice tabáquico: 10 paquetes/año')
-    expect(t).toContain('Dolor torácico, niega: síncope; disnea súbita.')
+    expect(t).toContain('Dolor torácico: niega síncope y disnea súbita.')
     expect(paquetesAnio(h)).toBe(10)
   })
   it('los campos gineco-obstétricos no salen en hombres', () => {

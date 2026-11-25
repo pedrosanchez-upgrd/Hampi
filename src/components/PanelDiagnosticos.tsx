@@ -191,8 +191,10 @@ function Pendientes({ historia, irA }: Props) {
 }
 
 /** Lo que Hampi encontró en el texto escrito: el médico confirma con un toque. */
-export function LoQueEscribio({ historia, setHistoria }: Props) {
+export function LoQueEscribio({ historia, setHistoria, max }: Props & { max?: number }) {
+  const [todos, setTodos] = useState(false)
   const lista = hallazgosEnLoEscrito(historia)
+  const visibles = max && !todos ? lista.slice(0, max) : lista
   if (!lista.length) return null
   const confirmar = (items: typeof lista) =>
     setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, ...Object.fromEntries(items.map((d) => [d.hallazgo, d.estado])) } }))
@@ -216,7 +218,7 @@ export function LoQueEscribio({ historia, setHistoria }: Props) {
         )}
       </div>
       <ul className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-1.5">
-        {lista.map((d) => (
+        {visibles.map((d) => (
           <li key={d.hallazgo} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface px-2.5 py-2">
             <div className="min-w-0 flex-[1_1_12rem]">
               <p className="break-words text-sm font-medium text-ink">
@@ -234,13 +236,18 @@ export function LoQueEscribio({ historia, setHistoria }: Props) {
           </li>
         ))}
       </ul>
+      {max && lista.length > max && (
+        <button className="mt-1 min-h-10 text-sm font-semibold text-brand" onClick={() => setTodos(!todos)}>{todos ? 'Ver menos' : `Ver ${lista.length - max} más`}</button>
+      )}
     </div>
   )
 }
 
 /** Las 3 preguntas o maniobras que más moverían la lista ahora: se responden ahí mismo. */
-export function PregunteAhora({ historia, setHistoria }: Props) {
+export function PregunteAhora({ historia, setHistoria, max }: Props & { max?: number }) {
+  const [todas, setTodas] = useState(false)
   const lista = preguntasClave(historia)
+  const visibles = max && !todas ? lista.slice(0, max) : lista
   if (!lista.length) return null
   const responder = (id: string, v: string) => setHistoria((h) => ({ ...h, hallazgos: { ...h.hallazgos, [id]: v } }))
   return (
@@ -250,7 +257,7 @@ export function PregunteAhora({ historia, setHistoria }: Props) {
       </p>
       <p className="mt-0.5 text-xs text-ink-faint">Son los datos que más cambiarían el orden de la lista.</p>
       <ul className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-1.5">
-        {lista.map((q) => (
+        {visibles.map((q) => (
           <li key={q.hallazgo} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface px-2.5 py-2">
             <div className="min-w-0 flex-[1_1_12rem]">
               <p className="text-sm font-medium text-ink">{q.texto}</p>
@@ -265,6 +272,9 @@ export function PregunteAhora({ historia, setHistoria }: Props) {
           </li>
         ))}
       </ul>
+      {max && lista.length > max && (
+        <button className="mt-1 min-h-10 text-sm font-semibold text-brand" onClick={() => setTodas(!todas)}>{todas ? 'Ver menos' : `Ver ${lista.length - max} más`}</button>
+      )}
     </div>
   )
 }
@@ -424,16 +434,9 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand"><Icono nombre="lupa" className="h-4 w-4" /></span>
             {compacto ? 'Lo más probable hasta ahora' : '¿Cuál es más probable? Elige tus diagnósticos'}
           </h3>
-          <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registraste. Toca «Afinar» para saber qué preguntar. La decisión es tuya.</p>
+          <p className="mt-1 text-sm text-ink-soft">Ordenados según lo que registraste. «Afinar» te dice qué preguntar. La decisión es tuya.</p>
         </div>
       </div>
-
-      {lista.length > 0 && (
-        <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
-          <LoQueEscribio historia={historia} setHistoria={setHistoria} />
-          <PregunteAhora historia={historia} setHistoria={setHistoria} />
-        </div>
-      )}
 
       {lista.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-line p-4 text-center text-sm text-ink-soft">

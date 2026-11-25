@@ -4,6 +4,7 @@ import { avisoSigno, cedulaValida, imc, RANGOS, type Historia } from '../lib/his
 import { sugerenciasPara, type Sugerencia } from '../data/redaccionAyuda'
 import { abreviaturasEn, escribirCompleto } from '../data/abreviaturas'
 import { agregarDictado, useDictado } from '../lib/dictado'
+import { terminosPara, usarTermino } from '../lib/terminos'
 import { Icono } from './Icono'
 
 interface Props {
@@ -110,29 +111,36 @@ function SignoVital({ c, v, onCambio }: { c: Campo; v: string; onCambio: (v: str
 }
 
 function Guia({ seccion, guia, onGuia }: Pick<Props, 'seccion' | 'guia' | 'onGuia'>) {
+  const [abierta, setAbierta] = useState(false)
   const hechas = seccion.guia.filter((_, i) => guia[`${seccion.id}.${i}`] === '1').length
-  const [abierta, setAbierta] = useState(hechas < seccion.guia.length)
+  const siguiente = seccion.guia.findIndex((_, i) => guia[`${seccion.id}.${i}`] !== '1')
+  const marcar = (i: number, v: boolean) => onGuia(`${seccion.id}.${i}`, v ? '1' : '')
   return (
     <section aria-label="Guion de la entrevista" className="rounded-xl border border-line bg-margen/70 px-4 py-3">
-      <button className="flex min-h-10 w-full items-center justify-between gap-3 text-left" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
-        <span className="flex items-center gap-2 text-sm font-semibold text-brand-strong">
-          <Icono nombre="mensaje" className="h-4 w-4" /> Guion de la entrevista
-        </span>
-        <span className="flex items-center gap-2 text-sm text-ink-soft">
-          <span className="cifra text-xs">{hechas} de {seccion.guia.length} preguntadas</span>
-          <Icono nombre="flecha" className={`h-4 w-4 transition-transform ${abierta ? 'rotate-90' : ''}`} />
-        </span>
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <p className="flex items-center gap-2 text-sm font-semibold text-brand-strong">
+          <Icono nombre="mensaje" className="h-4 w-4" /> {siguiente < 0 ? 'Guion completo' : 'Pregunta ahora'}
+          <span className="cifra text-xs font-normal text-ink-faint">{hechas}/{seccion.guia.length}</span>
+        </p>
+        <button className="min-h-10 text-sm font-medium text-brand" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
+          {abierta ? 'Ver menos' : 'Ver todo el guion'}
+        </button>
+      </div>
+      {!abierta && siguiente >= 0 && (
+        <label className="mt-1 flex min-h-11 cursor-pointer items-start gap-3 py-1 leading-snug">
+          <input type="checkbox" className="mt-1 h-[18px] w-[18px] shrink-0 accent-[var(--brand)]" checked={false} onChange={() => marcar(siguiente, true)} />
+          <span className="font-display text-[18px] text-ink">{seccion.guia[siguiente]}</span>
+        </label>
+      )}
+      {!abierta && siguiente < 0 && <p className="mt-1 text-sm text-ok">Preguntaste todo lo del guion de este apartado.</p>}
       {abierta && (
         <ol className="mt-1 grid gap-x-6 sm:grid-cols-2">
           {seccion.guia.map((g, i) => {
-            const clave = `${seccion.id}.${i}`
-            const hecha = guia[clave] === '1'
+            const hecha = guia[`${seccion.id}.${i}`] === '1'
             return (
               <li key={i}>
                 <label className="flex min-h-11 cursor-pointer items-start gap-3 py-1.5 leading-snug">
-                  <input type="checkbox" className="mt-1 h-[18px] w-[18px] shrink-0 accent-[var(--brand)]" checked={hecha}
-                    onChange={(e) => onGuia(clave, e.target.checked ? '1' : '')} />
+                  <input type="checkbox" className="mt-1 h-[18px] w-[18px] shrink-0 accent-[var(--brand)]" checked={hecha} onChange={(e) => marcar(i, e.target.checked)} />
                   <span className={`font-display text-[17px] ${hecha ? 'text-ink-faint line-through decoration-ink-faint/50' : 'text-ink'}`}>{g}</span>
                 </label>
               </li>
@@ -145,6 +153,22 @@ function Guia({ seccion, guia, onGuia }: Pick<Props, 'seccion' | 'guia' | 'onGui
 }
 
 /** Sugerencias de redacción debajo del campo: un toque para usarlas. */
+/** Términos de semiología mientras se escribe en el campo (solo con el campo activo). */
+function Terminos({ v, terminos, onCambio }: { v: string; terminos: string[]; onCambio: (v: string) => void }) {
+  const lista = terminosPara(v, terminos)
+  if (!lista.length) return null
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Opciones para escribir">
+      {lista.map(({ termino, completa }) => (
+        <button key={termino} type="button" onPointerDown={(e) => e.preventDefault()} onClick={() => onCambio(usarTermino(v, termino, completa))}
+          className={`inline-flex min-h-9 items-center rounded-full border px-3 text-sm transition-colors ${completa ? 'border-brand bg-brand-soft font-medium text-brand-strong' : 'border-line bg-surface text-ink-soft hover:border-brand/60'}`}>
+          {termino}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 /** Aviso suave cuando el texto tiene abreviaturas: un toque las escribe completas. */
 function Abreviaturas({ valor, onUsar }: { valor: string; onUsar: (t: string) => void }) {
   const ab = abreviaturasEn(valor)
@@ -170,7 +194,7 @@ function Sugerencias({ lista, valor, onUsar, aviso }: { lista: Sugerencia[]; val
   const largas = lista.filter((x) => !cortas.includes(x))
   const agregar = (t: string) => onUsar(v ? `${v}${v.endsWith('.') || t.includes('\n') ? '\n' : '; '}${t}` : t)
   return (
-    <div className="mt-2 grid gap-2">
+    <div className="mt-2 flex flex-wrap gap-2">
       {cortas.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-xs font-medium text-ink-faint">Sugerencias:</span>
@@ -185,33 +209,44 @@ function Sugerencias({ lista, valor, onUsar, aviso }: { lista: Sugerencia[]; val
           })}
         </div>
       )}
-      {largas.map((x) => {
-        const usado = v.includes(x.texto)
-        return (
-          <div key={x.etiqueta} className="rounded-xl border border-dashed border-brand/35 bg-brand-soft/25 p-3">
-            <p className="flex items-center gap-1.5 text-xs font-semibold text-brand-strong"><Icono nombre="libro" className="h-3.5 w-3.5" /> Sugerencia · {x.etiqueta}</p>
-            <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{x.texto}</p>
-            {aviso && x.etiqueta !== 'Formato' && <p className="mt-1 text-xs text-ink-faint">{aviso}</p>}
-            <div className="mt-2 flex flex-wrap gap-2">
-              {usado ? (
-                <span className="inline-flex min-h-9 items-center gap-1 text-sm font-medium text-ok"><Icono nombre="check" className="h-4 w-4" /> Usada</span>
-              ) : (
-                <>
-                  <button type="button" onClick={() => onUsar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
-                    {v ? 'Reemplazar con esta' : 'Usar este texto'}
-                  </button>
-                  {v && !/^niega\.?$/i.test(v) && <button type="button" onClick={() => agregar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink hover:border-brand/60">Agregar al final</button>}
-                </>
-              )}
-            </div>
-          </div>
-        )
-      })}
+      {largas.map((x) => <SugerenciaLarga key={x.etiqueta} x={x} v={v} onUsar={onUsar} agregar={agregar} aviso={aviso} />)}
+    </div>
+  )
+}
+
+/** Sugerencia larga plegada en una línea; un toque la abre. */
+function SugerenciaLarga({ x, v, onUsar, agregar, aviso }: { x: Sugerencia; v: string; onUsar: (t: string) => void; agregar: (t: string) => void; aviso?: string }) {
+  const [abierta, setAbierta] = useState(false)
+  const usado = v.includes(x.texto)
+  if (usado) return <p className="inline-flex min-h-8 items-center gap-1 text-sm text-ok"><Icono nombre="check" className="h-4 w-4" /> Sugerencia usada · {x.etiqueta}</p>
+  if (!abierta)
+    return (
+      <button type="button" onClick={() => setAbierta(true)} aria-expanded={false}
+        className="inline-flex min-h-9 w-fit max-w-full items-center gap-1.5 rounded-full border border-dashed border-brand/40 px-3 text-left text-sm text-brand-strong hover:bg-brand-soft/50">
+        <Icono nombre="libro" className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">Sugerencia: {x.etiqueta.charAt(0).toLowerCase() + x.etiqueta.slice(1)}</span>
+      </button>
+    )
+  return (
+    <div className="rounded-xl border border-dashed border-brand/35 bg-brand-soft/25 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-brand-strong"><Icono nombre="libro" className="h-3.5 w-3.5" /> Sugerencia · {x.etiqueta}</p>
+        <button type="button" onClick={() => setAbierta(false)} className="-m-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-surface-2" aria-label="Cerrar sugerencia"><Icono nombre="cerrar" className="h-4 w-4" /></button>
+      </div>
+      <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-ink">{x.texto}</p>
+      {aviso && x.etiqueta !== 'Formato' && <p className="mt-1 text-xs text-ink-faint">{aviso}</p>}
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button type="button" onClick={() => onUsar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
+          {v ? 'Reemplazar con esta' : 'Usar este texto'}
+        </button>
+        {v && !/^niega\.?$/i.test(v) && <button type="button" onClick={() => agregar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink hover:border-brand/60">Agregar al final</button>}
+      </div>
     </div>
   )
 }
 
 export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, sexo, children, historia }: Props) {
+  const [foco, setFoco] = useState<string | null>(null)
   const grupos: { titulo?: string; campos: Campo[] }[] = []
   for (const c of seccion.campos.filter((x) => !x.soloSexo || x.soloSexo === sexo)) {
     const ultimo = grupos[grupos.length - 1]
@@ -233,8 +268,9 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
       <Guia seccion={seccion} guia={guia} onGuia={onGuia} />
       {children}
 
+      <section className="linea-margen grid gap-7 rounded-xl border border-line bg-surface py-5 pl-6 pr-4 sm:py-6 sm:pl-8 sm:pr-6">
       {grupos.map((g, gi) => (
-        <section key={gi} className="linea-margen rounded-xl border border-line bg-surface py-4 pl-6 pr-4 sm:py-5 sm:pl-8 sm:pr-6">
+        <div key={gi}>
           {g.titulo && <h3 className="mb-4 border-b border-rule pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">{g.titulo}</h3>}
           {g.titulo === 'Signos vitales' ? (
             <>
@@ -264,18 +300,20 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
                 const a = aviso(seccion.id, c, v)
                 const ancho = c.tipo === 'parrafo' || (c.tipo === 'opcion' && (c.opciones?.length ?? 0) > 3 && (c.opciones?.length ?? 0) <= 4)
                 return (
-                  <div key={c.id} className={ancho || c.pregunta ? 'sm:col-span-2' : ''}>
-                    {c.pregunta && <p className="mb-1 font-display text-[18px] italic leading-snug text-ink">«{c.pregunta}»</p>}
+                  <div key={c.id} className={ancho ? 'sm:col-span-2' : ''}
+                    onFocusCapture={() => setFoco(c.id)} onBlurCapture={() => setTimeout(() => setFoco((f) => (f === c.id ? null : f)), 120)}>
                     {c.tipo === 'opcion' && (c.opciones?.length ?? 0) <= 4 ? (
                       <p id={`campo-${c.id}-etiqueta`} className="mb-1.5 text-sm font-medium text-ink">
                         {c.etiqueta}{c.obligatorio && <span className="text-alarm"> *</span>}
                       </p>
                     ) : (
-                      <label htmlFor={`campo-${c.id}`} className="mb-1.5 block text-sm font-medium text-ink">
+                      <label htmlFor={`campo-${c.id}`} className={`mb-1.5 block text-sm font-medium text-ink ${g.campos.some((x) => x.pregunta) && !ancho ? 'sm:min-h-[4.25rem]' : ''}`}>
                         {c.etiqueta}{c.obligatorio && <span className="text-alarm"> *</span>}
+                        {c.pregunta && <span className="mt-0.5 block font-display text-[15px] font-normal italic leading-snug text-ink-soft">«{c.pregunta}»</span>}
                       </label>
                     )}
                     <Entrada c={c} v={v} onCambio={(nv) => onCambio(c.id, nv)} invalido={!!a} />
+                    {c.terminos && foco === c.id && <Terminos v={v} terminos={c.terminos} onCambio={(nv) => onCambio(c.id, nv)} />}
                     {c.rapido && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {c.rapido.map((r) => (
@@ -303,8 +341,9 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
               )}
             </div>
           )}
-        </section>
+        </div>
       ))}
+      </section>
     </div>
   )
 }

@@ -6,7 +6,7 @@
 
 import { PATOLOGICOS } from './antecedentes'
 import { SINTOMAS } from './sintomas'
-import { sintomasAbiertos, type Historia } from '../lib/historia'
+import { enLista, sintomasAbiertos, type Historia } from '../lib/historia'
 import { diagnosticosEnVivo } from '../lib/motor'
 
 export interface Sugerencia {
@@ -80,7 +80,7 @@ export function relatoSugerido(h: Historia): string | null {
   const partes = [
     `${quien} que acude por cuadro${m.tiempo ? ` de ${limpio(m.tiempo)} de evolución` : ''} caracterizado por ${minus(sintoma)}`,
     limpio(e.aparicion) && `de inicio ${minus(limpio(e.aparicion))}`,
-    limpio(e.localizacion) && `localizado en ${minus(limpio(e.localizacion))}`,
+    limpio(e.localizacion) && `de localización ${minus(limpio(e.localizacion))}`,
     limpio(e.caracter) && `de tipo ${minus(limpio(e.caracter))}`,
     limpio(e.intensidad) && `de intensidad ${limpio(e.intensidad)}/10`,
     limpio(e.irradiacion) && `irradiado a ${minus(limpio(e.irradiacion))}`,
@@ -93,7 +93,7 @@ export function relatoSugerido(h: Historia): string | null {
     const sx = SINTOMAS.find((s) => s.id === id)!
     return sx.alarmas.filter((_, i) => h.sintomas?.[`${id}.a${i}`] === '0').map(minus)
   })
-  if (negativos.length) texto += ` Niega ${negativos.join(', ')}.`
+  if (negativos.length) texto += ` Niega ${enLista(negativos)}.`
   return texto.charAt(0).toUpperCase() + texto.slice(1)
 }
 
@@ -119,7 +119,7 @@ export function sugerenciasPara(seccionId: string, campoId: string, h: Historia)
   if (seccionId === 'plan' && campoId === 'educacion') {
     const alarmas = sintomasAbiertos(h).flatMap((id) => SINTOMAS.find((s) => s.id === id)!.alarmas.map(minus))
     if (alarmas.length)
-      out.push({ etiqueta: 'Signos de alarma de sus síntomas', texto: `Se explica al paciente que debe regresar de inmediato si presenta: ${[...new Set(alarmas)].join('; ')}.` })
+      out.push({ etiqueta: 'Signos de alarma de sus síntomas', texto: `Se explica al paciente que debe regresar de inmediato si presenta ${enLista([...new Set(alarmas)])}.` })
   }
   // Aparece después de tocar «Niega»: para escribir qué se preguntó y negó.
   if (seccionId === 'sistemas' && SISTEMAS_NIEGA[campoId] && /^niega\.?$/i.test(limpio(h.sistemas?.[campoId])))

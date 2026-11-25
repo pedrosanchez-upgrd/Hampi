@@ -29,7 +29,7 @@ function Probables({ historia, irA }: Pick<Props, 'historia' | 'irA'>) {
   return (
     <>
       <ol className="grid gap-1">
-        {todos.slice(0, 5).map((r, i) => {
+        {todos.slice(0, 3).map((r, i) => {
           const m = r.razones.find((x) => x.factor > 1) ?? r.razones[0]
           return (
             <li key={r.id} className="flex min-w-0 items-baseline gap-3 border-b border-rule py-1.5 last:border-0">
@@ -49,7 +49,7 @@ function Probables({ historia, irA }: Pick<Props, 'historia' | 'irA'>) {
         })}
       </ol>
       <button className="inline-flex min-h-10 w-fit items-center gap-1.5 text-sm font-semibold text-brand" onClick={() => irA('impresion')}>
-        {todos.length > 5 ? `Ver los ${todos.length} y elegir` : 'Elegir mis diagnósticos'} <Icono nombre="flecha" className="h-4 w-4" />
+        {todos.length > 3 ? `Ver los ${todos.length} y elegir` : 'Elegir mis diagnósticos'} <Icono nombre="flecha" className="h-4 w-4" />
       </button>
     </>
   )
@@ -62,7 +62,7 @@ function TeFalta({ historia, irA }: Pick<Props, 'historia' | 'irA'>) {
     ...faltantes(historia).map((f) => ({ texto: `${f.campo} · ${f.seccion}`, seccionId: f.seccionId, tipo: 'falta' as const })),
   ]
   if (!items.length) return <p className="flex items-center gap-1.5 text-sm text-ok"><Icono nombre="check" className="h-4 w-4" /> Lo obligatorio está completo.</p>
-  const visibles = todo ? items : items.slice(0, 4)
+  const visibles = todo ? items : items.slice(0, 2)
   return (
     <>
       <ul className="grid gap-0.5">
@@ -75,7 +75,7 @@ function TeFalta({ historia, irA }: Pick<Props, 'historia' | 'irA'>) {
           </li>
         ))}
       </ul>
-      {items.length > 4 && (
+      {items.length > 2 && (
         <button className="min-h-10 w-fit text-sm font-semibold text-brand" onClick={() => setTodo(!todo)}>{todo ? 'Ver menos' : `Ver las ${items.length}`}</button>
       )}
     </>
@@ -112,8 +112,8 @@ export function Tutor({ historia, setHistoria, irA, practica }: Props) {
         </Nota>
       ) : (
         <>
-          <LoQueEscribio historia={historia} setHistoria={setHistoria} />
-          <PregunteAhora historia={historia} setHistoria={setHistoria} />
+          <LoQueEscribio historia={historia} setHistoria={setHistoria} max={3} />
+          <PregunteAhora historia={historia} setHistoria={setHistoria} max={1} />
           <Nota titulo="Lo más probable ahora"><Probables historia={historia} irA={irA} /></Nota>
         </>
       )}

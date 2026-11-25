@@ -22,6 +22,8 @@ export interface Campo {
   soloSexo?: 'Mujer'
   /** Cómo preguntarlo al paciente (va arriba del campo, como en una conversación). */
   pregunta?: string
+  /** Términos de semiología que se ofrecen mientras se escribe (se filtran con lo que se va escribiendo). */
+  terminos?: string[]
 }
 
 export interface Seccion {
@@ -90,14 +92,14 @@ export const SECCIONES: Seccion[] = [
     campos: [
       { id: 'relato', etiqueta: 'Relato cronológico', tipo: 'parrafo', obligatorio: true, pregunta: 'Cuénteme cómo empezó todo, desde el principio.' },
       { id: 'sintoma', etiqueta: 'Síntoma principal', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)' },
-      { id: 'aparicion', corto: 'Aparición', etiqueta: 'Aparición (cuándo y cómo)', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Cuándo empezó y qué estaba haciendo?' },
-      { id: 'localizacion', etiqueta: 'Localización', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Dónde exactamente? Señálemelo con un dedo.' },
+      { id: 'aparicion', corto: 'Aparición', etiqueta: 'Aparición (cuándo y cómo)', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Cuándo empezó y qué estaba haciendo?', terminos: ['Súbita', 'Progresiva', 'En reposo', 'Durante el esfuerzo', 'Al despertar', 'Después de comer'] },
+      { id: 'localizacion', etiqueta: 'Localización', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Dónde exactamente? Señálemelo con un dedo.', terminos: ['Retroesternal', 'Precordial', 'Epigastrio', 'Hipocondrio derecho', 'Fosa ilíaca derecha', 'Periumbilical', 'Hipogastrio', 'Región lumbar', 'Hemicráneo derecho', 'Hemicráneo izquierdo', 'Holocraneana', 'Difuso'] },
       { id: 'intensidad', etiqueta: 'Intensidad', tipo: 'numero', unidad: '/10', grupo: 'Análisis del síntoma (ALICIA)', pregunta: 'Del 0 al 10, ¿qué tan fuerte es?' },
-      { id: 'caracter', corto: 'Carácter', etiqueta: 'Carácter (cómo es)', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Cómo es? ¿Aprieta, punza, quema?' },
-      { id: 'irradiacion', etiqueta: 'Irradiación', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Se le va hacia algún otro lado?' },
-      { id: 'atenuantes', corto: 'Atenuantes y agravantes', etiqueta: 'Atenuantes y agravantes', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Qué lo mejora y qué lo empeora?' },
-      { id: 'evolucion', corto: 'Evolución', etiqueta: 'Duración, frecuencia y evolución', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Va y viene o es continuo? ¿Está mejor, igual o peor?' },
-      { id: 'acompanantes', etiqueta: 'Síntomas acompañantes', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Qué más ha sentido junto con esto?' },
+      { id: 'caracter', corto: 'Carácter', etiqueta: 'Carácter (cómo es)', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Cómo es? ¿Aprieta, punza, quema?', terminos: ['Opresivo', 'Punzante', 'Urente', 'Cólico', 'Sordo', 'Pulsátil', 'Lancinante', 'Transfixiante', 'Desgarrante'] },
+      { id: 'irradiacion', etiqueta: 'Irradiación', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Se le va hacia algún otro lado?', terminos: ['No irradia', 'Brazo izquierdo', 'Ambos brazos', 'Mandíbula', 'Espalda', 'Interescapular', 'Epigastrio', 'En cinturón', 'Hacia la ingle', 'Hombro derecho'] },
+      { id: 'atenuantes', corto: 'Atenuantes y agravantes', etiqueta: 'Atenuantes y agravantes', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Qué lo mejora y qué lo empeora?', terminos: ['Mejora con el reposo', 'No cede con el reposo', 'Empeora con el esfuerzo', 'Empeora al respirar', 'Mejora al inclinarse hacia adelante', 'Empeora al acostarse', 'Empeora con las comidas', 'Mejora con analgésicos', 'Empeora con la tos'] },
+      { id: 'evolucion', corto: 'Evolución', etiqueta: 'Duración, frecuencia y evolución', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Va y viene o es continuo? ¿Está mejor, igual o peor?', terminos: ['Continuo', 'Intermitente', 'En aumento', 'Sin cambios', 'En mejoría', 'Primer episodio', 'Episodios previos similares'] },
+      { id: 'acompanantes', etiqueta: 'Síntomas acompañantes', tipo: 'texto', grupo: 'Análisis del síntoma (ALICIA)', pregunta: '¿Qué más ha sentido junto con esto?', terminos: ['Náusea', 'Vómito', 'Sudoración', 'Fiebre', 'Escalofríos', 'Disnea', 'Mareo', 'Palpitaciones', 'Síncope', 'Tos', 'Diarrea', 'Cefalea'] },
     ],
     guia: [
       '«Cuénteme cómo empezó todo» (relato libre, sin interrumpir).',
@@ -121,8 +123,8 @@ export const SECCIONES: Seccion[] = [
       { id: 'quirurgicos', corto: 'Cirugías', etiqueta: 'Cirugías (año y complicaciones)', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos', pregunta: '¿Le han operado alguna vez?' },
       { id: 'traumaticos', etiqueta: 'Traumatismos', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
       { id: 'transfusiones', etiqueta: 'Transfusiones', tipo: 'texto', grupo: 'Quirúrgicos y traumáticos' },
-      { id: 'alergicos', corto: 'Alergias', etiqueta: 'Alergias (sustancia y reacción)', tipo: 'texto', obligatorio: true, ayuda: 'Sustancia y reacción.', rapido: ['Niega alergias'], grupo: 'Alérgicos', pregunta: '¿Es alérgico a algún medicamento o alimento? ¿Qué le pasó?' },
-      { id: 'farmacologicos', corto: 'Medicamentos', etiqueta: 'Medicamentos (nombre, dosis, frecuencia, desde cuándo)', tipo: 'parrafo', obligatorio: true, ayuda: 'Incluir sin receta, naturales y anticonceptivos.', rapido: ['No toma medicamentos'], grupo: 'Farmacológicos', pregunta: '¿Qué medicamentos toma, incluso naturales o sin receta?' },
+      { id: 'alergicos', corto: 'Alergias', etiqueta: 'Alergias (sustancia y reacción)', tipo: 'texto', obligatorio: true, rapido: ['Niega alergias'], grupo: 'Alérgicos', pregunta: '¿Es alérgico a algún medicamento o alimento? ¿Qué le pasó?' },
+      { id: 'farmacologicos', corto: 'Medicamentos', etiqueta: 'Medicamentos (nombre, dosis, frecuencia, desde cuándo)', tipo: 'parrafo', obligatorio: true, ayuda: 'Incluye anticonceptivos.', rapido: ['No toma medicamentos'], grupo: 'Farmacológicos', pregunta: '¿Qué medicamentos toma, incluso naturales o sin receta?' },
       { id: 'inmunizaciones', etiqueta: 'Vacunas', tipo: 'texto', grupo: 'Inmunizaciones' },
       { id: 'fum', corto: 'FUM', etiqueta: 'Fecha de última menstruación (FUM)', tipo: 'fecha', grupo: 'Gineco-obstétricos', soloSexo: 'Mujer', pregunta: '¿Cuándo fue su última menstruación?' },
       { id: 'embarazo', corto: 'Posibilidad de embarazo', etiqueta: '¿Posibilidad de embarazo?', tipo: 'opcion', opciones: ['No', 'Sí', 'No sabe'], grupo: 'Gineco-obstétricos', soloSexo: 'Mujer' },

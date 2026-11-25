@@ -26,6 +26,7 @@ function Casilla({ marcada, onCambio, texto, tono }: { marcada: boolean; onCambi
 export function PestanasSintomas({ historia, setHistoria }: Props) {
   const abiertos = sintomasAbiertos(historia)
   const [elegido, setElegido] = useState<string | null>(null)
+  const [verRespondidos, setVerRespondidos] = useState(false)
   const activo = abiertos.includes(elegido ?? '') ? elegido! : abiertos[0]
   const s = SINTOMAS.find((x) => x.id === activo)
   const sx = historia.sintomas ?? {}
@@ -118,8 +119,12 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
               {hallazgosDeSintoma(s.id).length > 0 && (
                 <div className="lg:col-span-2">
                   <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">Hallazgos clave · alimentan los diagnósticos en vivo</h4>
-                  <ul className="mt-2 divide-y divide-line overflow-hidden rounded-xl border border-line">
-                    {hallazgosDeSintoma(s.id).map((hz) => {
+                  {(() => {
+                    const respondido = (id: string) => !!(historia.hallazgos?.[id] || auto[id])
+                    const todos = hallazgosDeSintoma(s.id)
+                    const pendientes = todos.filter((x) => !respondido(x.id))
+                    const listos = todos.filter((x) => respondido(x.id))
+                    const fila = (hz: (typeof todos)[number]) => {
                       const manual = historia.hallazgos?.[hz.id] ?? ''
                       const valor = manual || auto[hz.id] || ''
                       // Modo práctica: el paciente responde solo cuando se le pregunta (o se le examina).
@@ -165,8 +170,23 @@ export function PestanasSintomas({ historia, setHistoria }: Props) {
                           </span>
                         </li>
                       )
-                    })}
-                  </ul>
+                    }
+                    return (
+                      <>
+                        {pendientes.length > 0
+                          ? <ul className="mt-2 divide-y divide-line overflow-hidden rounded-xl border border-line">{pendientes.map(fila)}</ul>
+                          : <p className="mt-2 text-sm text-ok">Respondiste todos los hallazgos clave de esta pestaña.</p>}
+                        {listos.length > 0 && (
+                          <div className="mt-2">
+                            <button className="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-ink" aria-expanded={verRespondidos} onClick={() => setVerRespondidos(!verRespondidos)}>
+                              <Icono nombre="flecha" className={`h-4 w-4 transition-transform ${verRespondidos ? 'rotate-90' : ''}`} /> Ya respondidos ({listos.length})
+                            </button>
+                            {verRespondidos && <ul className="mt-1 divide-y divide-line overflow-hidden rounded-xl border border-line">{listos.map(fila)}</ul>}
+                          </div>
+                        )}
+                      </>
+                    )
+                  })()}
                 </div>
               )}
 

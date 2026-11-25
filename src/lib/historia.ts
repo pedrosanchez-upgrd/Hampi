@@ -109,14 +109,19 @@ export function faltantes(h: Historia): Faltante[] {
   for (const s of SECCIONES)
     for (const c of camposVisibles(s, h))
       if (c.obligatorio && !(h[s.id]?.[c.id] ?? '').trim())
-        out.push({ seccionId: s.id, seccion: s.titulo, campo: c.etiqueta })
+        out.push({ seccionId: s.id, seccion: s.titulo, campo: c.corto ?? c.etiqueta })
   return out
 }
 
 const valor = (h: Historia, s: string, c: string) => (h[s]?.[c] ?? '').trim()
 
+/** «a, b y c» (lista en español con «y» antes del último). */
+export const enLista = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`)
+/** Unidad pegada si empieza con «/» (8/10), separada en los demás casos (98 lpm). */
+const conUnidad = (v: string, u?: string) => (u ? (u.startsWith('/') ? `${v}${u}` : `${v} ${u}`) : v)
+
 function lineaCampo(c: Campo, v: string): string {
-  return `${c.corto ?? c.etiqueta}: ${v}${c.unidad && c.tipo === 'numero' ? ` ${c.unidad}` : ''}`
+  return `${c.corto ?? c.etiqueta}: ${c.tipo === 'numero' ? conUnidad(v, c.unidad) : v}`
 }
 
 /**
@@ -141,17 +146,30 @@ export function redactar(h: Historia): string {
     .map((id) => {
       const v = valor(h, 'examen', id)
       const a = avisoSigno(id, v)
-      return a ? `${a} (${v} ${SECCIONES[6].campos.find((c) => c.id === id)?.unidad ?? ''})` : null
+      return a ? `${a} (${conUnidad(v, SECCIONES[6].campos.find((c) => c.id === id)?.unidad)})` : null
     })
     .filter(Boolean) as string[]
   for (const a of alarmasMarcadas(h)) alertas.push(`${a.sintoma}: ${a.alarma}`)
   if (alertas.length) partes.push('SIGNOS DE ALARMA\n' + alertas.map((a) => `- ${a}`).join('\n'))
 
+  // Numeración seguida: si un apartado queda vacío, no se salta el número.
+  let numero = 0
   for (const s of SECCIONES) {
     const lineas: string[] = []
     let grupo: string | undefined
+    // Examen físico: los signos vitales en una sola línea, como en la historia en papel.
+    if (s.id === 'examen') {
+      const x = h.examen ?? {}
+      const i = imc(Number(valor(h, 'examen', 'peso')), Number(valor(h, 'examen', 'talla')))
+      const vit = [x.pas && x.pad && `PA ${x.pas}/${x.pad} mmHg`, x.fc && `FC ${x.fc} lpm`, x.fr && `FR ${x.fr} rpm`, x.temp && `T ${x.temp} °C`,
+        x.sat && `SatO₂ ${x.sat} %${x.oxigeno === 'Con oxígeno' ? ' con oxígeno' : x.oxigeno === 'Aire ambiente' ? ' al aire ambiente' : ''}`,
+        x.glucemia && `glucometría ${x.glucemia} mg/dL`, x.peso && `peso ${x.peso} kg`, x.talla && `talla ${x.talla} cm`, i && `IMC ${String(i).replace('.', ',')} kg/m²`]
+        .filter((t): t is string => typeof t === 'string' && t !== '').map((t) => t.trim())
+      if (vit.length) lineas.push(`Signos vitales: ${vit.join(', ')}.`)
+    }
     for (const c of camposVisibles(s, h)) {
       if (c.id === 'tabacoCig' || c.id === 'tabacoAnios') continue
+      if (s.id === 'examen' && c.grupo === 'Signos vitales') continue
       const v = valor(h, s.id, c.id)
       if (!v) continue
       if (c.grupo && c.grupo !== grupo) {
@@ -168,7 +186,7 @@ export function redactar(h: Historia): string {
         if (notas) lineas.push(`${sx.nombre}: ${notas}`)
         // Negativos pertinentes: los signos de alarma que se preguntaron y están ausentes.
         const niega = sx.alarmas.filter((_, i) => h.sintomas?.[`${id}.a${i}`] === '0')
-        if (niega.length) lineas.push(`${sx.nombre}, niega: ${niega.map((x) => x.charAt(0).toLowerCase() + x.slice(1)).join('; ')}.`)
+        if (niega.length) lineas.push(`${sx.nombre}: niega ${enLista(niega.map((x) => x.charAt(0).toLowerCase() + x.slice(1)))}.`)
       }
     }
     if (s.id === 'personales') lineas.unshift(...lineasAntecedentes(h))
@@ -177,11 +195,7 @@ export function redactar(h: Historia): string {
       const pa = paquetesAnio(h)
       if (pa !== null) lineas.push(`Índice tabáquico: ${String(pa).replace('.', ',')} paquetes/año`)
     }
-    if (s.id === 'examen') {
-      const i = imc(Number(valor(h, 'examen', 'peso')), Number(valor(h, 'examen', 'talla')))
-      if (i) lineas.push(`IMC: ${String(i).replace(".", ",")} kg/m²`)
-    }
-    if (lineas.length) partes.push(`${s.numero}. ${s.titulo.toUpperCase()}\n${lineas.join('\n')}`)
+    if (lineas.length) partes.push(`${++numero}. ${s.titulo.toUpperCase()}\n${lineas.join('\n')}`)
   }
   return partes.join('\n\n')
 }
@@ -231,12 +245,12 @@ function lineasAntecedentes(h: Historia): string[] {
     .map((x) => x.nombre + (a[`p.${x.id}.det`]?.trim() ? ` (${a[`p.${x.id}.det`].trim()})` : ''))
   const no = PATOLOGICOS.filter((x) => a[`p.${x.id}`] === 'no').map((x) => minus(x.nombre))
   if (si.length) out.push(`Patológicos: ${si.join('; ')}.`)
-  if (no.length) out.push(`Niega: ${no.join(', ')}.`)
+  if (no.length) out.push(`Niega ${enLista(no)}.`)
   const ep = EPIDEMIOLOGICOS.filter((x) => a[`e.${x.id}`] === 'si')
     .map((x) => x.nombre + (a[`e.${x.id}.det`]?.trim() ? ` (${a[`e.${x.id}.det`].trim()})` : ''))
   const epNo = EPIDEMIOLOGICOS.filter((x) => a[`e.${x.id}`] === 'no').map((x) => minus(x.nombre))
   if (ep.length) out.push(`Epidemiológicos: ${ep.join('; ')}.`)
-  if (epNo.length) out.push(`Epidemiológicos negativos: ${epNo.join(', ')}.`)
+  if (epNo.length) out.push(`Epidemiológicos: niega ${enLista(epNo)}.`)
   return out
 }
 
@@ -299,12 +313,12 @@ export function presentacionOral(h: Historia): string {
   if (e.sintoma && alicia.length) partes.push(`${e.sintoma}: ${alicia.join(', ')}.`)
   if (e.acompanantes) partes.push(`Se acompaña de ${e.acompanantes.toLowerCase()}.`)
   const positivas = alarmasMarcadas(h).map((z) => minus(z.alarma))
-  if (positivas.length) partes.push(`Signos de alarma presentes: ${positivas.join('; ')}.`)
+  if (positivas.length) partes.push(`Signos de alarma presentes: ${enLista(positivas)}.`)
   const negativos = sintomasAbiertos(h).flatMap((id) => {
     const sx = SINTOMAS.find((s) => s.id === id)!
     return sx.alarmas.filter((_, i) => h.sintomas?.[`${id}.a${i}`] === '0').map(minus)
   })
-  if (negativos.length) partes.push(`Niega ${negativos.join('; ')}.`)
+  if (negativos.length) partes.push(`Niega ${enLista(negativos)}.`)
   const vit = [x.pas && x.pad && `PA ${x.pas}/${x.pad} mmHg`, x.fc && `FC ${x.fc} lpm`, x.fr && `FR ${x.fr} rpm`, x.temp && `T ${x.temp} °C`, x.sat && `SatO₂ ${x.sat} %${x.oxigeno === 'Con oxígeno' ? ' con oxígeno' : ''}`].filter(Boolean)
   if (vit.length || x.aspecto) partes.push(`Al examen: ${[vit.join(', '), x.aspecto].filter(Boolean).join('. ')}${/[.]$/.test(x.aspecto ?? '') ? '' : '.'}`)
   const im = h.impresion ?? {}

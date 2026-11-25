@@ -52,6 +52,10 @@ Tipos: **Source Serif 4** para títulos, números de apartado, guion de entrevis
 - 2026-11-25 — Sombras solo en lo que flota (menú, hojas, diálogos); las hojas del cuaderno van con borde y línea de margen.
 - 2026-11-25 — Autocrítica: botones «Preguntar o examinar» como texto (doce botones con borde formaban una pared), números decorativos subidos a 75 % para contraste AA, títulos balanceados.
 
+- 2026-11-25 — Menos saturación (Pedro: «que no se vea hecho shampoo»). Método: divulgación progresiva, lo esencial a la vista y el resto a un toque. Guion: solo la siguiente pregunta («Ver todo el guion»). Sugerencias plegadas en una línea. Pregunta al paciente como nota bajo la etiqueta. Antecedentes como fichas de un toque (Sí → No → vacío) con detalle solo para «Sí»; familiares: primero la enfermedad, luego el parentesco. Hallazgos: solo los pendientes; «Ya respondidos (n)» plegado. Tutor: 1 pregunta, 3 encontrados, 3 diagnósticos y «Te falta» con 2. Una sola hoja por apartado. Alturas en iPad: Enfermedad actual 4073→2628 px, Personales 5961→4309, Familiares 2383→1546, Examen 3998→2896, Impresión 2910→2098.
+- 2026-11-25 — Opciones de semiología al escribir (ALICIA): aparecen solo con el campo activo y se filtran con lo que se escribe («opr» → Opresivo).
+- 2026-11-25 — Redacción: signos vitales en una línea, numeración seguida, listas con «y», «8/10» sin espacio, «de localización».
+
 ## Preguntas abiertas
 - ¿Le gusta a Pedro el papel cálido del cuaderno, o prefiere un fondo más blanco?
 - ¿Coma o punto decimal? Se usa coma (36,8 °C) (supuesto); confirmar el uso en los hospitales de Cuenca.
