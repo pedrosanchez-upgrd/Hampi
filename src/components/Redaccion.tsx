@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { faltantes, presentacionOral, redactar, type Historia } from '../lib/historia'
 import { Icono } from './Icono'
 
-export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccionId: string) => void }) {
+export function Redaccion({ historia, irA, onNueva, onInicio }: { historia: Historia; irA: (seccionId: string) => void; onNueva?: () => void; onInicio?: () => void }) {
   const [copiado, setCopiado] = useState<'no' | 'si' | 'manual'>('no')
   const [vista, setVista] = useState<'historia' | 'oral'>('historia')
   const oral = presentacionOral(historia)
@@ -28,7 +28,7 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
   const bloques = texto.split('\n\n').map((b) => { const [t, ...resto] = b.split('\n'); return { t, resto } })
 
   return (
-    <section className="grid gap-5">
+    <section className="grid grid-cols-[minmax(0,1fr)] gap-5">
       <header className="no-imprimir flex items-start gap-4">
         <span aria-hidden className="font-display text-[56px] font-semibold leading-[0.9] text-brand/75 sm:text-[72px]">10</span>
         <div className="min-w-0 pt-1">
@@ -39,7 +39,7 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
 
       {falta.length > 0 ? (
         <div className="no-imprimir rounded-xl border border-warn/30 bg-warn-soft p-4">
-          <p className="flex items-center gap-2 font-semibold text-warn"><Icono nombre="alerta" className="h-5 w-5" /> Faltan {falta.length} datos obligatorios</p>
+          <p className="flex items-center gap-2 font-semibold text-warn"><Icono nombre="alerta" className="h-5 w-5" /> {falta.length === 1 ? 'Falta 1 dato obligatorio' : `Faltan ${falta.length} datos obligatorios`}</p>
           <ul className="mt-2 flex flex-wrap gap-2">
             {falta.map((f) => (
               <li key={f.seccionId + f.campo}>
@@ -97,6 +97,13 @@ export function Redaccion({ historia, irA }: { historia: Historia; irA: (seccion
         </div>
         <p className="mt-8 border-t border-line pt-4 text-xs text-ink-faint">Firma y sello del profesional: ________________________</p>
       </article>
+      )}
+      {(onNueva || onInicio) && (
+        <div className="no-imprimir flex flex-wrap items-center gap-2 border-t border-line pt-5">
+          <p className="mr-auto text-sm text-ink-soft">¿Terminaste? Copia el texto y revísalo antes de firmar.</p>
+          {onInicio && <button onClick={onInicio} className="min-h-11 rounded-xl px-4 font-medium text-ink-soft hover:bg-surface-2">Volver al inicio</button>}
+          {onNueva && <button onClick={onNueva} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-surface px-4 font-semibold text-ink hover:border-brand/60"><Icono nombre="mas" className="h-4 w-4" /> Empezar otra historia</button>}
+        </div>
       )}
     </section>
   )

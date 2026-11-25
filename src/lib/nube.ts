@@ -4,7 +4,7 @@
 
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 import { SUPABASE_CLAVE_PUBLICA, SUPABASE_URL } from './config'
-import type { Historia } from './historia'
+import { edadTexto, type Historia } from './historia'
 
 export const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_CLAVE_PUBLICA, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
@@ -55,7 +55,7 @@ export function validarCuenta(correo: string, clave: string, registro?: DatosReg
 /** Título corto de una historia para la lista («Hombre, 58 años · dolor en el pecho»). */
 export function resumenHistoria(h: Historia): string {
   const f = h.filiacion ?? {}, m = h.motivo ?? {}
-  const quien = [f.sexo, f.edad && `${f.edad} años`].filter(Boolean).join(', ')
+  const quien = [f.sexo, f.edad && edadTexto(f.edad)].filter(Boolean).join(', ')
   const motivo = (m.motivo ?? '').trim()
   return [quien, motivo].filter(Boolean).join(' · ') || 'Historia sin datos'
 }

@@ -6,7 +6,7 @@
 
 import { PATOLOGICOS } from './antecedentes'
 import { SINTOMAS } from './sintomas'
-import { enLista, sintomasAbiertos, type Historia } from '../lib/historia'
+import { edadTexto, enLista, sintomasAbiertos, type Historia } from '../lib/historia'
 import { diagnosticosEnVivo } from '../lib/motor'
 
 export interface Sugerencia {
@@ -76,7 +76,7 @@ export function relatoSugerido(h: Historia): string | null {
   const f = h.filiacion ?? {}, m = h.motivo ?? {}, e = h.enfermedad ?? {}
   const sintoma = limpio(e.sintoma) || limpio(m.motivo)
   if (!sintoma) return null
-  const quien = [f.sexo === 'Mujer' ? 'Paciente femenina' : f.sexo === 'Hombre' ? 'Paciente masculino' : 'Paciente', f.edad && `de ${f.edad} años`].filter(Boolean).join(' ')
+  const quien = [f.sexo === 'Mujer' ? 'Paciente femenina' : f.sexo === 'Hombre' ? 'Paciente masculino' : 'Paciente', f.edad && `de ${edadTexto(f.edad)}`].filter(Boolean).join(' ')
   const partes = [
     `${quien} que acude por cuadro${m.tiempo ? ` de ${limpio(m.tiempo)} de evolución` : ''} caracterizado por ${minus(sintoma)}`,
     limpio(e.aparicion) && `de inicio ${minus(limpio(e.aparicion))}`,

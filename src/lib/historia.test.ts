@@ -111,3 +111,20 @@ describe('examen físico en la redacción', () => {
     expect(t).not.toContain('Presión sistólica:')
   })
 })
+
+import { edadTexto, limpiarEspacios, presentacionOral } from './historia'
+describe('break-ui (25-nov): plurales y texto pegado', () => {
+  it('«1 año» y «58 años»', () => {
+    expect(edadTexto('1')).toBe('1 año')
+    expect(edadTexto(58)).toBe('58 años')
+    const h = historiaVacia(); h.filiacion = { edad: '1', sexo: 'Mujer' }; h.motivo = { motivo: 'fiebre' }
+    expect(redactar(h)).toContain('Edad: 1 año\n')
+    expect(redactar(h)).not.toContain('1 años')
+    expect(presentacionOral(h)).toContain('Mujer de 1 año')
+  })
+  it('texto pegado: sin tabulaciones ni espacios repetidos en la redacción', () => {
+    expect(limpiarEspacios('Brazo izquierdo\tmandíbula   y  espalda ,  sin   mejoría \n otra línea')).toBe('Brazo izquierdo mandíbula y espalda, sin mejoría\notra línea')
+    const h = historiaVacia(); h.motivo = { motivo: 'dolor   de  pecho\t' }; h.enfermedad = { relato: 'Empezó   hace 2 horas.\tNo cede.' }
+    expect(redactar(h)).not.toMatch(/ {2}|\t/)
+  })
+})

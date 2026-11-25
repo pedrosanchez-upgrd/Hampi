@@ -43,7 +43,7 @@ function Probables({ historia, irA }: Pick<Props, 'historia' | 'irA'>) {
                   {m ? `${m.factor > 1 ? '▲' : '▼'} ${m.presente ? m.texto : 'Sin ' + m.texto.charAt(0).toLowerCase() + m.texto.slice(1)}` : 'Sin hallazgos registrados todavía'}
                 </p>
               </div>
-              {r.factorLR !== 1 && <span className="cifra shrink-0 text-xs text-ink-faint">{formatoFactor(r.factorLR)}</span>}
+              {r.factorLR !== 1 && <span className="cifra shrink-0 text-xs text-ink-faint" title="Razón de verosimilitud combinada de los hallazgos registrados" aria-label={`Razón de verosimilitud combinada ${formatoFactor(r.factorLR)}`}>{formatoFactor(r.factorLR)}</span>}
             </li>
           )
         })}
@@ -113,6 +113,15 @@ export function Tutor({ historia, setHistoria, irA, practica }: Props) {
       ) : (
         <>
           <LoQueEscribio historia={historia} setHistoria={setHistoria} max={3} />
+          {(() => {
+            const ocultos = (historia.diagnosticosVivo?.ignorados ?? '').split(',').filter(Boolean).length
+            return ocultos > 0 ? (
+              <button className="-mt-3 min-h-10 w-fit text-left text-sm text-ink-soft hover:text-ink"
+                onClick={() => setHistoria((h) => ({ ...h, diagnosticosVivo: { ...h.diagnosticosVivo, ignorados: '' } }))}>
+                Ocultaste {ocultos} {ocultos === 1 ? 'dato' : 'datos'} con «No corresponde» · <span className="font-semibold text-brand">volver a mostrar</span>
+              </button>
+            ) : null
+          })()}
           <PregunteAhora historia={historia} setHistoria={setHistoria} max={1} />
           <Nota titulo="Lo más probable ahora"><Probables historia={historia} irA={irA} /></Nota>
         </>
@@ -138,5 +147,5 @@ export function notaPrincipal(h: Historia, practica: boolean): { texto: string; 
   const d = diagnosticosEnVivo(h).filter((x) => !x.descartado)[0]
   if (d) return { texto: `Lo más probable: ${d.nombre}`, tono: 'neutro' }
   const f = faltantes(h).length
-  return { texto: f ? `Te faltan ${f} datos obligatorios` : 'Todo lo obligatorio está completo', tono: 'neutro' }
+  return { texto: f ? (f === 1 ? 'Te falta 1 dato obligatorio' : `Te faltan ${f} datos obligatorios`) : 'Todo lo obligatorio está completo', tono: 'neutro' }
 }

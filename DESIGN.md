@@ -56,8 +56,11 @@ Tipos: **Source Serif 4** para títulos, números de apartado, guion de entrevis
 - 2026-11-25 — Opciones de semiología al escribir (ALICIA): aparecen solo con el campo activo y se filtran con lo que se escribe («opr» → Opresivo).
 - 2026-11-25 — Redacción: signos vitales en una línea, numeración seguida, listas con «y», «8/10» sin espacio, «de localización».
 
+- 2026-11-25 — Evaluación heurística (Nielsen) y prueba de estrés (break-ui), todo corregido: «Deshacer» al usar una sugerencia; guardado visible en el teléfono; avisos de número/edad/intensidad; recuperar lo ocultado con «No corresponde»; cajón del tutor con Escape y foco; siguiente paso al final de la redacción; «Cómo funciona» siempre en la portada; columna que nunca supera el ancho de pantalla (320 px); «1 año»; «Falta 1 dato»; limpieza de espacios pegados; «Seguir donde quedé» vuelve al apartado. Informe: https://claude.ai/artifact/YKq3qLK7ozaBQMam8sUAC8
+
 ## Preguntas abiertas
 - ¿Le gusta a Pedro el papel cálido del cuaderno, o prefiere un fondo más blanco?
+- Fichas de antecedentes de un toque (vacía → Sí → No): la evaluación heurística las marcó como algo que hay que recordar; se mantiene la leyenda. Confirmar con internos reales si se entiende o si conviene Sí/No separados.
 - ¿Coma o punto decimal? Se usa coma (36,8 °C) (supuesto); confirmar el uso en los hospitales de Cuenca.
 - ¿Qué referencias le gustan y qué tomar/evitar de cada una?
 - ¿Logo propio más adelante?

@@ -115,10 +115,15 @@ export function faltantes(h: Historia): Faltante[] {
 
 const valor = (h: Historia, s: string, c: string) => (h[s]?.[c] ?? '').trim()
 
+/** «1 año», «58 años». */
+export const edadTexto = (e: string | number) => `${e} ${Number(e) === 1 ? 'año' : 'años'}`
+/** Limpia lo pegado: tabulaciones y espacios repetidos (también alrededor de los saltos de línea). */
+export const limpiarEspacios = (t: string) => t.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/ ([,.;:])/g, '$1')
+
 /** «a, b y c» (lista en español con «y» antes del último). */
 export const enLista = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`)
 /** Unidad pegada si empieza con «/» (8/10), separada en los demás casos (98 lpm). */
-const conUnidad = (v: string, u?: string) => (u ? (u.startsWith('/') ? `${v}${u}` : `${v} ${u}`) : v)
+const conUnidad = (v: string, u?: string) => (u ? (u.startsWith('/') ? `${v}${u}` : `${v} ${u === 'años' && Number(v) === 1 ? 'año' : u}`) : v)
 
 function lineaCampo(c: Campo, v: string): string {
   return `${c.corto ?? c.etiqueta}: ${c.tipo === 'numero' ? conUnidad(v, c.unidad) : v}`
@@ -136,7 +141,7 @@ export function redactar(h: Historia): string {
   const tiempo = valor(h, 'motivo', 'tiempo')
 
   const resumen = [
-    [sexo, edad && `${edad} años`].filter(Boolean).join(' de '),
+    [sexo, edad && edadTexto(edad)].filter(Boolean).join(' de '),
     motivo && `consulta por «${motivo.replace(/^[«"]|[»"]$/g, '')}»`,
     tiempo && `de ${tiempo} de evolución`,
   ].filter(Boolean).join(', ')
@@ -197,7 +202,7 @@ export function redactar(h: Historia): string {
     }
     if (lineas.length) partes.push(`${++numero}. ${s.titulo.toUpperCase()}\n${lineas.join('\n')}`)
   }
-  return partes.join('\n\n')
+  return limpiarEspacios(partes.join('\n\n'))
 }
 
 /** Campos que identifican al paciente y nunca se envían a la IA. */
@@ -303,7 +308,7 @@ export function avisos(h: Historia): Aviso[] {
 export function presentacionOral(h: Historia): string {
   const f = h.filiacion ?? {}, m = h.motivo ?? {}, e = h.enfermedad ?? {}, x = h.examen ?? {}, a = h.antecedentes ?? {}
   const partes: string[] = []
-  const quien = [f.sexo === 'Mujer' ? 'Mujer' : f.sexo === 'Hombre' ? 'Hombre' : 'Paciente', f.edad && `de ${f.edad} años`, f.ocupacion && `, ${f.ocupacion.toLowerCase()}`].filter(Boolean).join(' ').replace(' ,', ',')
+  const quien = [f.sexo === 'Mujer' ? 'Mujer' : f.sexo === 'Hombre' ? 'Hombre' : 'Paciente', f.edad && `de ${edadTexto(f.edad)}`, f.ocupacion && `, ${f.ocupacion.toLowerCase()}`].filter(Boolean).join(' ').replace(' ,', ',')
   const ant = PATOLOGICOS.filter((p) => a[`p.${p.id}`] === 'si').map((p) => minus(p.nombre))
   const pa = paquetesAnio(h)
   if (pa) ant.push(`tabaquismo de ${String(pa).replace('.', ',')} paquetes/año`)
@@ -325,5 +330,5 @@ export function presentacionOral(h: Historia): string {
   if (im.sindromes) partes.push(`Síndromes: ${im.sindromes.trim()}.`.replace('..', '.'))
   partes.push(im.diagnosticos?.trim() ? `Impresión diagnóstica: ${im.diagnosticos.trim().split('\n').join('; ')}.` : 'Impresión diagnóstica: pendiente.')
   if (h.plan?.manejo?.trim()) partes.push(`Plan: ${h.plan.manejo.trim()}${h.plan.examenes?.trim() ? `; exámenes: ${h.plan.examenes.trim()}` : ''}.`)
-  return partes.join(' ').replace(/\.\./g, '.')
+  return limpiarEspacios(partes.join(' ').replace(/\.\./g, '.'))
 }

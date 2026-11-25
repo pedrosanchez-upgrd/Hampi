@@ -1,7 +1,7 @@
 // Convierte el resultado de scripts/simular.cjs en una página para leer en el iPad.
 // Uso: node scripts/simulacion/informe.cjs simulacion.json informe.html
 const fs = require('fs')
-const [, , entrada, salida] = process.argv
+const [, , entrada, salida, extras] = process.argv
 const { fecha, tiempos, resultados } = JSON.parse(fs.readFileSync(entrada, 'utf8'))
 const h = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const coma = (n) => (n == null ? '—' : String(n).replace('.', ','))
@@ -19,6 +19,18 @@ for (const r of resultados) for (const o of r.hallazgos) {
 const obs = [...juntas.values()].sort((a, b) => ORDEN[a.gravedad] - ORDEN[b.gravedad] || a.donde.localeCompare(b.donde))
 const cuenta = { grave: 0, medio: 0, leve: 0 }
 for (const o of obs) cuenta[o.gravedad]++
+const REV = extras ? JSON.parse(fs.readFileSync(extras, 'utf8')).revisiones : []
+const seccionesRev = REV.map((r) => `
+  <section class="hoja" aria-label="${h(r.titulo)}">
+    <h2>${h(r.titulo)}</h2>
+    <p class="lead" style="margin-top:4px">${h(r.pregunta)}</p>
+    <ul style="margin-top:12px">${r.hallazgos.map((x) => `
+      <li class="obs ${x.gravedad >= 3 ? 'grave' : x.gravedad === 2 ? 'medio' : 'leve'}">
+        <span class="pill">Gravedad ${x.gravedad}</span>
+        <div class="cuerpo"><p class="donde">${h(x.regla)}</p><p>${h(x.que)}</p><p class="en">Corregido: ${h(x.arreglo)}</p></div>
+      </li>`).join('')}</ul>
+    ${r.aguanto ? `<p class="etq" style="margin-top:16px">Lo que aguantó bien</p><ul class="aguanto">${r.aguanto.map((a) => `<li>✓ ${h(a)}</li>`).join('')}</ul>` : ''}
+  </section>`).join('')
 const ok = resultados.filter((r) => r.minutosHampi != null)
 const prom = (k) => (ok.length ? (ok.reduce((s, r) => s + r[k], 0) / ok.length).toFixed(1) : null)
 const acierto = ok.filter((r) => r.puestoEsperado >= 1 && r.puestoEsperado <= 3).length
@@ -74,13 +86,14 @@ ul { list-style:none; margin:0; padding:0; display:grid; gap:10px }
 .grave .pill { background:var(--grave-suave); color:var(--grave) } .medio .pill { background:var(--medio-suave); color:var(--medio) } .leve .pill { background:var(--leve-suave); color:var(--leve) }
 .cuerpo { min-width:0 } .cuerpo p { margin:0 } .donde { font-weight:600 } .en { color:var(--tenue); font-size:13px; margin-top:4px !important }
 .vacio { color:var(--ok); font-weight:500 }
+.aguanto li { color:var(--ok) }
 .nota { color:var(--suave); font-size:14px; max-width:70ch } .nota li { list-style:disc; margin-left:18px }
 </style>
 <main>
   <header>
     <p class="etq">Hampi · prueba automática · ${h(new Date(fecha).toLocaleString('es-EC', { dateStyle: 'medium', timeStyle: 'short' }))}</p>
     <h1>Interno simulado</h1>
-    <p class="lead">Un robot llenó ${new Set(resultados.map((r) => r.caso)).size} historias ficticias completas, en iPad y en teléfono, como lo haría un interno, y anotó todo lo que encontró mal. El tiempo es una estimación: no reemplaza la prueba con internos reales.</p>
+    <p class="lead">Tres revisiones: un robot que llena historias como un interno, una evaluación de usabilidad y una prueba de estrés. Todo lo que encontraron ya está corregido. Un robot llenó ${new Set(resultados.map((r) => r.caso)).size} historias ficticias completas, en iPad y en teléfono, como lo haría un interno, y anotó todo lo que encontró mal. El tiempo es una estimación: no reemplaza la prueba con internos reales.</p>
   </header>
 
   <section class="hoja cifras" aria-label="Resumen">
@@ -102,6 +115,8 @@ ul { list-style:none; margin:0; padding:0; display:grid; gap:10px }
       <tbody>${filas}</tbody>
     </table></div>
   </section>
+
+  ${seccionesRev}
 
   <section class="nota" aria-label="Cómo se estimó">
     <p class="etq">Cómo se estimó el tiempo</p>

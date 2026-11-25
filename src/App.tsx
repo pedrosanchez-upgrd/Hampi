@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { SECCIONES } from './data/secciones'
 import { SINTOMAS } from './data/sintomas'
-import { alarmasMarcadas, historiaVacia, progresoSeccion, sintomasAbiertos, type Historia } from './lib/historia'
+import { alarmasMarcadas, edadTexto, historiaVacia, progresoSeccion, sintomasAbiertos, type Historia } from './lib/historia'
 import { useTema } from './lib/tema'
 import { Terminos, VERSION_TERMINOS } from './components/Terminos'
 import { SeccionFormulario } from './components/SeccionFormulario'
@@ -28,6 +28,7 @@ const CLAVE_BORRADOR = 'hampi.borrador'
 const CLAVE_SIN_CUENTA = 'hampi.sinCuenta'
 const CLAVE_HISTORIA_ID = 'hampi.historiaId'
 const CLAVE_VISTO = 'hampi.visto'
+const CLAVE_APARTADO = 'hampi.apartado'
 const VACIA = JSON.stringify(historiaVacia())
 
 type EstadoGuardado = 'local' | 'guardando' | 'guardado' | 'error'
@@ -36,8 +37,9 @@ type EstadoGuardado = 'local' | 'guardando' | 'guardado' | 'error'
 function Guardado({ estado }: { estado: EstadoGuardado }) {
   const t = { local: 'En este dispositivo', guardando: 'Guardando…', guardado: 'Guardado', error: 'No se pudo guardar en la cuenta · queda en el dispositivo' }[estado]
   return (
-    <span className={`hidden items-center gap-1.5 whitespace-nowrap text-xs font-medium lg:flex ${estado === 'error' ? 'text-warn' : estado === 'guardado' ? 'text-ok' : 'text-ink-faint'}`} role="status">
-      <Icono nombre={estado === 'guardado' ? 'check' : estado === 'error' ? 'alerta' : 'documento'} className="h-3.5 w-3.5" />{t}
+    <span className={`flex items-center gap-1.5 whitespace-nowrap text-xs font-medium ${estado === 'error' ? 'text-warn' : estado === 'guardado' ? 'text-ok' : 'text-ink-faint'}`} role="status" title={t}>
+      <Icono nombre={estado === 'guardado' ? 'check' : estado === 'error' ? 'alerta' : 'documento'} className="h-4 w-4 lg:h-3.5 lg:w-3.5" />
+      <span className="sr-only lg:not-sr-only">{t}</span>
     </span>
   )
 }
@@ -96,7 +98,7 @@ function FichaPaciente({ historia }: { historia: Historia }) {
   const m = historia.motivo ?? {}
   const abiertos = sintomasAbiertos(historia).map((id) => SINTOMAS.find((s) => s.id === id)!.nombre)
   const alarmas = alarmasMarcadas(historia).length
-  const quien = [f.sexo, f.edad && `${f.edad} años`].filter(Boolean).join(', ')
+  const quien = [f.sexo, f.edad && edadTexto(f.edad)].filter(Boolean).join(', ')
   return (
     <div className="flex min-w-0 flex-1 items-center gap-3">
       <div className="min-w-0">
@@ -137,7 +139,7 @@ function PacientePractica({ historia, seccionId }: { historia: Historia; seccion
 export default function App() {
   const [aceptado, setAceptado] = useState(() => leer<{ version?: string }>(CLAVE_TERMINOS, {}).version === VERSION_TERMINOS)
   const [historia, setHistoria] = useState<Historia>(() => ({ ...historiaVacia(), ...leer(CLAVE_BORRADOR, {}) }))
-  const [actual, setActual] = useState<string>(SECCIONES[0].id)
+  const [actual, setActual] = useState<string>(() => leer<string>(CLAVE_APARTADO, SECCIONES[0].id))
   const [confirmar, setConfirmar] = useState(false)
   const [tema, cambiarTema] = useTema()
   const [sesion, setSesion] = useState<Session | null>(null)
@@ -155,6 +157,7 @@ export default function App() {
   const [revisor, setRevisor] = useState(false)
   const [verRevision, setVerRevision] = useState(false)
   const [, setReglasNube] = useState(0)
+  const cerrarTutorRef = useRef<HTMLButtonElement | null>(null)
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null)
   const enCurso = useRef<Promise<void> | null>(null)
   const idActual = useRef<string | null>(historiaId)
@@ -162,6 +165,7 @@ export default function App() {
 
   useEffect(() => guardar(CLAVE_BORRADOR, historia), [historia])
   useEffect(() => guardar(CLAVE_HISTORIA_ID, historiaId), [historiaId])
+  useEffect(() => guardar(CLAVE_APARTADO, actual), [actual])
 
   // Sesión de Supabase: se recupera al abrir y se escucha si cambia.
   useEffect(() => {
@@ -207,6 +211,14 @@ export default function App() {
     }, 1500)
     return () => { if (temporizador.current) clearTimeout(temporizador.current) }
   }, [historia, sesion?.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Cajón del tutor: el foco entra al abrir y Escape lo cierra.
+  useEffect(() => {
+    if (!tutorAbierto) return
+    cerrarTutorRef.current?.focus()
+    const t = (e: KeyboardEvent) => { if (e.key === 'Escape') setTutorAbierto(false) }
+    addEventListener('keydown', t)
+    return () => removeEventListener('keydown', t)
+  }, [tutorAbierto])
   // En el teléfono, el apartado activo siempre visible en el carrusel.
   useEffect(() => {
     document.querySelector('[aria-current="step"]')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
@@ -222,7 +234,7 @@ export default function App() {
   const abrirConsulta = (h?: Historia, id: string | null = historiaId) => {
     if (h) { setHistoria(h); setHistoriaId(id) }
     guardar(CLAVE_VISTO, true)
-    setVista('consulta'); setActual(SECCIONES[0].id); setConfirmar(false); setVerHistorias(false); setVerResultado(false)
+    setVista('consulta'); if (h) setActual(SECCIONES[0].id); setConfirmar(false); setVerHistorias(false); setVerResultado(false)
     window.scrollTo({ top: 0 })
   }
   const nuevaHistoria = () => abrirConsulta(historiaVacia(), null)
@@ -306,7 +318,7 @@ export default function App() {
         <nav aria-label="Apartados" className="xl:hidden"><Indice historia={historia} actual={actual} irA={irA} /></nav>
       </header>
 
-      <div className="grid gap-6 px-4 pb-32 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:pb-16 xl:grid-cols-[210px_minmax(0,1fr)_370px] 2xl:mx-auto 2xl:max-w-[1600px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 px-4 pb-32 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:pb-16 xl:grid-cols-[210px_minmax(0,1fr)_370px] 2xl:mx-auto 2xl:max-w-[1600px]">
         <nav aria-label="Apartados" className="no-imprimir hidden xl:block">
           <div className="sticky top-24"><Indice historia={historia} actual={actual} irA={irA} vertical /></div>
         </nav>
@@ -330,7 +342,7 @@ export default function App() {
               {seccion.id === 'familiares' && <AntecedentesFamiliares historia={historia} setHistoria={setHistoria} />}
             </SeccionFormulario>
           ) : (
-            <Redaccion historia={historia} irA={irA} />
+            <Redaccion historia={historia} irA={irA} onNueva={() => setConfirmar(true)} onInicio={() => setVista('inicio')} />
           )}
 
           {seccion?.id === 'enfermedad' && <PestanasSintomas historia={historia} setHistoria={setHistoria} />}
@@ -396,7 +408,7 @@ export default function App() {
             <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line" aria-hidden />
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-display text-2xl font-semibold text-ink">Tutor</h2>
-              <button className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-surface-2" onClick={() => setTutorAbierto(false)} aria-label="Cerrar tutor"><Icono nombre="cerrar" className="h-5 w-5" /></button>
+              <button ref={cerrarTutorRef} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-surface-2" onClick={() => setTutorAbierto(false)} aria-label="Cerrar tutor"><Icono nombre="cerrar" className="h-5 w-5" /></button>
             </div>
             <Tutor historia={historia} setHistoria={setHistoria} irA={irA} practica={practica} />
           </aside>

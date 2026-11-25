@@ -25,6 +25,9 @@ const claseInput =
 
 function aviso(seccionId: string, c: Campo, v: string): string | null {
   if (seccionId === 'filiacion' && c.id === 'cedula' && v.trim() && !cedulaValida(v.trim())) return 'La cédula no es válida: revisa los 10 dígitos.'
+  if (c.tipo === 'numero' && v.trim() && Number.isNaN(Number(v.trim().replace(',', '.')))) return 'Escribe solo el número (por ejemplo 36,8).'
+  if (c.id === 'edad' && v.trim() && (Number(v) < 0 || Number(v) > 120)) return 'Revisa la edad: debe estar entre 0 y 120 años.'
+  if (c.id === 'intensidad' && v.trim() && (Number(v) < 0 || Number(v) > 10)) return 'La intensidad va de 0 a 10.'
   if (seccionId === 'examen') return avisoSigno(c.id, v)
   return null
 }
@@ -217,8 +220,19 @@ function Sugerencias({ lista, valor, onUsar, aviso }: { lista: Sugerencia[]; val
 /** Sugerencia larga plegada en una línea; un toque la abre. */
 function SugerenciaLarga({ x, v, onUsar, agregar, aviso }: { x: Sugerencia; v: string; onUsar: (t: string) => void; agregar: (t: string) => void; aviso?: string }) {
   const [abierta, setAbierta] = useState(false)
+  const [previo, setPrevio] = useState<string | null>(null)
   const usado = v.includes(x.texto)
-  if (usado) return <p className="inline-flex min-h-8 items-center gap-1 text-sm text-ok"><Icono nombre="check" className="h-4 w-4" /> Sugerencia usada · {x.etiqueta}</p>
+  if (usado)
+    return (
+      <p className="inline-flex min-h-10 flex-wrap items-center gap-x-2 text-sm text-ok">
+        <span className="inline-flex items-center gap-1"><Icono nombre="check" className="h-4 w-4" /> Sugerencia usada · {x.etiqueta}</span>
+        {previo !== null && (
+          <button type="button" className="min-h-10 rounded-lg px-2 font-semibold text-brand hover:bg-brand-soft" onClick={() => { onUsar(previo); setPrevio(null) }}>
+            Deshacer
+          </button>
+        )}
+      </p>
+    )
   if (!abierta)
     return (
       <button type="button" onClick={() => setAbierta(true)} aria-expanded={false}
@@ -236,10 +250,10 @@ function SugerenciaLarga({ x, v, onUsar, agregar, aviso }: { x: Sugerencia; v: s
       <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-ink">{x.texto}</p>
       {aviso && x.etiqueta !== 'Formato' && <p className="mt-1 text-xs text-ink-faint">{aviso}</p>}
       <div className="mt-2 flex flex-wrap gap-2">
-        <button type="button" onClick={() => onUsar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
+        <button type="button" onClick={() => { setPrevio(v); onUsar(x.texto) }} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand hover:bg-brand-strong">
           {v ? 'Reemplazar con esta' : 'Usar este texto'}
         </button>
-        {v && !/^niega\.?$/i.test(v) && <button type="button" onClick={() => agregar(x.texto)} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink hover:border-brand/60">Agregar al final</button>}
+        {v && !/^niega\.?$/i.test(v) && <button type="button" onClick={() => { setPrevio(v); agregar(x.texto) }} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-ink hover:border-brand/60">Agregar al final</button>}
       </div>
     </div>
   )
@@ -256,7 +270,7 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
   const i = seccion.id === 'examen' ? imc(Number(valores.peso), Number(valores.talla)) : null
 
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
       <header className="flex items-start gap-4">
         <span aria-hidden className="font-display text-[56px] font-semibold leading-[0.9] text-brand/75 sm:text-[72px]">{String(seccion.numero).padStart(2, '0')}</span>
         <div className="min-w-0 pt-1">

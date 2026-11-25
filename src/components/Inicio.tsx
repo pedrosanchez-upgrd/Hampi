@@ -1,5 +1,5 @@
 import { CASOS, type CasoPractica } from '../data/casosPractica'
-import type { Historia } from '../lib/historia'
+import { edadTexto, type Historia } from '../lib/historia'
 import { Icono, Logo } from './Icono'
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
 
 function resumen(h: Historia) {
   const f = h.filiacion ?? {}, m = h.motivo ?? {}
-  const quien = [f.sexo, f.edad && `${f.edad} años`].filter(Boolean).join(', ') || 'Paciente sin datos'
+  const quien = [f.sexo, f.edad && edadTexto(f.edad)].filter(Boolean).join(', ') || 'Paciente sin datos'
   return { quien, motivo: m.motivo ? `«${m.motivo}»${m.tiempo ? `, ${m.tiempo}` : ''}` : 'sin motivo de consulta todavía' }
 }
 
@@ -78,7 +78,6 @@ export function Inicio(p: Props) {
         )}
       </section>
 
-      {p.primeraVez && (
         <section aria-label="Cómo funciona" className="grid gap-4 sm:grid-cols-3">
           {[
             ['Escribe', 'El motivo, el relato y el examen. Puedes dictar con el micrófono.'],
@@ -94,7 +93,6 @@ export function Inicio(p: Props) {
             </div>
           ))}
         </section>
-      )}
 
       <section aria-labelledby="practicar" className="grid gap-4">
         <div className="flex flex-wrap items-end justify-between gap-2">
@@ -114,7 +112,7 @@ export function Inicio(p: Props) {
                   className="group flex h-full w-full flex-col gap-3 rounded-xl border border-line bg-surface p-4 text-left transition-colors hover:border-brand/60">
                   <span className="flex items-center justify-between gap-2 text-xs">
                     <span className="rounded-full bg-surface-2 px-2 py-0.5 font-semibold text-ink-soft">{c.nivel}</span>
-                    <span className="text-ink-faint">{c.sexo}, {c.edad} años</span>
+                    <span className="text-ink-faint">{c.sexo}, {edadTexto(c.edad)}</span>
                   </span>
                   <span className="font-display text-xl font-semibold leading-snug text-ink">{c.titulo}</span>
                   <span className="font-display italic leading-snug text-ink-soft">«{c.motivo}»</span>

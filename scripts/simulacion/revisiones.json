@@ -1,0 +1,31 @@
+{
+  "fecha": "2026-11-25",
+  "revisiones": [
+    {
+      "titulo": "Evaluación heurística",
+      "pregunta": "¿Se entiende sin ayuda? (10 reglas de usabilidad de Nielsen, gravedad de 0 a 4)",
+      "hallazgos": [
+        { "gravedad": 3, "regla": "Control y salida", "que": "«Reemplazar con esta» borraba lo que habías escrito, sin deshacer.", "arreglo": "Botón «Deshacer» que devuelve tu texto original." },
+        { "gravedad": 3, "regla": "Se ve qué está pasando", "que": "En el teléfono no se veía si la historia estaba guardada.", "arreglo": "Ícono de guardado también en el teléfono." },
+        { "gravedad": 2, "regla": "Prevenir errores", "que": "La edad aceptaba «cincuenta» o «500» sin avisar.", "arreglo": "Aviso si no es número, si la edad no está entre 0 y 120 o la intensidad no va de 0 a 10." },
+        { "gravedad": 2, "regla": "Control y salida", "que": "Lo que ocultabas con «No corresponde» no se podía recuperar.", "arreglo": "«Ocultaste N datos · volver a mostrar» en el tutor." },
+        { "gravedad": 2, "regla": "Accesibilidad", "que": "El cajón del tutor no se cerraba con Escape y el foco no entraba en él.", "arreglo": "Escape lo cierra y el foco va al botón de cerrar." },
+        { "gravedad": 2, "regla": "Control y salida", "que": "Al terminar la redacción no había siguiente paso.", "arreglo": "«Empezar otra historia» y «Volver al inicio» al final." },
+        { "gravedad": 1, "regla": "Ayuda", "que": "«Cómo funciona» solo se veía la primera vez.", "arreglo": "Siempre visible en la portada." },
+        { "gravedad": 1, "regla": "Habla como el usuario", "que": "El «×5,3» no se explicaba donde aparece.", "arreglo": "Explicación al mantener el dedo o el puntero encima." }
+      ]
+    },
+    {
+      "titulo": "Prueba de estrés (break-ui)",
+      "pregunta": "¿Aguanta datos y acciones difíciles? Nombre largo, relato pegado de WhatsApp con emojis, 8 medicamentos, 6 síntomas, teléfono de 320 px, zoom al 200 %, modo oscuro, recargar, doble toque, almacenamiento bloqueado.",
+      "hallazgos": [
+        { "gravedad": 4, "regla": "Teléfono pequeño (320 px)", "que": "La pantalla se cortaba a la derecha: títulos, relato y campos se salían.", "arreglo": "La columna nunca es más ancha que la pantalla." },
+        { "gravedad": 2, "regla": "Texto", "que": "«1 años» en la cabecera, la redacción y la presentación oral.", "arreglo": "«1 año», «58 años»." },
+        { "gravedad": 2, "regla": "Texto", "que": "«Faltan 1 datos obligatorios».", "arreglo": "«Falta 1 dato obligatorio»." },
+        { "gravedad": 2, "regla": "Texto pegado", "que": "Espacios dobles y tabulaciones de lo pegado llegaban a la redacción.", "arreglo": "Se limpian al redactar." },
+        { "gravedad": 2, "regla": "Seguir donde quedé", "que": "Volvía siempre al apartado 01.", "arreglo": "Vuelve al apartado donde estabas." }
+      ],
+      "aguanto": ["Recargar a mitad de la historia no pierde nada.", "Con el almacenamiento bloqueado (modo privado estricto) Hampi igual abre.", "Doble toque en «Confirmar» no rompe nada.", "Nombres y direcciones largas, emojis, mayúsculas y 8 medicamentos se ven bien.", "Zoom real al 200 % en iPad y modo oscuro: sin desbordes."]
+    }
+  ]
+}
