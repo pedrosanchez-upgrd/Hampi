@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host",
     "test": "vitest run",
-    "revisar:accesibilidad": "node scripts/accesibilidad.cjs"
+    "revisar:accesibilidad": "node scripts/accesibilidad.cjs",
+    "simular": "node scripts/simular.cjs simulacion.json && node scripts/simulacion/informe.cjs simulacion.json simulacion.html"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.119.0",

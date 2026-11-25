@@ -180,7 +180,7 @@ function Abreviaturas({ valor, onUsar }: { valor: string; onUsar: (t: string) =>
         {ab.map((a) => `${a.abrev} → ${a.completo}`).join(' · ')}
       </span>
       <button type="button" onClick={() => onUsar(escribirCompleto(valor))}
-        className="inline-flex min-h-8 items-center gap-1 rounded-lg border border-brand/40 bg-surface px-2.5 text-sm font-semibold text-brand-strong hover:bg-brand-soft">
+        className="inline-flex min-h-10 items-center gap-1 rounded-lg border border-brand/40 bg-surface px-2.5 text-sm font-semibold text-brand-strong hover:bg-brand-soft">
         <Icono nombre="check" className="h-3.5 w-3.5" /> Escribir completo
       </button>
     </div>
@@ -202,7 +202,7 @@ function Sugerencias({ lista, valor, onUsar, aviso }: { lista: Sugerencia[]; val
             const usado = v.toLowerCase().includes(x.texto.toLowerCase())
             return (
               <button key={x.texto} type="button" disabled={usado} onClick={() => agregar(x.texto)}
-                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-brand/30 bg-brand-soft/40 px-3 text-sm text-brand-strong hover:bg-brand-soft disabled:border-line disabled:bg-transparent disabled:text-ink-faint">
+                className="inline-flex min-h-10 items-center gap-1 rounded-full border border-brand/30 bg-brand-soft/40 px-3 text-sm text-brand-strong hover:bg-brand-soft disabled:border-line disabled:bg-transparent disabled:text-ink-faint">
                 <Icono nombre={usado ? 'check' : 'mas'} className="h-3.5 w-3.5" />{x.texto}
               </button>
             )
@@ -318,7 +318,7 @@ export function SeccionFormulario({ seccion, valores, onCambio, guia, onGuia, se
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {c.rapido.map((r) => (
                           <button key={r} type="button" aria-pressed={v === r} onClick={() => onCambio(c.id, v === r ? '' : r)}
-                            className={`min-h-8 rounded-full border px-3 text-sm transition-colors ${v === r ? 'border-brand bg-brand-soft font-medium text-brand-strong' : 'border-line text-ink-soft hover:border-brand/60'}`}>
+                            className={`min-h-10 rounded-full border px-3 text-sm transition-colors ${v === r ? 'border-brand bg-brand-soft font-medium text-brand-strong' : 'border-line text-ink-soft hover:border-brand/60'}`}>
                             {r}
                           </button>
                         ))}
