@@ -146,7 +146,7 @@ async function simular(caso, nombreDisp, opciones, navegador) {
   for (let i = 0; i < 3 && await p.getByRole('button', { name: /^Niega las otras/ }).count(); i++) await tocar(p.getByRole('button', { name: /^Niega las otras/ }).first(), true)
   if (caso.mujer) {
     await escribir('#campo-fum', '2026-11-10')
-    await tocar(p.getByRole('radiogroup', { name: /Posibilidad de embarazo/ }).getByRole('radio', { name: caso.mujer.embarazo }), true)
+    await tocar(p.getByRole('radiogroup', { name: /Posibilidad de embarazo/ }).getByRole('radio', { name: caso.mujer.embarazo, exact: true }), true)
   }
   await tocar(p.getByRole('button', { name: 'Niega alergias', exact: true }), true)
   if (caso.medicamentos) await escribir('#campo-farmacologicos', caso.medicamentos)
