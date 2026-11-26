@@ -4,6 +4,25 @@
 
 module.exports = [
   {
+    id: 'gota', titulo: 'Dedo gordo rojo e hinchado',
+    filiacion: { edad: '54', sexo: 'Hombre', ocupacion: 'Comerciante' },
+    motivo: { motivo: 'dolor e hinchazón del dedo gordo del pie', tiempo: '1 día' },
+    relato: 'Despertó en la madrugada con dolor intenso en el dedo gordo del pie derecho. Dedo gordo rojo, caliente e hinchado. Ya le había pasado antes hace un año. Niega fiebre y trauma.',
+    alicia: { sintoma: 'Dolor articular', localizacion: 'Primera articulación metatarsofalángica derecha', intensidad: '9' },
+    pestanas: ['Dolor articular'],
+    alarmasSi: [],
+    encontrar: { 'Afecta la base del dedo gordo del pie (primera metatarsofalángica)': 'Presente', 'Articulación roja': 'Presente', 'El dolor llegó a su máximo en menos de 1 día': 'Presente', 'Ataques de artritis antes (referidos por el paciente)': 'Presente' },
+    responder: { 'Prótesis de cadera o rodilla, o cirugía de esa articulación': 'No' },
+    antecedentes: { 'Hipertensión arterial': 'desde 2020, hidroclorotiazida 25 mg al día' },
+    familiares: {},
+    medicamentos: 'Hidroclorotiazida 25 mg cada día',
+    vitales: { pas: '138', pad: '86', fc: '84', fr: '16', temp: '36,9', sat: '94' },
+    aspecto: 'Paciente consciente, orientado, con facies de dolor, camina con dificultad.',
+    examenNormal: ['Cabeza y cuello', 'Tórax y pulmones', 'Corazón', 'Abdomen', 'Neurológico'],
+    esperado: 'Gota (artritis gotosa aguda)',
+    manejo: 'Reposo de la articulación y analgesia según guía; ácido úrico en sangre.',
+  },
+  {
     id: 'toracico', titulo: 'Dolor torácico con factores de riesgo',
     filiacion: { edad: '58', sexo: 'Hombre', ocupacion: 'Chofer de bus' },
     motivo: { motivo: 'dolor en el pecho', tiempo: '2 horas' },

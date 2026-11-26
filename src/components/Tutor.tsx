@@ -4,6 +4,8 @@ import { alarmasMarcadas, avisos, faltantes, type Historia } from '../lib/histor
 import { hallazgosEnLoEscrito } from '../data/detectarHallazgos'
 import { LoQueEscribio, PregunteAhora } from './PanelDiagnosticos'
 import { Icono } from './Icono'
+import { considerarEnHistoria } from '../data/considerar'
+import { sintomasAbiertos } from '../lib/historia'
 
 interface Props {
   historia: Historia
@@ -52,6 +54,38 @@ function Probables({ historia, irA }: Pick<Props, 'historia' | 'irA'>) {
         {todos.length > 3 ? `Ver los ${todos.length} y elegir` : 'Elegir mis diagnósticos'} <Icono nombre="flecha" className="h-4 w-4" />
       </button>
     </>
+  )
+}
+
+/** Diferencial amplio (orientativo): lo que sugiere lo escrito y lo grave, para no olvidar nada. */
+function TambienConsidera({ historia, irA }: Pick<Props, 'historia' | 'irA'>) {
+  const [todo, setTodo] = useState(false)
+  const abiertos = sintomasAbiertos(historia)
+  if (!abiertos.length) return null
+  const motor = new Set(diagnosticosEnVivo(historia).map((x) => x.nombre.toLowerCase()))
+  const lista = considerarEnHistoria(historia, abiertos, motor)
+  if (!lista.length) return null
+  const destacados = lista.filter((x) => x.porque.length || x.grave)
+  const visibles = todo ? lista : (destacados.length ? destacados : lista).slice(0, 4)
+  return (
+    <Nota titulo="También considera">
+      <ul className="grid gap-1">
+        {visibles.map((x) => (
+          <li key={x.nombre} className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-sm leading-snug">
+            <span className="font-medium text-ink">{x.nombre}</span>
+            {x.grave && <span className="whitespace-nowrap rounded-full bg-alarm-soft px-1.5 py-px text-[11px] font-semibold text-alarm">no te lo pierdas</span>}
+            {x.porque.length > 0 && <span className="text-xs text-ink-soft">▲ por «{x.porque.slice(0, 2).join('», «')}»</span>}
+          </li>
+        ))}
+      </ul>
+      <div className="flex flex-wrap gap-x-4">
+        {lista.length > visibles.length || todo ? (
+          <button className="min-h-10 w-fit text-sm font-semibold text-brand" onClick={() => setTodo(!todo)}>{todo ? 'Ver menos' : `Ver los ${lista.length}`}</button>
+        ) : null}
+        <button className="min-h-10 w-fit text-sm text-ink-soft hover:text-ink" onClick={() => irA('impresion')}>Agregar a mi impresión</button>
+      </div>
+      <p className="text-xs text-ink-faint">Lista orientativa, sin puntaje. Pendiente de revisión médica.</p>
+    </Nota>
   )
 }
 
@@ -124,6 +158,7 @@ export function Tutor({ historia, setHistoria, irA, practica }: Props) {
           })()}
           <PregunteAhora historia={historia} setHistoria={setHistoria} max={1} />
           <Nota titulo="Lo más probable ahora"><Probables historia={historia} irA={irA} /></Nota>
+          <TambienConsidera historia={historia} irA={irA} />
         </>
       )}
 

@@ -2,7 +2,7 @@
 // de los hallazgos registrados y ordena los diagnósticos. Es determinista: con los
 // mismos datos siempre da el mismo orden. No calcula probabilidades absolutas.
 
-import { DIAGNOSTICOS, FUENTES, HALLAZGOS, type Fuente, type Regla } from '../data/conocimiento'
+import { DIAGNOSTICOS, FUENTES, HALLAZGOS, IMPLICA, type Fuente, type Regla } from '../data/conocimiento'
 import { sintomasAbiertos, type Historia } from './historia'
 import { EPIDEMIOLOGICOS, PATOLOGICOS } from '../data/antecedentes'
 
@@ -42,6 +42,8 @@ export function hallazgosAutomaticos(h: Historia): Record<string, Estado> {
   if (t !== null) out.fiebreMedida = t >= 38 ? 'si' : 'no'
   if (fr !== null) out.taquipnea = fr > 24 ? 'si' : 'no'
   if (edad !== null) out.edad40 = edad >= 40 ? 'si' : 'no'
+  const sexo = h.filiacion?.sexo
+  if (sexo === 'Hombre' || sexo === 'Mujer') out.sexoMasculino = sexo === 'Hombre' ? 'si' : 'no'
   // Antecedentes conectados: «Sí» en cualquiera de los que alimentan un hallazgo lo marca presente;
   // «No» en todos los que lo alimentan lo marca ausente.
   const a = h.antecedentes ?? {}
@@ -54,6 +56,10 @@ export function hallazgosAutomaticos(h: Historia): Record<string, Estado> {
     if (valores.includes('si')) out[hz] = 'si'
     else if (valores.length && valores.every((v) => v === 'no')) out[hz] = 'no'
   }
+  // Janssens 2010: hipertensión o al menos una enfermedad cardiovascular.
+  const cv = ['hta', 'cardiopatiaIsq', 'ic', 'acv'].map((k) => a[`p.${k}`])
+  if (cv.includes('si')) out.htaOCardio = 'si'
+  else if (cv.every((v) => v === 'no')) out.htaOCardio = 'no'
   return out
 }
 
@@ -62,7 +68,11 @@ export function estadoHallazgos(h: Historia): Record<string, Estado> {
   const manual = Object.fromEntries(
     Object.entries(h.hallazgos ?? {}).filter(([, v]) => v === 'si' || v === 'no'),
   ) as Record<string, Estado>
-  return { ...hallazgosAutomaticos(h), ...manual }
+  const e: Record<string, Estado> = { ...hallazgosAutomaticos(h), ...manual }
+  for (const v of ['si', 'no'] as const)
+    for (const [id, otros] of Object.entries(IMPLICA[v]))
+      if (e[id] === v) for (const o of otros) if (!manual[o]) e[o] = v
+  return e
 }
 
 export interface Razon {
@@ -113,6 +123,7 @@ export function diagnosticosEnVivo(h: Historia): Resultado[] {
     .filter((d) => d.sintomas.some((s) => abiertos.has(s)))
     .filter((d) => !d.soloSexo || d.soloSexo === sexo)
     .filter((d) => !d.requiere || estados[d.requiere] === 'si')
+    .filter((d) => !d.edadMin || !(num(h.filiacion?.edad) !== null && num(h.filiacion?.edad)! < d.edadMin))
     .map((d) => {
       const razones: Razon[] = []
       for (const r of reglasDe(d)) {

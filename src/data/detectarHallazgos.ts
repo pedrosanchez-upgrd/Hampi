@@ -78,6 +78,19 @@ export const PATRONES: Record<string, Patron> = {
   mucosasHumedas: { todas: [/mucosas (orales )?humedas/], ausente: [/mucosas (orales )?secas/] },
   cianosisEpisodio: { todas: [/cianosis|se puso morad|labios morados/] },
   frioAntes: { todas: [/(sintio|sensacion de) frio antes/] },
+  ataquePrevio: { todas: [/(episodios?|ataques?|crisis|cuadros?) (similares?|previos?|parecidos?|anteriores?)|ya (le )?(habia|ha) (dado|pasado)|(no es|no era) la primera vez|gota (previa|conocida)|antecedente de gota/] },
+  inicio1dia: { todas: [/(en|durante|de) (la noche|la madrugada|horas|pocas horas|unas horas)|desperto con (el )?dolor|amanecio con|(menos de|en) (un|1) dia/] },
+  articulacionRoja: { todas: [/(rodilla|tobillo|dedo|articulacion|muneca|codo|pie)[^.]{0,40}(roj|eritemat|enrojecid)|(roj|eritem|enrojec)\w*[^.]{0,30}(rodilla|tobillo|dedo|articulacion|muneca|codo|pie)/] },
+  mtp1: { todas: [/dedo gordo|primer dedo del pie|hallux|podagra|primera (articulacion )?metatarsofalang|\bmtf ?1\b|\bmtp ?1\b/] },
+  uricoAlto: { todas: [/(acido urico|uricemia|hiperuricemia)[^.]{0,20}(alto|elevad|[6-9][,.]?[0-9]?|1[0-9])|hiperuricemia/] },
+  protesisArticular: { todas: [/protesis (de )?(cadera|rodilla)|reemplazo (de )?(cadera|rodilla)|artroplastia|cirugia (de|en) (la )?(rodilla|cadera|hombro|tobillo)/] },
+  infeccionPiel: { todas: [/celulitis|absceso|erisipela|herida infectada|infeccion (de|en) (la )?piel|piel (roja|infectada) (sobre|cerca)/] },
+  artritisReumatoide: { todas: [/artritis reumatoide/] },
+  exudadoAmigdalar: { todas: [/(placas|exudado|pus|puntos blancos)[^.]{0,30}amigdal|amigdal\w*[^.]{0,30}(placas|exudado|purulent|puntos blancos)/] },
+  exudadoFaringeo: { todas: [/exudado faringeo|faringe[^.]{0,20}(exudado|placas)/] },
+  amigdalasGrandes: { todas: [/amigdalas? (hipertrofic|aumentadas|grandes|grado [2-4i])/] },
+  ganglioCervical: { todas: [/(adenopatias?|ganglios?) (cervical\w* )?(anterior\w* )?(dolorosos?|sensibles?)/] },
+  aortaAncha: { todas: [/(masa pulsatil|pulsacion aortica (ensanchada|amplia|aumentada)|aorta (palpable )?ensanchada)/] },
 }
 
 /** Campos que se leen (no se leen la impresión ni el plan: ahí escribe el médico sus conclusiones). */

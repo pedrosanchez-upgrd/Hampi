@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { diagnosticosEnVivo, formatoFactor, preguntasClave, preguntasParaAfinar, type Resultado } from '../lib/motor'
-import { CONSIDERAR } from '../data/considerar'
+import { considerarEnHistoria } from '../data/considerar'
 import { hallazgosEnLoEscrito } from '../data/detectarHallazgos'
 import { alarmasMarcadas, avisos, faltantes, sintomasAbiertos, type Historia } from '../lib/historia'
 import { Icono } from './Icono'
@@ -423,7 +423,7 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
   const todos = diagnosticosEnVivo(historia).filter((x) => !x.descartado)
   const lista = compacto && !verTodos ? todos.slice(0, 3) : todos
   const nombresMotor = new Set(todos.map((x) => x.nombre.toLowerCase()))
-  const otros = [...new Set(sintomasAbiertos(historia).flatMap((id) => CONSIDERAR[id] ?? []))].filter((n) => !nombresMotor.has(n.toLowerCase()))
+  const otros = considerarEnHistoria(historia, sintomasAbiertos(historia), nombresMotor)
   if (compacto && lista.length === 0) return null
 
   return (
@@ -457,19 +457,24 @@ export function ElegirDiagnosticos({ historia, setHistoria, compacto, irA }: Pro
       {(!compacto || verTodos) && otros.length > 0 && (
         <div className="mt-5 border-t border-line pt-4">
           <h4 className="text-sm font-semibold text-ink">Otros a considerar</h4>
-          <p className="mt-0.5 text-xs text-ink-faint">Lista orientativa según los síntomas, sin puntaje. Pendiente de revisión médica.</p>
+          <p className="mt-0.5 text-xs text-ink-faint">Lista orientativa según los síntomas, sin puntaje: primero lo que sugiere lo escrito, luego lo grave. Pendiente de revisión médica.</p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            {otros.map((n) => {
+            {otros.map((o) => {
+              const n = o.nombre
               const elegido = estaElegido(historia, n)
               return (
                 <button key={n} aria-pressed={elegido}
+                  title={o.porque.length ? `Lo sugiere: ${o.porque.join(', ')}` : undefined}
                   onClick={() => setHistoria((h) => (elegido ? quitarDeDiagnosticos(h, n) : agregarADiagnosticos(h, n)))}
-                  className={`inline-flex min-h-9 items-center gap-1 rounded-full border px-3 text-sm transition-colors ${elegido ? 'border-brand bg-brand text-on-brand' : 'border-line bg-surface text-ink hover:border-brand/60'}`}>
-                  <Icono nombre={elegido ? 'check' : 'mas'} className="h-3.5 w-3.5" />{n}
+                  className={`inline-flex min-h-10 items-center gap-1 rounded-full border px-3 text-left text-sm transition-colors ${elegido ? 'border-brand bg-brand text-on-brand' : o.grave ? 'border-alarm/40 bg-surface text-ink hover:border-alarm' : 'border-line bg-surface text-ink hover:border-brand/60'}`}>
+                  <Icono nombre={elegido ? 'check' : 'mas'} className="h-3.5 w-3.5 shrink-0" />{n}
+                  {o.porque.length > 0 && !elegido && <span className="text-xs text-brand">· por «{o.porque[0]}»</span>}
+                  {o.grave && !elegido && <span className="sr-only"> (no te lo pierdas)</span>}
                 </button>
               )
             })}
           </div>
+          <p className="mt-2 text-xs text-ink-faint"><span className="inline-block h-2.5 w-2.5 rounded-full border border-alarm/60 align-middle" /> Borde rojo: grave, no te lo pierdas.</p>
         </div>
       )}
     </section>

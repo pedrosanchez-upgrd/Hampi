@@ -149,6 +149,10 @@ export const CONSULTAS: Record<string, { en: string; es: string }> = {
   hipovolemia: { en: 'hypovolemia physical examination', es: 'hipovolemia deshidratación adultos' },
   sincopeCardiaco: { en: 'syncope cardiac cause', es: 'síncope' },
   tvp: { en: 'deep vein thrombosis', es: 'trombosis venosa profunda' },
+  gota: { en: 'gout', es: 'gota' },
+  artritisSeptica: { en: 'septic arthritis', es: 'artritis séptica' },
+  faringitisStrep: { en: 'streptococcal pharyngitis', es: 'faringitis estreptocócica' },
+  aneurismaAorta: { en: 'abdominal aortic aneurysm', es: 'aneurisma de aorta abdominal' },
 }
 
 /** Filtro de exactitud diagnóstica para PubMed (lo que sirve para el motor: sensibilidad, especificidad, LR). */

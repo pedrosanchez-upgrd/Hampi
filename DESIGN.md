@@ -66,3 +66,5 @@ Tipos: **Source Serif 4** para títulos, números de apartado, guion de entrevis
 - ¿Coma o punto decimal? Se usa coma (36,8 °C) (supuesto); confirmar el uso en los hospitales de Cuenca.
 - ¿Qué referencias le gustan y qué tomar/evitar de cada una?
 - ¿Logo propio más adelante?
+
+- 26-nov: «También considera» en el tutor (diferencial amplio sin puntaje: primero lo que sugiere lo escrito con «▲ por «…»», luego lo grave con «no te lo pierdas»; «Ver los N»). En Impresión, las opciones graves llevan borde rojo. Motivo: el dueño probó gota y no salió nada.

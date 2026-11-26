@@ -86,6 +86,18 @@ export const FUENTES: Record<string, Fuente> = {
   wells2003: { id: 'wells2003', pmid: '14507948', doi: '10.1056/NEJMoa023153',
     cita: 'Wells PS, et al. N Engl J Med. 2003;349(13):1227-35',
     titulo: 'Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis' },
+  janssens2010: { id: 'janssens2010', pmid: '20625017', doi: '10.1001/archinternmed.2010.196',
+    cita: 'Janssens HJ, et al. Arch Intern Med. 2010;170(13):1120-6',
+    titulo: 'A diagnostic rule for acute gouty arthritis in primary care without joint fluid analysis' },
+  margaretten2007: { id: 'margaretten2007', pmid: '17405973', doi: '10.1001/jama.297.13.1478',
+    cita: 'Margaretten ME, et al. JAMA. 2007;297(13):1478-88',
+    titulo: 'Does this adult patient have septic arthritis?' },
+  ebell2000: { id: 'ebell2000', pmid: '11147989', doi: '10.1001/jama.284.22.2912',
+    cita: 'Ebell MH, et al. JAMA. 2000;284(22):2912-8',
+    titulo: 'The rational clinical examination. Does this patient have strep throat?' },
+  lederle1999: { id: 'lederle1999', pmid: '9892455', doi: '10.1001/jama.281.1.77',
+    cita: 'Lederle FA, Simel DL. JAMA. 1999;281(1):77-82',
+    titulo: 'The rational clinical examination. Does this patient have abdominal aortic aneurysm?' },
 }
 
 export interface Hallazgo {
@@ -197,7 +209,41 @@ export const HALLAZGOS: Hallazgo[] = [
   { id: 'cianosisEpisodio', texto: 'Cianosis vista durante el episodio', sintomas: ['sincope'] },
   { id: 'frioAntes', texto: 'Sensación de frío antes del episodio', sintomas: ['sincope'] },
   { id: 'cefaleaAntes', texto: 'Dolor de cabeza antes del episodio', sintomas: ['sincope'] },
+  // Monoartritis: gota y artritis séptica
+  { id: 'sexoMasculino', texto: 'Sexo masculino', sintomas: ['articular'], automatico: 'Se toma del sexo en la filiación' },
+  { id: 'ataquePrevio', texto: 'Ataques de artritis antes (referidos por el paciente)', sintomas: ['articular'] },
+  { id: 'inicio1dia', texto: 'El dolor llegó a su máximo en menos de 1 día', sintomas: ['articular'] },
+  { id: 'articulacionRoja', texto: 'Articulación roja', sintomas: ['articular'] },
+  { id: 'mtp1', texto: 'Afecta la base del dedo gordo del pie (primera metatarsofalángica)', sintomas: ['articular', 'extremidad'] },
+  { id: 'htaOCardio', texto: 'Hipertensión o una enfermedad cardiovascular', sintomas: ['articular'], automatico: 'Se toma de antecedentes patológicos' },
+  { id: 'uricoAlto', texto: 'Ácido úrico en sangre mayor de 5,88 mg/dL', sintomas: ['articular'] },
+  { id: 'protesisArticular', texto: 'Prótesis de cadera o rodilla, o cirugía de esa articulación', sintomas: ['articular'] },
+  { id: 'infeccionPiel', texto: 'Infección de piel (sobre todo cerca de la articulación)', sintomas: ['articular'] },
+  { id: 'diabetes', texto: 'Diabetes', sintomas: ['articular'], automatico: 'Se toma de antecedentes patológicos' },
+  { id: 'artritisReumatoide', texto: 'Artritis reumatoide', sintomas: ['articular'] },
+  { id: 'vih', texto: 'Infección por VIH', sintomas: ['articular'], automatico: 'Se toma de antecedentes patológicos' },
+  { id: 'wbc25', texto: 'Leucocitos en líquido sinovial de 25 000/µL o más', sintomas: ['articular'] },
+  { id: 'wbc50', texto: 'Leucocitos en líquido sinovial de más de 50 000/µL', sintomas: ['articular'] },
+  { id: 'wbc100', texto: 'Leucocitos en líquido sinovial de más de 100 000/µL', sintomas: ['articular'] },
+  // Faringitis estreptocócica
+  { id: 'exudadoAmigdalar', texto: 'Exudado (placas) en las amígdalas', sintomas: ['garganta'] },
+  { id: 'exudadoFaringeo', texto: 'Exudado en la faringe', sintomas: ['garganta'] },
+  { id: 'contactoStrep', texto: 'Contacto con faringitis estreptocócica en las últimas 2 semanas', sintomas: ['garganta'] },
+  { id: 'ganglioCervical', texto: 'Ganglios cervicales anteriores dolorosos', sintomas: ['garganta'] },
+  { id: 'amigdalasGrandes', texto: 'Amígdalas aumentadas de tamaño', sintomas: ['garganta'] },
+  // Aneurisma de aorta abdominal
+  { id: 'aortaAncha', texto: 'A la palpación, pulsación aórtica ensanchada', sintomas: ['abdominal', 'lumbar'] },
+  { id: 'pmn90', texto: 'Polimorfonucleares del 90 % o más en líquido sinovial', sintomas: ['articular'] },
 ]
+
+/**
+ * Hallazgos escalonados: «sí» en uno implica «sí» en los menores; «no» implica «no» en los
+ * mayores (p. ej. más de 100 000 leucocitos implica más de 50 000). Solo llena lo no marcado.
+ */
+export const IMPLICA: { si: Record<string, string[]>; no: Record<string, string[]> } = {
+  si: { wbc100: ['wbc50', 'wbc25'], wbc50: ['wbc25'] },
+  no: { wbc25: ['wbc50', 'wbc100'], wbc50: ['wbc100'] },
+}
 
 export interface Regla {
   hallazgo: string
@@ -232,6 +278,8 @@ export interface Diagnostico {
   grave: boolean
   sintomas: string[]
   soloSexo?: 'Mujer' | 'Hombre'
+  /** Solo se muestra desde esta edad (filtro de presentación, no de puntaje; pendiente de revisión médica). */
+  edadMin?: number
   /** Solo se muestra si este hallazgo está marcado como presente. */
   requiere?: string
   /** Estudios que menciona el resumen del artículo citado (no es una orden médica). */
@@ -384,5 +432,47 @@ export const DIAGNOSTICOS: Diagnostico[] = [
     { hallazgo: 'inmovilizacion', cualitativo: 'sube', fuente: 'wells2003' },
     { hallazgo: 'tvpPrevia', cualitativo: 'sube', fuente: 'wells2003' },
     { hallazgo: 'cancer', cualitativo: 'sube', fuente: 'wells2003' },
+  ] },
+  { id: 'gota', nombre: 'Gota (artritis gotosa aguda)', grave: false, sintomas: ['articular', 'extremidad'],
+    estudios: 'Ácido úrico en sangre; la confirmación es ver cristales de urato en el líquido sinovial.',
+    nota: 'Regla de Janssens (monoartritis en atención primaria, sin líquido sinovial): sexo masculino, ataque previo, inicio en menos de 1 día, enrojecimiento, primera metatarsofalángica, hipertensión o enfermedad cardiovascular y ácido úrico mayor de 5,88 mg/dL. El resumen no da los puntos de cada variable: se usan como cualitativos. Si hay fiebre, descarta artritis séptica antes.',
+    reglas: [
+    { hallazgo: 'sexoMasculino', cualitativo: 'sube', fuente: 'janssens2010' },
+    { hallazgo: 'ataquePrevio', cualitativo: 'sube', fuente: 'janssens2010' },
+    { hallazgo: 'inicio1dia', cualitativo: 'sube', fuente: 'janssens2010' },
+    { hallazgo: 'articulacionRoja', cualitativo: 'sube', fuente: 'janssens2010' },
+    { hallazgo: 'mtp1', cualitativo: 'sube', fuente: 'janssens2010' },
+    { hallazgo: 'htaOCardio', cualitativo: 'sube', fuente: 'janssens2010' },
+    { hallazgo: 'uricoAlto', cualitativo: 'sube', fuente: 'janssens2010' },
+  ] },
+  { id: 'artritisSeptica', nombre: 'Artritis séptica', grave: true, sintomas: ['articular'],
+    estudios: 'Artrocentesis: recuento de leucocitos y porcentaje de polimorfonucleares en líquido sinovial, antes del Gram y el cultivo.',
+    nota: 'Dolor articular (85 %), hinchazón (78 %) y fiebre (57 %) son frecuentes pero no la distinguen; la ausencia de fiebre no la descarta. Lo que más cambia la probabilidad es el líquido sinovial. Factores de riesgo (edad, diabetes, artritis reumatoide, cirugía o prótesis, infección de piel, VIH) sin número en el resumen: cualitativos.',
+    reglas: [
+    { hallazgo: 'pmn90', lrPos: 3.4, lrNeg: 0.34, fuente: 'margaretten2007' },
+    { hallazgo: 'protesisArticular', cualitativo: 'sube', fuente: 'margaretten2007' },
+    { hallazgo: 'infeccionPiel', cualitativo: 'sube', fuente: 'margaretten2007' },
+    { hallazgo: 'diabetes', cualitativo: 'sube', fuente: 'margaretten2007' },
+    { hallazgo: 'artritisReumatoide', cualitativo: 'sube', fuente: 'margaretten2007' },
+    { hallazgo: 'vih', cualitativo: 'sube', fuente: 'margaretten2007' },
+  ],
+    conteo: { hallazgos: ['wbc25', 'wbc50', 'wbc100'], texto: 'Leucocitos en líquido sinovial',
+      tramos: [{ min: 3, lr: 28 }, { min: 2, lr: 7.7 }, { min: 1, lr: 2.9 }, { min: 0, lr: 0.32 }], fuente: 'margaretten2007',
+      nota: 'Menos de 25 000/µL: LR 0,32; 25 000 o más: LR 2,9; más de 50 000: LR 7,7; más de 100 000: LR 28' } },
+  { id: 'faringitisStrep', nombre: 'Faringitis estreptocócica', grave: false, sintomas: ['garganta'],
+    estudios: 'Regla clínica validada y, según ella, prueba rápida de antígeno o cultivo de garganta.',
+    nota: 'Ningún dato aislado de la historia o el examen basta para confirmarla o descartarla; usa una regla clínica validada.',
+    reglas: [
+    { hallazgo: 'exudadoAmigdalar', lrPos: 3.4, fuente: 'ebell2000' },
+    { hallazgo: 'exudadoFaringeo', lrPos: 2.1, fuente: 'ebell2000' },
+    { hallazgo: 'contactoStrep', lrPos: 1.9, fuente: 'ebell2000' },
+    { hallazgo: 'ganglioCervical', lrNeg: 0.6, fuente: 'ebell2000' },
+    { hallazgo: 'amigdalasGrandes', lrNeg: 0.63, fuente: 'ebell2000' },
+  ] },
+  { id: 'aneurismaAorta', nombre: 'Aneurisma de aorta abdominal', grave: true, edadMin: 50, sintomas: ['abdominal', 'lumbar'],
+    estudios: 'Ecografía abdominal (estudio de referencia en los trabajos del artículo).',
+    nota: 'La palpación es la única maniobra con valor demostrado (aneurisma de 3 cm o más). No sirve para descartarlo, sobre todo si se sospecha rotura; la obesidad abdominal la hace menos sensible.',
+    reglas: [
+    { hallazgo: 'aortaAncha', lrPos: 12, lrNeg: 0.72, fuente: 'lederle1999', nota: 'Aneurisma de 3 cm o más' },
   ] },
 ]
